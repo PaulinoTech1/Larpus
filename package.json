@@ -1,0 +1,1 @@
+{"name":"larpus","private":true,"version":"0.1.0","scripts":{"start":"python -m runtime.gateway","test":"python -m unittest discover -s tests -v","vendor":"node scripts/vendor.cjs"},"dependencies":{"katex":"0.19.0"}}
