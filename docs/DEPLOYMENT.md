@@ -1,12 +1,36 @@
 # Rebuild and deployment gates
 
-## Rebuild current host slice
+Windows 11 Home deployment is now implemented separately in
+[WINDOWS-HOME-ISOLATION.md](WINDOWS-HOME-ISOLATION.md): a dedicated WSL2 distro,
+rootless network-disabled Podman pod, sealed stdio MCP executor and quarantine
+volume excluded from the model container. It is now provisioned on this machine
+and passed live denial, DLP and GPU checks. OpenShell below remains an additional
+unimplemented layer; backend restart after owner-reported Windows reboot is verified; physically
+disconnected reboot and second-device UI acceptance remain pending.
+
+## Restart deployed station
+
+```powershell
+wsl --distribution Larpus --user larpus --exec env XDG_RUNTIME_DIR=/run/user/1000 podman pod start larpus-offline
+python -m runtime.isolation check
+# Continue only after a successful check:
+.\scripts\start-lan.ps1
+```
+
+Preserve data/password.json, data/tls and the Linux quarantine volume. Local HTTP
+has no password; LAN HTTPS requires it. Missing TLS credentials stop LAN startup.
+Reseal runtime after source/persona edits before restarting. No autostart is installed.
+See [HTTPS](HTTPS.md) and [decisions](DECISIONS.md).
+
+## Rebuild explicit unsandboxed host slice
 
 Clone this repo; install Python 3.10+, Node 22+, and Ollama. Run `npm ci
 --ignore-scripts`, `npm run vendor`, and `ollama pull qwen2.5:14b` during the
 online preparation window. Start Ollama with cloud disabled, then run
+`python -m runtime.auth`, explicitly set `LARPUS_ISOLATION=host`, then run
 `python -m runtime.gateway`. Preserve `web/vendor/katex` and the Ollama model
-cache to rebuild/run offline. There are no Python package dependencies.
+cache to rebuild/run offline. Install the pinned Python dependency from
+`requirements.txt`; cache its wheel as described in TEXT_FILTER.md.
 Only gateway 8080 and Ollama 11434 listen, both on loopback. No container volume
 mounts exist in this slice. GPU drivers and Ollama CUDA support remain external
 prerequisites. Query `ollama list` and record each model digest; tags can change.

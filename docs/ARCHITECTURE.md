@@ -1,58 +1,32 @@
 # Architecture
 
-```text
-Browser HUD → Larpus gateway → AEI config runtime → local Ollama
-                    ↑                              ↓
-Wake word → local STT → user message       text → local TTS → speaker
-               VoiceStudio adapter / voice profiles (planned)
+## Deployed Windows 11 Home station
 
-Target boundary: OpenShell supervisor → rootless Podman agent sandbox
+```text
+Local HTTP 127.0.0.1:8080 (no password)
+LAN HTTPS 192.168.1.2:8080 (password + subnet checks)
+  -> Windows gateway, shared authentication and limits
+  -> fixed WSL/Podman stdio MCP
+Dedicated Larpus WSL2 / rootless network=none pod:
+  trusted persona/skill/MCP runtime -> Ollama loopback :11434
+  generated reply -> DLP -> private quarantine -> approved output
 ```
 
-All components stay on the owner's PC. The UI serves its own fonts, scripts,
-equation renderer, and animation. The gateway validates messages, injects the
-chosen persona's system prompt, bounds body/history/context/output, and serializes
-inference. It only calls host-loopback Ollama `/api/chat` with `stream:false`.
-The browser never chooses an upstream URL, model, or system instruction.
-Errors are explicit; no cloud fallback. Responses use text nodes, not model HTML.
-History is session-only; no prompt logging, durable memory, or file/home tools.
+Only network is shared; PID/IPC/filesystems are separate. No published inference
+port. Code/configs/models are read-only. Model gets narrow read-only GPU libraries
+and one NVIDIA package plus /dev/dxg; agent gets no GPU, Windows drives, owner
+home, passwords or container sockets. Only trusted DLP mounts writable quarantine.
+The executor validates sealed source and images and never falls back to host mode.
 
-AEI here means the project's configurable agent execution interface, not an
-implementation of an unspecified external AEI SDK. Add a sandbox executor behind
-this interface later; keep persona definition independent of execution backend.
-Until then `runtime/agents.py` is config-driven inference only.
+Browser selects approved personas/skills, never upstream URLs or system prompts.
+Inputs are validated/filtered; replies render as text. Chat history is browser
+memory only; held output is the intentional persistence exception. AEI is this
+project's configurable agent interface, not an external SDK.
 
-## Boundaries and storage
+VoiceStudio STT/TTS remains planned with AGPL distribution implications. Voice
+is a stub; proposed adapter port 7861 is not listening. OpenShell is a future
+layer with no deployed control-plane port. Explicit host development mode does
+not carry the Podman isolation claims.
 
-| Component | Bind / port | Storage / mounts | Current status |
-|---|---|---|---|
-| HUD + Larpus gateway | 127.0.0.1:8080, `LARPUS_PORT` override | reads `web/` and `agents/`; no writable data | implemented |
-| Ollama host service | 127.0.0.1:11434 | Windows `%USERPROFILE%\.ollama\models`; Linux `~/.ollama/models` for user service, or explicit `OLLAMA_MODELS` | external prerequisite |
-| VoiceStudio adapter | reserve 127.0.0.1:7861 | planned `data/voice/{models,profiles,recordings}` | stub only |
-| OpenShell control plane | version-specific local port, record before deployment | dedicated `data/openshell`, Podman user socket | not deployed |
-| AEI sandbox | no published ports | `/app` read-only code, `/app/agents` read-only configs; future `/data` scoped writable state | planned |
-
-7861 is Larpus's proposed adapter port, not a claim about VoiceStudio's API port.
-No volumes are mounted by the current host slice. Do not mount the home directory,
-Podman socket, credential stores, or model cache into the agent. OpenShell owns
-its privileged control interfaces outside the workload. Host loopback inside a
-container differs from host loopback; a future supervisor-local inference route
-must bridge this explicitly, never broaden Ollama to `0.0.0.0` as a shortcut.
-
-## Target isolation and privacy
-
-Use Linux or WSL2 with rootless Podman 5.x and a pinned OpenShell release. WSL2
-support is experimental; rootless networking and kernel enforcement need owner
-validation. Set `OPENSHELL_TELEMETRY_ENABLED=false` on the gateway. Deny all
-outbound traffic except the specific local inference and voice routes, and deny
-external DNS. Enforce this at the supervisor and host firewall. Keep tools
-disabled until policy denial tests and scoped mounts are verified.
-
-OpenShell deployment is not simulated here: Podman and OpenShell are unavailable
-in the kickoff environment. See DEPLOYMENT.md for the acceptance gates. Never
-describe the development Python process as an OpenShell sandbox.
-
-References checked 2026-10-07:
-- https://docs.ollama.com/api/chat
-- https://docs.nvidia.com/openshell/latest/about/support-matrix
-- https://github.com/NVIDIA/OpenShell (telemetry opt-out)
+See [exact mounts/rebuild](WINDOWS-HOME-ISOLATION.md), [HTTPS](HTTPS.md),
+[decisions](DECISIONS.md) and [verification](VERIFICATION.md).

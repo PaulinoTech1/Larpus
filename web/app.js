@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-let history = [], busy = false, personas = [];
+let history = [], busy = false, personas = [], skills = [];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 function state(value) { $('core-state').textContent = `● ${value}`; }
 function message(role, content) {
@@ -8,13 +8,18 @@ function message(role, content) {
   el.append(label, document.createTextNode(content)); $('messages').append(el); $('messages').scrollTop = $('messages').scrollHeight;
 }
 function reset() { history = []; $('messages').replaceChildren(); $('notice').textContent = 'New session. Conversation stays in browser memory only.'; }
-function setBusy(value) { busy = value; for (const id of ['send','persona','clear']) $(id).disabled = value; state(value ? 'THINKING' : 'STANDBY'); }
+function setBusy(value) { busy = value; for (const id of ['send','persona','skill','clear']) $(id).disabled = value; state(value ? 'THINKING' : 'STANDBY'); }
 async function api(path, body) {
   const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : {});
   if(r.status===401){location.replace('/login');throw Error('Session expired');}
   const data = await r.json(); if (!r.ok) throw Error(data.error || 'Gateway request failed'); return data;
 }
-$('persona').addEventListener('change', () => {reset(); const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; $('model').textContent = p.model;});
+$('persona').addEventListener('change', () => {reset(); const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; $('model').textContent = p.model; refreshSkills(p);});
+function refreshSkills(persona) {
+  const options=[new Option('Persona only',''),...skills.filter(s=>(persona.skills||[]).includes(s.id)).map(s=>new Option(s.name,s.id))];
+  $('skill').replaceChildren(...options);$('skill').disabled=false;
+}
+$('skill').onchange=reset;
 $('clear').onclick = reset;
 const logout=document.createElement('button');logout.textContent='LOCK STATION';logout.id='logout';logout.type='button';
 document.querySelector('header').append(logout);
@@ -26,13 +31,13 @@ $('chat').onsubmit = async e => {
   if (history.length >= 38) { $('notice').textContent = 'Session limit reached. Reset to begin a new conversation.'; return; }
   $('messages').querySelector('.empty')?.remove(); message('user', content); $('prompt').value = ''; $('notice').textContent = ''; setBusy(true);
   const next = [...history,{role:'user',content}];
-  try { const result = await api('/api/chat',{persona:$('persona').value,messages:next}); history = [...next,{role:'assistant',content:result.content}]; message('assistant',result.content); }
+  try { const result = await api('/api/chat',{persona:$('persona').value,messages:next,skill:$('skill').value||null}); history = [...next,{role:'assistant',content:result.content}]; message('assistant',result.content); }
   catch (err) { $('notice').textContent = err.message; $('prompt').value = content; }
   finally {setBusy(false); $('prompt').focus();}
 };
 $('mic').onclick = async () => {try {await api('/api/voice', {action:'listen'});} catch(e) {$('notice').textContent=e.message;}};
 async function boot() {
-  try { const data = await api('/api/personas'); personas = data.personas; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas[0]; $('description').textContent=p.description; $('model').textContent=p.model;
+  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas[0]; $('description').textContent=p.description; $('model').textContent=p.model;refreshSkills(p);
     const h = await api('/api/health'); $('connection').textContent = h.ollama === 'online' ? '● OLLAMA ONLINE' : '○ OLLAMA OFFLINE';
     if(h.ollama === 'offline') $('notice').textContent='Start local Ollama to open the inference channel.';
     else if(!h.models.includes(p.model)) $('notice').textContent=`Install ${p.model} in local Ollama before chatting.`;
@@ -92,3 +97,18 @@ function draw(now) {
   requestAnimationFrame(draw);
 }
 boot(); requestAnimationFrame(draw);
+
+async function refreshHealth() {
+  try {
+    const report=await api('/api/station-health');
+    $('health-summary').textContent=`STATION HEALTH / ${report.status.toUpperCase()}`;
+    const rows=(report.checks||[]).map(check=>{
+      const row=document.createElement('p');
+      row.textContent=`${check.name} / ${check.status.toUpperCase()} - ${check.message}`;
+      return row;
+    });
+    if(report.message){const row=document.createElement('p');row.textContent=report.message;rows.push(row);}
+    $('health-checks').replaceChildren(...rows);
+  } catch(e) {$('health-summary').textContent='STATION HEALTH / UNAVAILABLE';}
+}
+refreshHealth(); setInterval(refreshHealth,30000);

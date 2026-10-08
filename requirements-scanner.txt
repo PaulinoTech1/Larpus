@@ -1,0 +1,2 @@
+# Separate Python 3.12–3.14 scanner environment; never import into agent runtime.
+skillspector @ git+https://github.com/NVIDIA/SkillSpector.git@3c8e4b958fda9602e0044885f766be0e49f03585

@@ -2,14 +2,18 @@
 import json
 import re
 from pathlib import Path
+from runtime.text_filter import filter_messages, DEFENSE_PROMPT
+from runtime.skills import load_skills, selected_prompt
 
 ROOT = Path(__file__).resolve().parents[1]
 
 def load_personas():
+    skills=load_skills()
     personas = {}
     for path in sorted((ROOT / 'agents/personas').glob('*.json')):
         p = json.loads(path.read_text(encoding='utf-8'))
-        if set(p) != {'version', 'id', 'name', 'description', 'system_prompt', 'model', 'temperature', 'voice'}:
+        required={'version', 'id', 'name', 'description', 'system_prompt', 'model', 'temperature', 'voice'}
+        if not required.issubset(p) or set(p)-required-{'skills'}:
             raise ValueError(f'Invalid persona fields: {path.name}')
         if p['version'] != 1 or not isinstance(p['id'], str) or not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', p['id']):
             raise ValueError('Invalid persona identity')
@@ -22,6 +26,8 @@ def load_personas():
             raise ValueError('Invalid temperature')
         if p['voice'] is not None and not isinstance(p['voice'], str):
             raise ValueError('Invalid voice')
+        if not isinstance(p.get('skills',[]),list) or any(not isinstance(s,str) or s not in skills for s in p.get('skills',[])) or len(set(p.get('skills',[])))!=len(p.get('skills',[])):
+            raise ValueError('Invalid local skill selection')
         if p['id'] in personas:
             raise ValueError('Duplicate persona')
         personas[p['id']] = p
@@ -29,7 +35,7 @@ def load_personas():
         raise ValueError('No personas configured')
     return personas
 
-def messages_for(persona, history):
+def messages_for(persona, history, skill=None):
     if not isinstance(history, list) or not 1 <= len(history) <= 40:
         raise ValueError('Send 1–40 conversation messages')
     clean = []
@@ -43,4 +49,5 @@ def messages_for(persona, history):
         clean.append(msg)
     if clean[-1]['role'] != 'user':
         raise ValueError('Last message must be from user')
-    return [{'role': 'system', 'content': persona['system_prompt']}] + clean
+    filter_messages(clean)
+    return [{'role': 'system', 'content': persona['system_prompt'] + selected_prompt(persona,skill) + DEFENSE_PROMPT}] + clean

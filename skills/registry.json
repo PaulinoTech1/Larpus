@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "id": "home-planning",
+      "name": "Home planning",
+      "description": "Turn a household goal into a short, realistic plan.",
+      "origin": "local-authored",
+      "sha256": "d4f4665381a716ce13a378ddaad666901724a556c87b590af886de59a96f33b7"
+    },
+    {
+      "id": "it-interview",
+      "name": "IT interview practice",
+      "description": "Rehearse a systems-administration or cybersecurity interview.",
+      "origin": "local-authored",
+      "sha256": "7359d47c23d4743a43b54bc45ba2a02b5a03a1f871eb9abbefe264c42405b235"
+    },
+    {
+      "id": "larp-character",
+      "name": "Character workshop",
+      "description": "Prepare a character for any fictional setting or subculture.",
+      "origin": "local-authored",
+      "sha256": "a44e3880c8cfd278b20636aa579cf64ddf0e7aecfc6559706f8757c00072adfc"
+    },
+    {
+      "id": "scenario-debrief",
+      "name": "Scenario and debrief",
+      "description": "Practice and debrief an authorized IT lab or fictional incident.",
+      "origin": "local-authored",
+      "sha256": "9fd7835cc10cb336485ad0e7a028c1c8f274c8b85e2c55a7dcf338a26cb74480"
+    }
+  ]
+}

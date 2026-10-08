@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "recommended": "qwen3:14b",
+  "candidates": [
+    {"tag":"qwen3:14b","weight_gb":9.3,"purpose":"General assistant and persona coaching, with voice headroom","quantization":"Q4_K_M"},
+    {"tag":"qwen3:30b-a3b-instruct-2507-q4_K_M","weight_gb":19,"purpose":"Larger text-only candidate; serialize voice GPU work","quantization":"Q4_K_M"},
+    {"tag":"qwen2.5:14b","weight_gb":9,"purpose":"Existing baseline for comparison","quantization":"Q4_K_M"}
+  ],
+  "num_ctx":4096,
+  "num_predict":256,
+  "benchmark_status":"NOT_RUN_ON_OWNER_GPU"
+}

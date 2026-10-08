@@ -10,3 +10,8 @@ form.onsubmit=async event=>{
   }catch(e){error.textContent='Station unavailable. Try again shortly.';}
   finally{button.disabled=false;password.focus();}
 };
+
+// Existing access (including local loopback access) opens the HUD directly.
+fetch('/api/personas', {cache: 'no-store'})
+  .then(response => { if (response.ok) location.replace('/'); })
+  .catch(() => {});

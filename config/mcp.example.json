@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "larpus-local": {
+      "command": "C:\\Users\\PS5Killer\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+      "args": ["E:\\speedzone_MS\\LARPUS\\scripts\\run_mcp.py"],
+      "env": {"OTEL_SDK_DISABLED":"true", "OLLAMA_NO_CLOUD":"1", "PYTHONUTF8":"1"}
+    }
+  }
+}

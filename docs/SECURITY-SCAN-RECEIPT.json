@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-10-07T20:47:02.612445+00:00",
+  "fingerprint": "e882735afd1f408edc8283a7eed1c4e7ec7f991e176b98fa417abb28674a15ca",
+  "scanner": "SkillSpector 2.12.0",
+  "source_commit": "3c8e4b958fda9602e0044885f766be0e49f03585",
+  "mode": "static-no-network-wrapper",
+  "results": [
+    {
+      "target": "home-planning",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-planning.json"
+    },
+    {
+      "target": "it-interview",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/it-interview.json"
+    },
+    {
+      "target": "larp-character",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/larp-character.json"
+    },
+    {
+      "target": "scenario-debrief",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/scenario-debrief.json"
+    },
+    {
+      "target": "mcp",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/mcp.json"
+    }
+  ],
+  "status": "pass"
+}

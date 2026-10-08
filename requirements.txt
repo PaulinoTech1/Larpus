@@ -1,0 +1,3 @@
+# Immutable upstream source; install/cache during online preparation only.
+stegdetect @ git+https://github.com/PaulinoTech1/Steganography.git@ba0fc95a5c8ea256bdf1501de400304837e33c30
+mcp==2.3.0

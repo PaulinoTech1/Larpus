@@ -1,0 +1,10 @@
+.git
+data
+node_modules
+web
+docs
+tests
+**/__pycache__
+vendor/*
+!vendor/runtime-wheels
+!vendor/runtime-wheels/**

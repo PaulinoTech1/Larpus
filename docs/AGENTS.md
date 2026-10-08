@@ -2,7 +2,7 @@
 
 `agents/schema.json` defines v1. `runtime/agents.py` enforces the supported fields
 at startup, rejects unknown fields and duplicate IDs, and fails startup on invalid
-configs. Restart the gateway after edits. Add a JSON file under `agents/personas`
+configs. Reseal the isolated runtime and restart the gateway after edits. Add a JSON file under `agents/personas`
 to add another subculture/persona; UI choices are discovered from these files.
 
 | Field | Meaning |
@@ -15,7 +15,7 @@ to add another subculture/persona; UI choices are discovered from these files.
 | temperature | Number from 0 to 1 |
 | voice | Future local voice profile ID or null; currently unused |
 
-Two references ship: `home-assistant` and `it-larp-coach`. Both use
+The original two reference personas are: `home-assistant` and `it-larp-coach`. Both use
 `qwen2.5:14b`. The latter coaches scenarios without presenting fiction as actual
 professional experience. Future personas can cover any subculture. Persona
 prompts are behavioral guidance, not security controls; tools and network rights
@@ -28,3 +28,6 @@ Conversation must alternate user/assistant and end in user; max 40 messages,
 tokens, 120-second timeout; long histories may be truncated by the model context.
 409 signals busy inference, 400 invalid input, 502 local model failure.
 `POST /api/voice` returns 501 until capture/STT/TTS integration exists.
+
+Ten additional roles ship; see [persona catalog](PERSONAS.md). All twelve
+use qwen2.5:14b and approved local skill allowlists.

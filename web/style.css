@@ -5,3 +5,4 @@
 @media(max-width:600px){:root #equation{margin-top:8px;font-size:16px}#torus-domain{font-size:14px;margin-inline:0}}
 .login-panel{max-width:440px;margin:80px auto;padding:24px}.login-panel form{padding:20px}.login-panel label{margin-top:0}.login-panel input{width:100%;padding:14px;background:var(--bg);color:#e4eff2;border:1px solid var(--line);font:inherit}.login-panel button{width:100%;min-height:48px;margin-top:20px;background:var(--cyan);color:#071417;border:0;font:inherit}#login-error{color:#ffd592;line-height:1.8}
 #logout{background:none;border:1px solid var(--line);color:var(--cyan);min-height:44px;padding:8px;font:inherit;font-size:10px}
+.station-health{margin:18px 4% 0;border:1px solid var(--line);padding:12px;color:var(--muted);font-size:11px}.station-health summary{cursor:pointer;color:var(--cyan);min-height:24px;line-height:24px}.station-health p{line-height:1.7;overflow-wrap:anywhere}.station-health summary:focus-visible{outline:2px solid var(--cyan)}

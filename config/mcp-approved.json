@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "name": "chat_local",
+      "description": "Send bounded, filtered conversation to a server-configured local model.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "persona": {
+            "title": "Persona",
+            "type": "string"
+          },
+          "messages": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "skill": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Skill"
+          }
+        },
+        "required": [
+          "persona",
+          "messages"
+        ],
+        "title": "chat_localArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "chat_localDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_personas",
+      "description": "List configured local personas and their installed-model targets.",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "list_personasArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "list_personasDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "local_status",
+      "description": "Check only the fixed host-loopback Ollama model service.",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "local_statusArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "local_statusDictOutput",
+        "type": "object"
+      }
+    }
+  ]
+}
