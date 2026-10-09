@@ -9,12 +9,13 @@ from urllib.parse import urlsplit
 from runtime.agents import ROOT, load_personas, messages_for
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
-from runtime.mcp_client import chat as mcp_chat, health as mcp_health
+from runtime.mcp_client import chat as mcp_chat, health as mcp_health, stream_chat as mcp_stream
 from runtime.skills import summaries
 
 WEB = ROOT / 'web'
 PERSONAS = load_personas()
 LOCK = threading.Lock()
+DRAIN=ROOT/'release-state/drain'
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass  # Do not log prompts or request URLs.
@@ -27,7 +28,11 @@ class Handler(BaseHTTPRequestHandler):
     def headers_out(self, status, mime, size, extra=None):
         self.send_response(status)
         self.send_header('Content-Type', mime)
-        self.send_header('Content-Length', str(size))
+        if size is not None:
+            self.send_header('Content-Length', str(size))
+        else:
+            self.send_header('Connection','close')
+            self.close_connection=True
         self.send_header('Cache-Control', 'no-store')
         for key,value in (extra or {}).items():
             self.send_header(key,value)
@@ -110,12 +115,26 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200,{'ok':True},{'Set-Cookie':'larpus_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' + ('; Secure' if getattr(self.server, 'tls', False) else '')})
         if not self.server.auth.allowed(('api',self.client_address[0]),30,60):
             return self.reply(429,{'error':'Too many requests. Try again shortly.'},{'Retry-After':'60'})
-        if self.path not in ('/api/chat', '/api/voice'):
+        if self.path not in ('/api/chat', '/api/chat/stream', '/api/voice'):
             return self.reply(404, {'error': 'Not found'})
+        if DRAIN.exists():
+            return self.reply(503,{'error':'Finishing an update. Please retry shortly.'},{'Retry-After':'5'})
         if self.path == '/api/voice':
             try:
                 from runtime.voice import call
                 data = self.read_json(1400000)
+                if isinstance(data,dict) and set(data)=={'action','text'} and data['action']=='synthesize':
+                    from runtime.text_filter import inspect_message
+                    from runtime.dlp import inspect_output
+                    text=data['text']
+                    if not isinstance(text,str) or not text.strip() or len(text)>2200:
+                        raise ValueError('Invalid speech text')
+                    inspect_message(text)
+                    # Replays are client-supplied text, not trusted agent output.
+                    # Fail closed before TTS; generated replies still use isolated DLP.
+                    if inspect_output(text,system_prompt='\n'.join(p['system_prompt'] for p in PERSONAS.values())):
+                        return self.reply(422,{'error':'Speech held by local output DLP.'})
+                    return self.reply(200,call({'action':'synthesize','text':text}))
                 if not isinstance(data,dict) or set(data)!={'action','audio'} or data['action']!='transcribe' or not isinstance(data['audio'],str):
                     raise ValueError('Expected a bounded audio request')
                 result=call(data)
@@ -135,6 +154,8 @@ class Handler(BaseHTTPRequestHandler):
                     except OSError:
                         result['voice_error']='Local speech unavailable.'
                 return self.reply(200,result)
+            except TextHeld:
+                return self.reply(422,{'error':'Speech held by local text filter.'})
             except (ValueError,TypeError):
                 return self.reply(400,{'error':'Invalid voice request. Use mono 16 kHz PCM WAV, at most 30 seconds.'})
             except OSError:
@@ -144,7 +165,7 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError('JSON required')
             size = int(self.headers.get('Content-Length', '0'))
             if not 0 < size <= 65536:
-                raise ValueError('Request must be 1–65536 bytes')
+                raise ValueError('Request must be 1-65536 bytes')
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
                 raise ValueError('Expected persona and messages')
@@ -164,6 +185,22 @@ class Handler(BaseHTTPRequestHandler):
         if not LOCK.acquire(blocking=False):
             return self.reply(409, {'error': 'Inference busy. Try again shortly.'})
         try:
+            if self.path=='/api/chat/stream':
+                self.headers_out(200,'application/x-ndjson',None,{'X-Accel-Buffering':'no'})
+                def event(value):
+                    self.wfile.write((json.dumps(value)+'\n').encode());self.wfile.flush()
+                try:
+                    result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}))
+                    if result.get('status')==200:
+                        event({'type':'done','sources':result.get('sources',[]),**({'context':result['context']} if 'context' in result else {})})
+                    else:
+                        event({'type':'error','error':result.get('error','Response withheld.')})
+                except (OSError,ValueError,KeyError,TypeError):
+                    try:
+                        event({'type':'error','error':'Local stream interrupted. The partial reply is incomplete.'})
+                    except OSError:
+                        pass  # Browser disconnected; never start another HTTP response.
+                return
             result = mcp_chat(data['persona'], data['messages'],data.get('skill'))
             status = result.pop('status', 502)
             if status == 200 and data.get('speak'):
@@ -246,6 +283,12 @@ def main():
         print(f'larpus: {scheme}://{host}:{port}', flush=True)
         from runtime.health import start_monitor
         stop_monitor = start_monitor()
+        def drain_when_requested():
+            while not stop_monitor.wait(.25):
+                if DRAIN.exists():
+                    server.shutdown()
+                    return
+        threading.Thread(target=drain_when_requested,daemon=True,name='larpus-release-drain').start()
         try:
             server.serve_forever()
         finally:

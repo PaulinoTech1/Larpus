@@ -91,3 +91,128 @@ Original documents remain private under ignored `data/research/`, separate from
 the output-DLP investigation quarantine. Only catalogs, provenance and the owner-run
 rebuild tool belong in Git. Preparation grants no internet access or document/tool
 execution to the local model. See [research archives](RESEARCH_ARCHIVES.md).
+
+## Voice correction and playback controls (2026-10-09)
+
+Push-to-talk and transcript review are defaults because ambient sound and Whisper
+hallucinations can create unwanted messages. Hands-free and auto-send remain explicit
+choices. The browser chooses a microphone by exact device ID; audio processing stays
+local and no device metadata leaves the page. VAD, deterministic decoding and segment
+confidence checks reduce false recognition without claiming perfect accuracy. Playback
+is independently controlled, retains position on pause, has a speed slider and can
+replay any displayed reply. Replay text is bounded and rechecked by input filtering
+and DLP before TTS; the isolated generated-output quarantine path remains intact.
+Wit is a scoped persona instruction, not a speech-model capability or invented
+credential. No new ports, mounts, tools, external downloads or accounts were added.
+
+## Qwen3.5 27B Q4 GPU, CPU voice (2026-10-09)
+
+All personas target qwen3.5:27b-q4_K_M at 4096 context. Conversational requests
+disable thinking, request GPU layers and retain the loaded model. The runtime
+checks actual Ollama GPU residency before releasing a generated response; CPU or
+partial-offload answers fail rather than silently becoming slow. Health and the
+HUD distinguish loaded-model placement from mere NVIDIA hardware availability.
+Voice remains CPU-only in its existing network-disabled, device-free container.
+System RAM usage is not evidence of CPU-only inference: the previous qwen2.5:14b
+was verified 100% GPU before this switch. Public weights are retrieved only by a
+temporary, separate preparation container, which is stopped after verification.
+See [model deployment and verification](MODELS.md).
+
+## Sentence streaming with cumulative DLP (2026-10-09)
+
+The HUD releases inspected sentences during generation over the existing local
+MCP progress channel and a same-origin NDJSON route. CPU speech runs as a separate
+FIFO queue with one WAV prepared ahead, so synthesis does not block text delivery.
+Whole-response chat remains available. Every release stages and checks the full
+generated prefix, with incomplete protected phrases held across boundaries.
+Later holds stop remaining output and audio; already released clean sentences
+cannot be retracted. Incomplete replies never enter browser conversation history.
+See [streaming behavior and verification](STREAMING.md) for the exact contract
+and limits. GPU inference, CPU voice, LAN authentication/TLS, rate limiting and
+network-disabled containers retain their existing scopes.
+
+## Vetted local evidence rather than model browsing (2026-10-09)
+
+Owner-reviewed publisher snapshots and checksum-pinned archived research feed a
+CPU-only SQLite FTS index inside the read-only agent image. Retrieval is trusted
+runtime code behind the existing chat tool; there is no new filesystem/browser
+tool or network access. Roles receive only permitted, bounded, rescanned passages
+as quoted data, with actual source metadata displayed after the answer. The
+model can reason about this evidence to bridge training-era gaps without weight
+updates. Exact kernel/distribution versions and snapshot dates matter; backports
+and release candidates are distinguished from upstream stable releases.
+Blocked downloads remain recorded; official-source factual briefs are labelled,
+and image-only PDF coverage is marked as metadata-only. Public CPU product facts
+are discussable while host-inventory claims retain a scoped output check.
+See [curation, retrieval and rebuild contract](APPROVED_KNOWLEDGE.md).
+
+## Shared reading with role priorities (2026-10-09)
+
+The owner explicitly replaced document read restrictions with shared access.
+All twelve configured personas can retrieve any approved document; source role
+labels now influence ranking rather than authorisation. Native-role relevance
+gets a modest boost, shared rows are deduplicated and named comparisons preserve
+evidence for each subject. Specialist skill selection allowlists remain exclusive.
+Evidence remains bounded, untrusted and subject to input/output checks.
+
+The home assistant prioritises official AI product/model/pricing references.
+ChatGPT Plus/Codex, GPT-6.1 Sol, GPT-6 Astra, SuperGrok/Grok Bot, Claude Pro and
+DeepSeek V4 Pro/Flash are dated reference snapshots, not installed services.
+API rates are distinct from subscriptions; retired Flash aliases and peak/cache
+conditions are preserved. Muse remains unidentified pending an owner URL/name.
+See [AI references and price conditions](AI_PRODUCT_REFERENCES.md).
+
+## Keep production independent of checkout updates (2026-10-09)
+
+Production executes a frozen source/UI/approved-index snapshot and a separately
+pinned offline agent. Checkout edits, tests, builds and static scans prepare a
+candidate beside production. Owner activation drains existing requests, briefly
+rebinds the same listeners, checks functional station health and restores the
+previous release if startup fails. Shared GPU model and CPU voice stay running.
+No new network service or model update tool was added. Owner state remains shared;
+incompatible migrations and shared dependency upgrades need separate planning.
+This provides preparation availability and recoverable cutovers, not zero downtime.
+See [update workflow and limitations](UPDATES.md).
+
+## Meta Muse identification and agent recommendations (2026-10-09)
+
+The owner identified Muse as Meta's personal agent, replacing the earlier pending
+identification. Three reviewed official snapshots and six compact local briefs
+cover Muse, Muse Spark/related families, API tiers and the Grok Bot comparison.
+The home persona compares practical tasks, eligibility, costs and privacy rather
+than treating agents as model names. Every persona retains shared reading access.
+The owner-reported billion-token referral bonus is included with explicit
+primary-source verification limits: its announcement was inaccessible, so no
+eligibility, code, cap, expiry, cash value or API entitlement is promised.
+External agents remain reference subjects; local model/voice and egress isolation
+are unchanged. Deployment uses the available-update workflow.
+
+## GitHub access through owner-side archives (2026-10-09)
+
+The owner authorised downloading all owned GitHub repositories. Authenticated,
+paginated owner discovery and native Git/GCM run only during preparation. Full
+Git mirrors and inert commit snapshots remain outside the model sandbox; screened
+source/docs join the shared read-only reference index. No GitHub credential,
+network client, write tool or downloaded skill is exposed to the LLM.
+Repository queries scope to named projects, reserve comparison evidence and
+provide a complete local catalogue. Original files are not served by the gateway.
+Windows-incompatible paths stay in mirrors, with explicit snapshot exclusions.
+See [archive, screening and refresh contract](GITHUB_ARCHIVES.md).
+
+## Microsoft coaching and continuous conversations (2026-10-09)
+
+Add individually reviewed Microsoft Learn snapshots for Intune, Entra ID, Azure,
+Microsoft 365 and BitLocker to the shared reference library, with five local
+implementation skills shared by System Administrator and IT/Cybersecurity Coach.
+Preserve existing role-exclusive skills. No live tenant integration or cloud
+runtime access is introduced. Treat Windows Home edition constraints explicitly.
+
+Switching skills and personas retains browser-memory conversation; RESET remains
+explicit. Show latest Ollama-measured input/output token use against 4096 tokens,
+including gateway omission count, rather than estimating from visible text.
+Release scanning checks the exact frozen registry target inventory instead of
+assuming a fixed skill count. All targets must complete and new MCP findings block.
+
+Give every role the same original eccentric British LARPUS character: concise
+wit, evidence-led pushback and practical alternatives, with no insults, invented
+objections or loss of specialist boundaries. See [implementation contract](MICROSOFT_IMPLEMENTATION.md).

@@ -10,6 +10,18 @@ disconnected reboot and second-device UI acceptance remain pending.
 
 ## Restart deployed station
 
+For the installed frozen-release deployment, use:
+
+```powershell
+python scripts/releases.py start
+python scripts/releases.py status
+```
+
+For future changes, follow [available updates and rollback](UPDATES.md). Build,
+test and scan a candidate while the active release continues serving. The older
+manual pod/start instructions below apply to a deployment without an active
+release pointer; do not launch the working checkout over a frozen release.
+
 ```powershell
 wsl --distribution Larpus --user larpus --exec env XDG_RUNTIME_DIR=/run/user/1000 podman pod start larpus-offline
 wsl --distribution Larpus --user larpus --exec env XDG_RUNTIME_DIR=/run/user/1000 podman start larpus-voice
@@ -26,7 +38,7 @@ See [HTTPS](HTTPS.md) and [decisions](DECISIONS.md).
 ## Rebuild explicit unsandboxed host slice
 
 Clone this repo; install Python 3.10+, Node 22+, and Ollama. Run `npm ci
---ignore-scripts`, `npm run vendor`, and `ollama pull qwen2.5:14b` during the
+--ignore-scripts`, `npm run vendor`, and `ollama pull qwen3.5:27b-q4_K_M` during the
 online preparation window. Start Ollama with cloud disabled, then run
 `python -m runtime.auth`, explicitly set `LARPUS_ISOLATION=host`, then run
 `python -m runtime.gateway`. Preserve `web/vendor/katex` and the Ollama model

@@ -1,21 +1,40 @@
-# Local voice loop ? deployed 2026-10-08
+# Local voice loop - deployed 2026-10-08; controls updated 2026-10-09
 
 ## Using it
 
-Refresh the HUD and select Home assistant for dry, gentle wit in British English.
-Click VOICE and allow microphone access. Speak, then pause for about one second.
-The transcript appears as your chat message; the selected persona answers in text
-and speech. Click VOICE again to immediately stop capture/playback. Listening is
-opt-in on each page load. Capture pauses during transcription, inference and speech
-playback to reduce self-triggering. Browser echo cancellation is requested.
+Refresh the HUD. Open **VOICE / INPUT & PLAYBACK**, click VOICE and allow
+microphone access. The microphone selector lists browser-visible inputs; REFRESH
+MICS updates the list after permission or device changes. A selected device uses
+an exact device ID rather than silently choosing another microphone. Device IDs
+and names are not sent to the server or saved; reselect after a page reload.
 
-Exact station commands: "Larpus reset chat", "Larpus switch to Network Engineer"
-(or another displayed persona name), and "Larpus mute" / "mute voice". Fixed
-confirmations are spoken; no arbitrary OS action or shell execution is enabled.
-Speech recognition can mishear names. Use the selector/button when needed.
-Listening is speech/silence segmentation, not wake-word detection; nearby speech
-may be submitted while listening is enabled. Continuous listening must be explicitly
-enabled. No voice cloning or wake-word model is deployed.
+Push-to-talk is the default: RECORD, speak, then STOP RECORDING. The transcript
+lands in the composer for correction before SEND. Hands-free listening is optional;
+review-before-send remains on unless explicitly unchecked. Draft text is preserved
+and a transcript is appended rather than replacing it. Empty/no-speech results
+never submit chat or execute commands. Nearby speech can still be recognised;
+VAD and confidence filtering reduce false triggers but do not prove correctness.
+
+Speak replies is independent of microphone capture, so typed chat can speak with
+the microphone off. PAUSE AUDIO / RESUME AUDIO preserves the playback position.
+The speed slider adjusts playback from 0.85x to 1.5x while preserving pitch where
+supported by the browser. Piper's synthesis length scale is 0.85 (a quicker default
+cadence than the previous model default). REPEAT LAST replays the latest reply;
+REPLAY REPLY on any displayed assistant message reads that entire reply, including
+older replies and text beyond the initial 2000-character spoken preview. Long
+replays are synthesised in bounded chunks and may have pauses between chunks.
+
+VOICE toggles capture only; disabling Speak replies stops playback. Capture stays
+suspended during playback, including paused playback, to prevent feedback. Listening
+is opt-in on each page load. No recordings or generated speech are saved to disk.
+
+Exact station commands in optional auto-send mode: "Larpus reset chat", "Larpus
+switch to Network Engineer" (or another displayed name), "Larpus repeat", and
+"Larpus mute" / "mute voice". In review mode these are ordinary draft text until
+the owner chooses the UI action; sending a draft sends a chat message. There are
+no OS actions, wake-word detector or voice cloning. Use buttons for commands while
+audio is playing, because capture is suspended. Wit comes from persona wording:
+natural British English and occasional dry humour, omitted in serious contexts.
 
 Use localhost HTTP on the station or trusted LAN HTTPS on another device.
 Microphone permission requires a secure browser context. SpeechRecognition and
@@ -34,10 +53,13 @@ are not run. This is a narrow VoiceStudio ASR integration, not full studio embed
 
 Faster Whisper 1.2.1 uses Systran/faster-whisper-small.en with CPU int8.
 Piper TTS 1.8.0 uses rhasspy/piper-voices en_GB-alan-medium (British English).
-Wit comes from the home-assistant persona instructions, not the voice model.
+Wit comes from role-specific persona instructions, not the voice model.
 Both run on CPU so Ollama retains the GPU. The worker uses validated PCM arrays
 for recognition, avoiding PyAV 19's incompatible decoding keyword. Models are
-loaded per operation; real-device latency tuning remains future work.
+loaded per operation; startup overhead remains. A trusted wrapper enables local
+VAD, deterministic decoding, no previous-text conditioning and segment confidence
+filters beneath the unmodified pinned VoiceStudio adapter. Digital silence is
+rejected before loading the ASR model.
 
 ```text
 Opt-in mic -> mono 16 kHz PCM16 WAV -> offline VoiceStudio/Faster Whisper adapter
@@ -45,9 +67,10 @@ Opt-in mic -> mono 16 kHz PCM16 WAV -> offline VoiceStudio/Faster Whisper adapte
   -> output DLP -> approved text -> offline Piper -> WAV playback
 ```
 
-Only DLP-approved generated replies reach TTS. Held replies return an incident
-instead. Command confirmations are fixed application text. No arbitrary-text TTS
-endpoint is exposed. Replies longer than 2000 characters speak an initial portion
+Only DLP-approved generated replies reach automatic TTS. Held replies return an
+incident instead. Command confirmations are fixed application text. The authenticated,
+rate-limited replay route accepts bounded text and applies the local input filter
+and output DLP again before synthesis; it is not a trusted model-output bypass. Replies longer than 2000 characters speak an initial portion
 and indicate the remainder is displayed. Text still works if synthesis fails.
 Utterances are at most 30 seconds. Audio is browser/process memory only; runtime
 does not save recordings or generated speech. No prompt/audio logs are enabled.
@@ -118,3 +141,24 @@ Sources: https://github.com/debpalash/VoiceStudio,
 https://github.com/SYSTRAN/faster-whisper,
 https://github.com/OHF-Voice/piper1-gpl,
 https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_GB/alan/medium.
+
+## Voice controls validation (2026-10-09)
+
+The HUD now streams approved sentences into a FIFO speech queue while generation
+continues, with at most one WAV prepared ahead. See [streaming](STREAMING.md) for
+inspection boundaries, interruption handling and validation. The complete-WAV
+behavior described for the original chat API remains available to API callers.
+
+52 Python tests pass, including uncertain-segment rejection, empty transcription
+and replay text/DLP checks. `node tests/voice-ui.cjs` verifies exact mic selection,
+silence and review gates, paused-playback capture suppression, resume position,
+speed changes, replay with the microphone off, older-reply synthesis and cancellation.
+These simulated browser tests do not prove physical microphone accuracy or sound
+quality. A real offline Piper -> Whisper test reproduced the synthetic sentence,
+and one second of digital silence returned no speech. The test WAV was 4.9 seconds
+long and generated in about 2.5 seconds on this machine; this is not a benchmark
+for arbitrary replies. Physical mic, room noise and speaker acceptance remain owner
+checks. Both worker images were rebuilt offline; previous containers remain stopped
+for rollback, with credentials, models and quarantine preserved.
+
+The matching [offline scan receipt](VOICE-CONTROLS-SCAN-RECEIPT.json) records 64 clean skill scans and eight retained MCP findings (MEDIUM aggregate risk). Overall health remains degraded for those warnings; static scanning is not a full audit of voice quality or browser behaviour.

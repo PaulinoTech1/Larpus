@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-10-09T08:31:27.538810+00:00",
+  "fingerprint": "1ed1f33ae1346f3e4e1122c472994c1feb9032a21365e07b74b8b44449fe068d",
+  "scanner": "SkillSpector 2.12.0",
+  "source_commit": "3c8e4b958fda9602e0044885f766be0e49f03585",
+  "mode": "static-no-network-wrapper",
+  "status": "warning",
+  "skill_targets": 64,
+  "skill_targets_clean": 64,
+  "mcp": {
+    "target": "mcp",
+    "status": "warning",
+    "complete": true,
+    "severity": "MEDIUM",
+    "score": 48,
+    "issues": 8,
+    "report": "data/security/mcp.json"
+  }
+}

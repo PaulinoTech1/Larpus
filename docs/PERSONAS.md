@@ -6,7 +6,7 @@ Network Engineer, Cryptographer, Mathematician, Quantum Mechanics Professor,
 Statistician, Economist, Sociologist and Psychologist.
 
 Each role is a local JSON configuration in agents/personas with a distinct
-educational prompt, the installed qwen2.5:14b model, and five dedicated locally
+educational prompt, the installed qwen3.5:27b-q4_K_M model, and five dedicated locally
 authored skills listed in the [role skill catalog](ROLE_SKILLS.md), alongside
 its preserved shared skills. Roles support guided practice and
 scenario preparation. They do not confer credentials or add system access.

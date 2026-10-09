@@ -6,11 +6,17 @@ import subprocess
 from pathlib import Path
 from runtime.skills import ROOT
 
-PROFILE=ROOT/'data/isolated-deployment.json'
+PROFILE=ROOT/'deployment.json' if (ROOT/'deployment.json').is_file() else ROOT/'data/isolated-deployment.json'
 DISTRO='Larpus'
 USER='larpus'
 AGENT='larpus-agent'
 MODEL='larpus-model'
+
+def agent_name(profile):
+    name=profile.get('agent_name',AGENT)
+    if not isinstance(name,str) or not re.fullmatch(r'larpus-agent(?:-[a-f0-9]{32})?',name):
+        raise ValueError('Invalid sealed agent identity')
+    return name
 
 def mode():
     value=os.environ.get('LARPUS_ISOLATION')
@@ -117,9 +123,10 @@ def preflight():
     info=query('info','--format','json')
     if info['host']['security']['rootless'] is not True:
         raise ValueError('Rootful Podman prohibited')
-    containers=query('inspect',AGENT,MODEL)
+    selected_agent=agent_name(profile)
+    containers=query('inspect',selected_agent,MODEL)
     by_name={c['Name'].lstrip('/'):c for c in containers}
-    agent,model=by_name[AGENT],by_name[MODEL]
+    agent,model=by_name[selected_agent],by_name[MODEL]
     validate_container(agent,profile['agent_image'],False,read_oci(agent))
     validate_container(model,profile['model_image'],True,read_oci(model),gpu_driver)
     if not agent.get('Pod') or agent['Pod']!=model.get('Pod'):
@@ -135,12 +142,12 @@ def preflight():
     return profile
 
 def child_args():
-    preflight()
-    return wsl_command('podman','exec','--interactive',AGENT,'python','-m','runtime.mcp_server')
+    profile=preflight()
+    return wsl_command('podman','exec','--interactive',agent_name(profile),'python','-m','runtime.mcp_server')
 
 def check_behavior():
-    preflight()
-    result=subprocess.run(wsl_command('podman','exec',AGENT,'python','-m','runtime.namespace_probe'),capture_output=True,check=True,timeout=10)
+    profile=preflight()
+    result=subprocess.run(wsl_command('podman','exec',agent_name(profile),'python','-m','runtime.namespace_probe'),capture_output=True,check=True,timeout=10)
     return json.loads(result.stdout.decode())
 
 def main():
@@ -154,8 +161,8 @@ def main():
     else:
         if not args.arguments or args.arguments[0] not in ('list','inspect','delete'):
             parser.error('Use quarantine list, inspect ID, or delete ID')
-        preflight()
-        subprocess.run(wsl_command('podman','exec',AGENT,'python','-m','runtime.dlp',*args.arguments),check=True)
+        profile=preflight()
+        subprocess.run(wsl_command('podman','exec',agent_name(profile),'python','-m','runtime.dlp',*args.arguments),check=True)
 
 if __name__=='__main__':
     main()

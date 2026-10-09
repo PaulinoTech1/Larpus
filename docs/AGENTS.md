@@ -16,7 +16,7 @@ to add another subculture/persona; UI choices are discovered from these files.
 | voice | Future local voice profile ID or null; currently unused |
 
 The original two reference personas are: `home-assistant` and `it-larp-coach`. Both use
-`qwen2.5:14b`. The latter coaches scenarios without presenting fiction as actual
+`qwen3.5:27b-q4_K_M`. The latter coaches scenarios without presenting fiction as actual
 professional experience. Future personas can cover any subculture. Persona
 prompts are behavioral guidance, not security controls; tools and network rights
 belong to independently enforced sandbox policy.
@@ -30,4 +30,4 @@ tokens, 120-second timeout; long histories may be truncated by the model context
 `POST /api/voice` returns 501 until capture/STT/TTS integration exists.
 
 Ten additional roles ship; see [persona catalog](PERSONAS.md). All twelve
-use qwen2.5:14b and approved local skill allowlists.
+use qwen3.5:27b-q4_K_M and approved local skill allowlists.

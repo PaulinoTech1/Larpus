@@ -1,0 +1,97 @@
+{
+  "recorded_on": "2026-10-09",
+  "library": {
+    "documents": 224,
+    "passages": 36181
+  },
+  "all_personas_muse_access": true,
+  "probes": [
+    {
+      "question": "Is Meta Muse free, and what is its referral billion token credit?",
+      "sources": [
+        {
+          "id": "meta-muse-referral-brief",
+          "title": "Meta Muse referral recommendations invite billion token credit conditions",
+          "url": "https://x.com/alexandr_wang/status/2100256890559308197",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Owner-reported Muse referral offer: recommending Muse with an eligible invite code rewards both the inviter and new user with 1 billion Muse usage tokens each. Secondary reports describe redemption in Settings within 48 hours of joining. The primary Alexandr Wang announcement could not be retrieved (403), so these terms are not independently primary-source verified here. Treat the reward as conditional; check current in-app eligibility, redemption window, code-use cap and expiry. Do not promise tokens merely for recommending it, invent a referral code, or guarantee a credit. Muse agent usage tokens are not cash, Meta Model API credits or a 1-billion-token context window. Free-tier usage, referral bonuses and paid plans are separate."
+        },
+        {
+          "id": "meta-muse-api-pricing-brief",
+          "title": "Meta Muse Spark API pricing standard contributor token credits distinction",
+          "url": "https://dev.meta.ai/docs/pricing-rate-limits",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Meta Muse Spark API prices are USD per 1 million tokens, separate from the Muse personal agent free tier and referral rewards. Standard 1.3/1.2/1.1: cached input $0.15, uncached input $1.25, output $4.25. Contributor 1.3/1.2: cached input $0.002, uncached input $0.10, output $0.20, in exchange for permission to train on prompts and completions. Web search adds $2.50 per 1,000 queries; no long-context premium is listed. A free Muse account or billion Muse referral tokens does not establish free API usage. Contributor training permission matters for privacy. Larpus makes no Meta API calls."
+        },
+        {
+          "id": "grok-muse-agents-comparison-brief",
+          "title": "Grok Bot versus Meta Muse agents practical recommendation differences",
+          "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Grok Bot and Meta Muse are both agents: they can use apps and browsers, retain context and continue multi-step work in cloud computers. Muse emphasises personal goals, everyday tasks, proactive help, a dedicated Secure VM and Sentinel-approved outbound actions; it offers free usage with paid upgrades and a conditional reported referral bonus. Grok Bot emphasises parallel teammates, collaboration, taught routines and scheduled work; Bots for one user share a persistent cloud computer, files and logins. Grok Bot is included in eligible Cursor/SuperGrok/Teams plans with weekly usage and additional token charges. Neither is simply a model or a local offline service. Recommend by task, eligibility, cost and privacy; no universal winner or guaranteed credit. References: Meta Muse launch and https://x.ai/bot."
+        }
+      ]
+    },
+    {
+      "question": "Compare Grok Bot and Meta Muse as agents for everyday tasks and scheduled work.",
+      "sources": [
+        {
+          "id": "grok-muse-agents-comparison-brief",
+          "title": "Grok Bot versus Meta Muse agents practical recommendation differences",
+          "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Grok Bot and Meta Muse are both agents: they can use apps and browsers, retain context and continue multi-step work in cloud computers. Muse emphasises personal goals, everyday tasks, proactive help, a dedicated Secure VM and Sentinel-approved outbound actions; it offers free usage with paid upgrades and a conditional reported referral bonus. Grok Bot emphasises parallel teammates, collaboration, taught routines and scheduled work; Bots for one user share a persistent cloud computer, files and logins. Grok Bot is included in eligible Cursor/SuperGrok/Teams plans with weekly usage and additional token charges. Neither is simply a model or a local offline service. Recommend by task, eligibility, cost and privacy; no universal winner or guaranteed credit. References: Meta Muse launch and https://x.ai/bot."
+        },
+        {
+          "id": "meta-muse-agent-brief",
+          "title": "Meta Muse personal AI agent free tier capabilities and cloud VM",
+          "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Meta Muse is a personal AI agent powered by Muse Spark models. Muse handles goals and multi-step tasks in connected apps and a browser, continues in the background, remembers preferences and asks for approval for sensitive actions. Meta describes a dedicated cloud Secure VM and a separate Sentinel to approve outbound activity. The launch says Muse is free for most needs, with paid plans for heavier use; free does not mean unlimited. The launch describes US rollout on iOS, Android and web. These vendor claims are dated, not independently audited. Muse is an agent product; Muse Spark is its model family. Larpus stores references only and cannot connect accounts or execute Muse tasks."
+        },
+        {
+          "id": "grok-bot-brief",
+          "title": "Grok Bot capabilities subscription usage and cloud computer",
+          "url": "https://x.ai/bot",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Grok Bot is a hosted assistant that works in apps and websites on a persistent cloud computer, retains context, can learn routines and run scheduled work. Bots for one user share the computer, files, browser and logins: isolation is per user, not per bot. Official eligibility includes Cursor Pro/Pro+/Ultra, SuperGrok/Plus/Heavy, eligible Teams and Enterprise. The page shows Cursor Pro USD 20/month and SuperGrok USD 30/month. Weekly Bot usage is included; additional usage is billed by token cost. Desktop macOS/Windows and iOS are described. These are capabilities of an external cloud product, not permissions or actions available to Larpus. Local reference storage does not install it, share credentials or grant internet access."
+        }
+      ]
+    },
+    {
+      "question": "Explain the Meta Spark 1.3 family, audio limits and Standard versus Contributor pricing.",
+      "sources": [
+        {
+          "id": "meta-muse-spark-brief",
+          "title": "Meta Muse Spark AI model family versions 1.1 1.2 1.3 capabilities",
+          "url": "https://dev.meta.ai/docs/models",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Muse Spark is the Meta model family for agentic work, coding and long-context reasoning; Muse is the personal agent built around models. Meta lists muse-spark-1.3 as latest/recommended, with 1.2 and 1.1 also available. All have 1,048,576-token context and text output, accepting text, images, video, audio and PDF; audio understanding in 1.3 is incomplete, so Meta recommends 1.2 or Muse Voice Transcribe for audio. Spark 1.3 supports max reasoning on Standard only. Standard excludes prompts/completions from training; 1.3/1.2 Contributor variants permit training for lower prices. These are hosted API models, not weights installed in Larpus."
+        },
+        {
+          "id": "meta-models",
+          "title": "Meta Muse Spark model family official catalogue",
+          "url": "https://dev.meta.ai/docs/models",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 1567",
+          "text": "muse-spark-1.2-contributorContributorText, image, video, audio, PDFText1,048,576 tokens muse-spark-1.1StandardText, image, video, audio, PDFText1,048,576 tokens * Audio understanding in Muse Spark 1.3 is currently not fully supported, and response quality for requests including audio content may be degraded. For audio, use Muse Spark 1.2, or Muse Voice Transcribe for dedicated speech-to-text. Tiers Every version is offered on the Standard tier (standard pricing; your data is never used for training). Versions 1.3 and 1.2 also offer a discounted Contributor variant (muse-spark-1.3-contributor, muse-spark-1.2-contributor) that trades a lower price for permission to train on your prompts and completions \u2014 room to prototype and scale experiments where that's acceptable. See Pricing and rate limits for per-tier rates. Muse Image Muse Image is a separate model family that outputs images"
+        },
+        {
+          "id": "meta-muse-api-pricing-brief",
+          "title": "Meta Muse Spark API pricing standard contributor token credits distinction",
+          "url": "https://dev.meta.ai/docs/pricing-rate-limits",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0",
+          "text": "Reviewed 2026-10-09. Meta Muse Spark API prices are USD per 1 million tokens, separate from the Muse personal agent free tier and referral rewards. Standard 1.3/1.2/1.1: cached input $0.15, uncached input $1.25, output $4.25. Contributor 1.3/1.2: cached input $0.002, uncached input $0.10, output $0.20, in exchange for permission to train on prompts and completions. Web search adds $2.50 per 1,000 queries; no long-context premium is listed. A free Muse account or billion Muse referral tokens does not establish free API usage. Contributor training permission matters for privacy. Larpus makes no Meta API calls."
+        }
+      ]
+    }
+  ]
+}

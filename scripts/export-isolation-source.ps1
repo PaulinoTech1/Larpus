@@ -6,7 +6,7 @@ $before=python -c 'from runtime.security_scan import fingerprint; print(fingerpr
 if ($LASTEXITCODE -ne 0 -or $before -notmatch '^[a-f0-9]{64}$') { throw 'Cannot fingerprint source' }
 $archive=Join-Path $sourceRoot 'data/isolated-source.tar'
 # Fixed project directories only: no data, owner profile, credentials or recordings.
-tar.exe --exclude=__pycache__ -cf $archive runtime agents skills config scripts deploy requirements.txt .containerignore .gitattributes LICENSE LICENSE-NOTICE.md
+tar.exe --exclude=__pycache__ --exclude=approved.build.sqlite -cf $archive runtime agents skills config scripts deploy knowledge requirements.txt .containerignore .gitattributes LICENSE LICENSE-NOTICE.md
 if ($LASTEXITCODE -ne 0) { throw 'Source archive failed' }
 $after=python -c 'from runtime.security_scan import fingerprint; print(fingerprint())'
 if ($before -ne $after) { throw 'Source changed during export; discard this archive and repeat' }

@@ -45,7 +45,7 @@ class DLPTests(unittest.TestCase):
             self.assertEqual(dlp.gate('Useful reply')['status'],503)
 
     def test_inference_holds_before_mcp_return(self):
-        with tempfile.TemporaryDirectory() as temp,patch.object(dlp,'QUARANTINE',Path(temp)/'quarantine'),patch.object(inference,'ollama',return_value={'message':{'content':'My address is 192.168.1.2'}}):
+        with tempfile.TemporaryDirectory() as temp,patch.object(dlp,'QUARANTINE',Path(temp)/'quarantine'),patch.object(inference,'gpu_placement',return_value='GPU'),patch.object(inference,'ollama',return_value={'message':{'content':'My address is 192.168.1.2'}}):
             result=inference.chat('home-assistant',[{'role':'user','content':'Hello'}])
             self.assertEqual(result['status'],422)
             self.assertNotIn('192.168.1.2',json.dumps(result))

@@ -18,8 +18,25 @@ and r = 0.8 give the displayed approximate volume of 25.266.
 Local: **http://127.0.0.1:8080**, no password.
 LAN: **https://192.168.1.2:8080**, password required.
 Use [restart instructions](docs/DEPLOYMENT.md) and [CA trust setup](docs/HTTPS.md).
+Production runs from a frozen release: [updates and rollback](docs/UPDATES.md)
+keep the station usable during edits, builds, tests and scans, with a brief switch
+only after candidate preparation succeeds.
 Twelve [personas](docs/PERSONAS.md) are available. The
 [decision record](docs/DECISIONS.md) explains accepted choices and pending work.
+
+Replies now [stream as inspected sentences](docs/STREAMING.md), with CPU speech
+queued while the GPU continues generating. Pause/resume and full-reply replay
+remain available in the voice controls.
+
+[Approved local knowledge](docs/APPROVED_KNOWLEDGE.md) supplies cited documentation
+and research to every persona, prioritising relevant material from its field.
+References include Linux/platforms, consumer CPUs and dated
+[AI product/model pricing](docs/AI_PRODUCT_REFERENCES.md). The model never browses
+or downloads its own data.
+
+[Local GitHub archives](docs/GITHUB_ARCHIVES.md) add screened repository source
+and documentation to that library. The owner-side downloader uses existing Git
+credentials; the running agents remain offline and never receive those credentials.
 
 ## First slice
 
@@ -36,7 +53,7 @@ Install Ollama separately. Initial downloads need internet; runtime needs none.
 npm.cmd ci --ignore-scripts
 npm.cmd run vendor
 python -m pip install -r requirements.txt
-ollama pull qwen2.5:14b
+ollama pull qwen3.5:27b-q4_K_M
 # Start Ollama if its desktop service is not already running:
 ollama serve
 ```
@@ -52,7 +69,8 @@ python -m runtime.gateway
 Open **http://127.0.0.1:8080** without a password; LAN HTTPS requires it. See
 [password setup and rate limits](docs/AUTH.md). Select a persona and send a message.
 Responses render as plain text; the torus accelerates while thinking. The mic button enables opt-in local listening and British English spoken replies;
-see [voice setup](docs/VOICE_INTEGRATION.md). History lives only
+see [voice setup](docs/VOICE_INTEGRATION.md). Choose a microphone, record with
+push-to-talk, review the transcript, and use pause/resume, speed and replay controls. History lives only
 in browser memory and is reset on reload or persona change. No tools execute.
 
 ```powershell
@@ -137,3 +155,5 @@ See [third-party notices](LICENSE-NOTICE.md) and
 [VoiceStudio's license notice](https://github.com/debpalash/VoiceStudio/blob/main/LICENSE-NOTICE.md).
 
 No mobile app, multi-user service, cloud account, or remote telemetry is planned.
+
+Microsoft implementation references, shared skills, retained conversations and the measured context HUD: [details](docs/MICROSOFT_IMPLEMENTATION.md).

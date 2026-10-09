@@ -1,0 +1,64 @@
+{
+  "recorded_on": "2026-10-09",
+  "first_text_seconds": 4.707,
+  "events": [
+    {
+      "type": "text",
+      "content": "Here are the standard API prices for both models, in USD per million tokens, based on the snapshot date **2026-10-09**:\n\n"
+    },
+    {
+      "type": "text",
+      "content": "**GPT-6.1 Sol** (Model ID: `gpt-6.1-sol`)\n*   **Input:** $2.00\n*   **Cached Input:** $0.10\n*   **Cache Writes:** $2.50\n*   **Output:** $10.00\n*   *Source:* `openai-sol-61-brief`\n\n"
+    },
+    {
+      "type": "text",
+      "content": "**GPT-6 Astra 6.0** (Model ID: `gpt-6-astra`)\n*   **Input:** $10.00\n*   **Cached Input:** $1.00\n*   **Cache Writes:** $12.50\n*   **Output:** $50.00\n*   *Source:* `openai-astra-6-brief`\n\n"
+    },
+    {
+      "type": "text",
+      "content": "A word of caution: these are standard rates. "
+    },
+    {
+      "type": "text",
+      "content": "If you push input tokens above 272,000 in a single request, the input and cache rates double, and output costs jump by 50%. "
+    },
+    {
+      "type": "text",
+      "content": "Also, remember that API costs are separate from any ChatGPT subscription allowances; paying for one doesn't buy you the other."
+    },
+    {
+      "type": "done",
+      "sources": [
+        {
+          "id": "openai-sol-61-brief",
+          "title": "GPT-6.1 Sol model standard API pricing and capabilities",
+          "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "openai-astra-6-brief",
+          "title": "GPT-6 Astra 6.0 model standard API pricing and capabilities",
+          "url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "openai-sol-61",
+          "title": "Official GPT-6.1 Sol API model",
+          "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ]
+    }
+  ],
+  "voice_wav_bytes": 251436,
+  "access_statuses": {
+    "http://127.0.0.1:8080/": 200,
+    "http://127.0.0.1:8080/api/personas": 200,
+    "https://192.168.1.2:8080/api/personas": 401
+  },
+  "chat_and_voice_total_seconds": 13.67,
+  "stream_total_seconds": 11.078
+}

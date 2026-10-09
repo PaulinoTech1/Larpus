@@ -5,8 +5,11 @@ URL importer, executable skill code or automatic installer. The initial skills a
 home planning, IT interview practice, fictional character preparation and scenario
 debriefing. Each of the twelve personas now also offers five dedicated skills:
 see the [role-specific catalog](ROLE_SKILLS.md). There are 60 specialist skills
-and four preserved shared skills. Select one in the HUD; changing it clears
-conversation history. Only the selected skill enters the model context.
+and four preserved shared skills, plus five Microsoft implementation skills shared
+by System Administrator and IT/Cybersecurity LARP Coach (69 registered total).
+Select one in the HUD; changing it retains the chat and applies the new skill on
+the next turn. Only the selected skill enters the model context. See
+[Microsoft implementation and context controls](MICROSOFT_IMPLEMENTATION.md).
 
 Each skills/<id>/ folder contains only SKILL.md, with LF line endings and UTF-8
 text. skills/registry.json records the slug, display metadata, local-authored origin

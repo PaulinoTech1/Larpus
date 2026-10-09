@@ -1,5 +1,12 @@
 # Architecture
 
+Production updates execute frozen source, HUD and approved-index snapshots with
+per-release deployment/scan/health state and a separate offline agent container.
+Candidate preparation keeps the active gateway, shared GPU model and CPU voice
+available. Owner activation drains requests, briefly switches the same listeners,
+checks functional readiness and restores the previous release on startup failure.
+See [owner update workflow](UPDATES.md) for commands and shared-state limits.
+
 ## Deployed Windows 11 Home station
 
 ```text
@@ -32,3 +39,25 @@ not carry the Podman isolation claims.
 
 See [exact mounts/rebuild](WINDOWS-HOME-ISOLATION.md), [HTTPS](HTTPS.md),
 [decisions](DECISIONS.md) and [verification](VERIFICATION.md).
+
+The selected inference model is qwen3.5:27b-q4_K_M at 4096 context, with
+non-thinking replies and verified full GPU residency before release. /api/ps is
+an additional fixed loopback-only status route, not a model-accessible tool. Voice
+remains CPU-only in its separate worker. See [model deployment](MODELS.md).
+
+The HUD's `/api/chat/stream` route carries cumulative-DLP-approved sentences from
+MCP progress messages as flushed NDJSON. Browser CPU-speech requests run alongside
+generation and retain the existing bounded/filter/DLP route. No inference tools
+or network boundaries changed; [streaming](STREAMING.md) documents how later
+holds stop further release and how incomplete responses are handled.
+
+Before inference, the trusted agent searches a fixed, checksum-verified SQLite
+FTS5 index inside its read-only image. Every configured persona can search all
+approved documents, with a modest native-role relevance boost. Bounded passages
+enter the question context as untrusted quoted reference data.
+The model reasons over those passages and the HUD displays selected source IDs,
+URLs and snapshot/page locators. Existing output DLP remains in the release path.
+Owner-side reviewed downloads and PDF preparation are separate from the offline
+runtime; no new model tool, port or host mount is exposed. See
+[approved knowledge](APPROVED_KNOWLEDGE.md) and the
+[reviewed catalog](../knowledge/CATALOG.md).

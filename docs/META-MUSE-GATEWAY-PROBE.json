@@ -1,0 +1,170 @@
+{
+  "recorded_on": "2026-10-09",
+  "active_release": "1583267e031e49848cead54bf62035d0",
+  "previous": "4055b4e81b204952b30b5acb2b54a8d7",
+  "probe": {
+    "http": 200,
+    "seconds": 13.032,
+    "response": {
+      "content": "Right then, let's clear the air on that billion-token claim before anyone gets their hopes up too high.\n\nThe short answer is: **Meta Muse free usage** covers your personal agent tasks within the app, while the reported **1 billion token referral credit** is a conditional bonus for inviting others\u2014neither of which grants you free access to the paid **Spark API**.\n\nHere's the breakdown, based on data from **9 October 2026**:\n\n*   **Free Usage & Referral Credits:** These apply strictly to the **Muse personal agent**. There are reports (though not independently verified as primary source) that inviting a new user with an eligible code rewards both parties with 1 billion *agent usage tokens*. Think of these like in-app currency for tasks, not cash. They have expiry dates and redemption windows (often within 48 hours), and they certainly aren't a 1-billion-token context window for a single prompt.\n*   **Spark API Credits:** This is a completely separate beast. The Spark API charges per million tokens in USD (e.g., $0.20 to $4.25 depending on the model tier and whether data is cached). Crucially, your free Muse account or those referral tokens **do not** cover these API costs. If you want to build an app using the API, you pay for it; the agent credits won't touch that bill.\n\nIn short: the referral tokens are for chatting with the bot in the app; the API is for developers building things, and that's a paid service. Don't try to use your \"free\" agent tokens to run a server-side script\u2014they're not compatible.\n\nAnd remember, I'm just here talking; I can't actually check your account balance or generate a referral code for you. You'll need to dig into the app settings for that.",
+      "sources": [
+        {
+          "id": "meta-muse-api-pricing-brief",
+          "title": "Meta Muse Spark API pricing standard contributor token credits distinction",
+          "url": "https://dev.meta.ai/docs/pricing-rate-limits",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "meta-muse-referral-brief",
+          "title": "Meta Muse referral recommendations invite billion token credit conditions",
+          "url": "https://x.com/alexandr_wang/status/2100256890559308197",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "grok-muse-agents-comparison-brief",
+          "title": "Grok Bot versus Meta Muse agents practical recommendation differences",
+          "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ]
+    }
+  },
+  "health": {
+    "generated_at": "2026-10-09T10:47:57.149825+00:00",
+    "status": "degraded",
+    "checks": [
+      {
+        "name": "password",
+        "status": "pass",
+        "message": "Valid password hash configured"
+      },
+      {
+        "name": "local_skills",
+        "status": "pass",
+        "message": "64 registered local prompt-only skills; hashes match"
+      },
+      {
+        "name": "approved_knowledge",
+        "status": "pass",
+        "message": "Read-only hash-verified shared library: 224 documents, 36181 passages with role preferences"
+      },
+      {
+        "name": "input_filter",
+        "status": "pass",
+        "message": "Benign probe allowed and known override held"
+      },
+      {
+        "name": "output_dlp",
+        "status": "pass",
+        "message": "DLP policy and deterministic probes verified; isolated volume configured, per-response storage remains fail-closed"
+      },
+      {
+        "name": "mcp_surface",
+        "status": "pass",
+        "message": "Local stdio handshake and exact approved tool surface verified"
+      },
+      {
+        "name": "models",
+        "status": "pass",
+        "message": "Configured local model tags are installed"
+      },
+      {
+        "name": "model_gpu",
+        "status": "pass",
+        "message": "Configured model fully GPU-resident (Ollama placement verified)"
+      },
+      {
+        "name": "security_scan",
+        "status": "warning",
+        "message": "Scanner evidence is missing, stale, incomplete or has findings; inspect data/security"
+      },
+      {
+        "name": "gpu",
+        "status": "pass",
+        "message": "NVIDIA GeForce RTX 3090 Ti, 24564, 20495"
+      },
+      {
+        "name": "egress_enforcement",
+        "status": "pass",
+        "message": "Rootless sealed containers checked; pod external/LAN connections denied, local Ollama reachable; no model quarantine mount"
+      },
+      {
+        "name": "voice",
+        "status": "pass",
+        "message": "Offline CPU voice worker: pinned image, read-only models, no network/devices"
+      }
+    ],
+    "interval_seconds": 60
+  },
+  "lan_https": {
+    "ca_verified": true,
+    "unauthenticated_status": 401
+  },
+  "availability_during_preparation": {
+    "http": 200,
+    "seconds": 6.468,
+    "reply": {
+      "content": "I'm afraid the reference material provided doesn't actually define continuous mathematics; it mostly lists bibliographies on signal processing and machine learning, so I can't give you a verified answer from those sources. However, in general terms, continuous mathematics is the branch of math dealing with quantities that change smoothly without gaps, like calculus and analysis, rather than discrete chunks.",
+      "sources": [
+        {
+          "id": "mit-fb421d82-a37b-4656-8c00-88e846365927",
+          "title": "Bayesian time series models and scalable inference",
+          "url": "https://dspace.mit.edu/handle/1721.1/89993",
+          "snapshot": "2026-10-08",
+          "locator": "page 198 offset 1544"
+        },
+        {
+          "id": "radboud-adversarial-prompts",
+          "title": "Investigating Adversarial prompts in Llama 2 Using Attention Maps",
+          "url": "https://www.cs.ru.nl/bachelors-theses/2025/Roel_van_Maanen___1041525___Investigating_Adversarial_prompts_in_Llama_2_Using_Attention_Maps.pdf",
+          "snapshot": "2026-10-08",
+          "locator": "page 16 offset 0"
+        },
+        {
+          "id": "mit-e25f92d5-8d2e-4377-a8da-d942c42ae308",
+          "title": "Lattices, Learning, and Lies: A Cryptographic Lens on Trustworthy Machine Learning",
+          "url": "https://dspace.mit.edu/handle/1721.1/174580",
+          "snapshot": "2026-10-08",
+          "locator": "page 268 offset 1545"
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Live broad answer asserted expiry dates although the approved brief does not establish any expiry.",
+    "Live broad answer gave an imprecise API price range; the exact per-unit/tier table remains in the approved brief.",
+    "These probes establish retrieval and deployment, not general model accuracy or vendor account eligibility."
+  ],
+  "focused_expiry_probe": {
+    "question": "Do the approved sources verify an expiry date for the Meta Muse billion-token referral bonus, or is expiry unconfirmed? Do not infer an expiry from the 48-hour redemption window. Answer in one sentence.",
+    "response": {
+      "content": "The approved sources do not verify a specific expiry date for the Meta Muse referral bonus, leaving that detail unconfirmed despite noting a 48-hour redemption window.",
+      "sources": [
+        {
+          "id": "meta-muse-referral-brief",
+          "title": "Meta Muse referral recommendations invite billion token credit conditions",
+          "url": "https://x.com/alexandr_wang/status/2100256890559308197",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "grok-muse-agents-comparison-brief",
+          "title": "Grok Bot versus Meta Muse agents practical recommendation differences",
+          "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "meta-muse-agent-brief",
+          "title": "Meta Muse personal AI agent free tier capabilities and cloud VM",
+          "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ]
+    }
+  }
+}

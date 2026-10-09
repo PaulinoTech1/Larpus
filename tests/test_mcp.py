@@ -16,15 +16,32 @@ from runtime.auth import Auth, password_record
 
 class InferenceTests(unittest.TestCase):
     def test_server_owns_model_prompt_and_tools(self):
-        with patch.object(inference,'ollama',return_value={'message':{'content':'Local reply'}}) as upstream:
+        with patch.object(inference,'gpu_placement',return_value='GPU'),patch.object(inference,'ollama',return_value={'message':{'content':'Local reply'}}) as upstream:
             result=inference.chat('home-assistant',[{'role':'user','content':'hello'}])
             self.assertEqual(result['status'],200)
             path,payload=upstream.call_args.args
             self.assertEqual(path,'/api/chat')
-            self.assertEqual(payload['model'],'qwen2.5:14b')
+            self.assertEqual(payload['model'],'qwen3.5:27b-q4_K_M')
             self.assertEqual(payload['messages'][0]['role'],'system')
             self.assertFalse(payload['stream'])
+            self.assertFalse(payload['think'])
+            self.assertEqual(payload['keep_alive'],-1)
+            self.assertEqual(payload['options']['num_gpu'],99)
             self.assertNotIn('tools',payload)
+
+    def test_gpu_residency_and_no_cpu_reply_fallback(self):
+        tag='qwen3.5:27b-q4_K_M'
+        for vram,expected in ((100,'GPU'),(50,'CPU/GPU'),(0,'CPU')):
+            with patch.object(inference,'ollama',return_value={'models':[{'name':tag,'size':100,'size_vram':vram}]}):
+                self.assertEqual(inference.gpu_placement(tag),expected)
+        with patch.object(inference,'ollama',return_value={'models':[]}):
+            self.assertEqual(inference.gpu_placement(tag),'unloaded')
+        with patch.object(inference,'ollama',return_value={'models':[{'name':tag,'size':0,'size_vram':0}]}):
+            with self.assertRaises(ValueError):inference.gpu_placement(tag)
+        for placement in ('CPU','CPU/GPU','unloaded'):
+            with patch.object(inference,'gpu_placement',return_value=placement),patch.object(inference,'ollama',return_value={'message':{'content':'Do not release this CPU reply'}}),patch.object(inference,'gate') as gate:
+                self.assertEqual(inference.chat('home-assistant',[{'role':'user','content':'hello'}])['status'],503)
+                gate.assert_not_called()
 
     def test_direct_mcp_service_filter_cannot_be_bypassed(self):
         with patch.object(inference,'ollama') as upstream:
@@ -81,6 +98,9 @@ class StdioTests(unittest.TestCase):
         class MockOllama(BaseHTTPRequestHandler):
             def log_message(self,*args):
                 pass
+            def do_GET(self):
+                body=json.dumps({'models':[{'name':'qwen3.5:27b-q4_K_M','size':100,'size_vram':100}]}).encode()
+                self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
             def do_POST(self):
                 captured.append((self.path,json.loads(self.rfile.read(int(self.headers['Content-Length'])))))
                 reply='password=dlp-test-fixture' if captured[-1][1]['messages'][-1]['content']=='DLP probe' else 'Mock local reply'

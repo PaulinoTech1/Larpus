@@ -16,13 +16,21 @@ def child_parameters():
         return StdioServerParameters(command=command[0],args=command[1:],cwd=str(ROOT),env=env)
     return StdioServerParameters(command=sys.executable,args=['-m','runtime.mcp_server'],cwd=str(ROOT),env=env)
 
-async def call_async(tool, arguments=None):
+async def call_async(tool, arguments=None, on_chunk=None):
     if tool not in ('chat_local','list_personas','local_status'):
         raise ValueError('MCP tool is not allowed')
     async with Client(child_parameters(),read_timeout_seconds=130) as client:
-        result=await client.call_tool(tool,arguments or {})
+        chunks=[]
+        async def progress(_progress,_total,message):
+            if not isinstance(message,str) or len(message.encode())>65536 or sum(len(s.encode()) for s in chunks)+len(message.encode())>65536:
+                raise ValueError('Invalid approved chunk')
+            chunks.append(message)
+            on_chunk(message)
+        result=await client.call_tool(tool,arguments or {},progress_callback=progress if on_chunk else None,meta={'larpus_stream':True} if on_chunk else None)
         if result.is_error or not isinstance(result.structured_content,dict):
             raise OSError('Local MCP operation failed')
+        if on_chunk and result.structured_content.get('status')==200 and ''.join(chunks)!=result.structured_content.get('content'):
+            raise OSError('Incomplete local MCP stream')
         return result.structured_content
 
 def call(tool, arguments=None):
@@ -33,6 +41,12 @@ def call(tool, arguments=None):
 
 def chat(persona,messages,skill=None):
     return call('chat_local',{'persona':persona,'messages':messages,'skill':skill})
+
+def stream_chat(persona,messages,skill,on_chunk):
+    try:
+        return asyncio.run(asyncio.wait_for(call_async('chat_local',{'persona':persona,'messages':messages,'skill':skill},on_chunk),timeout=140))
+    except Exception as exc:
+        raise OSError('Local MCP stream unavailable') from exc
 
 def health():
     return call('local_status')

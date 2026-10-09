@@ -1,0 +1,595 @@
+{
+  "generated_at": "2026-10-09T06:06:32.509381+00:00",
+  "fingerprint": "3189a129f836b43198f68c47d6cb9f39ffb3d9a9aba5096ba185cf383d742271",
+  "scanner": "SkillSpector 2.12.0",
+  "source_commit": "3c8e4b958fda9602e0044885f766be0e49f03585",
+  "mode": "static-no-network-wrapper",
+  "results": [
+    {
+      "target": "home-planning",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-planning.json"
+    },
+    {
+      "target": "it-interview",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/it-interview.json"
+    },
+    {
+      "target": "larp-character",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/larp-character.json"
+    },
+    {
+      "target": "scenario-debrief",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/scenario-debrief.json"
+    },
+    {
+      "target": "home-day-plan",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-day-plan.json"
+    },
+    {
+      "target": "home-household-routines",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-household-routines.json"
+    },
+    {
+      "target": "home-meal-prep",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-meal-prep.json"
+    },
+    {
+      "target": "home-explain-reference",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-explain-reference.json"
+    },
+    {
+      "target": "home-character-workshop",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/home-character-workshop.json"
+    },
+    {
+      "target": "cyber-interview-rehearsal",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/cyber-interview-rehearsal.json"
+    },
+    {
+      "target": "cyber-incident-tabletop",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/cyber-incident-tabletop.json"
+    },
+    {
+      "target": "cyber-threat-modelling",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/cyber-threat-modelling.json"
+    },
+    {
+      "target": "cyber-identity-review",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/cyber-identity-review.json"
+    },
+    {
+      "target": "cyber-lab-debrief",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/cyber-lab-debrief.json"
+    },
+    {
+      "target": "kernel-crash-triage",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/kernel-crash-triage.json"
+    },
+    {
+      "target": "kernel-concurrency",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/kernel-concurrency.json"
+    },
+    {
+      "target": "kernel-memory",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/kernel-memory.json"
+    },
+    {
+      "target": "kernel-driver-review",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/kernel-driver-review.json"
+    },
+    {
+      "target": "kernel-config-tradeoffs",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/kernel-config-tradeoffs.json"
+    },
+    {
+      "target": "sysadmin-enterprise-change",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/sysadmin-enterprise-change.json"
+    },
+    {
+      "target": "sysadmin-directory-lifecycle",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/sysadmin-directory-lifecycle.json"
+    },
+    {
+      "target": "sysadmin-backup-recovery",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/sysadmin-backup-recovery.json"
+    },
+    {
+      "target": "sysadmin-capacity-reliability",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/sysadmin-capacity-reliability.json"
+    },
+    {
+      "target": "sysadmin-incident-runbooks",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/sysadmin-incident-runbooks.json"
+    },
+    {
+      "target": "network-packet-path",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/network-packet-path.json"
+    },
+    {
+      "target": "network-segmentation",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/network-segmentation.json"
+    },
+    {
+      "target": "network-routing-resilience",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/network-routing-resilience.json"
+    },
+    {
+      "target": "network-performance",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/network-performance.json"
+    },
+    {
+      "target": "network-dns-services",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/network-dns-services.json"
+    },
+    {
+      "target": "crypto-aes-modes",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/crypto-aes-modes.json"
+    },
+    {
+      "target": "crypto-ecc-protocols",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/crypto-ecc-protocols.json"
+    },
+    {
+      "target": "crypto-mlkem",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/crypto-mlkem.json"
+    },
+    {
+      "target": "crypto-mldsa",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/crypto-mldsa.json"
+    },
+    {
+      "target": "crypto-implementation-review",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/crypto-implementation-review.json"
+    },
+    {
+      "target": "math-real-analysis",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/math-real-analysis.json"
+    },
+    {
+      "target": "math-continuous-calculus",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/math-continuous-calculus.json"
+    },
+    {
+      "target": "math-differential-equations",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/math-differential-equations.json"
+    },
+    {
+      "target": "math-continuous-optimisation",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/math-continuous-optimisation.json"
+    },
+    {
+      "target": "math-functional-analysis",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/math-functional-analysis.json"
+    },
+    {
+      "target": "quantum-state-measurement",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/quantum-state-measurement.json"
+    },
+    {
+      "target": "quantum-schrodinger",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/quantum-schrodinger.json"
+    },
+    {
+      "target": "quantum-spin-angular-momentum",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/quantum-spin-angular-momentum.json"
+    },
+    {
+      "target": "quantum-perturbation",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/quantum-perturbation.json"
+    },
+    {
+      "target": "quantum-entanglement",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/quantum-entanglement.json"
+    },
+    {
+      "target": "stats-study-design",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/stats-study-design.json"
+    },
+    {
+      "target": "stats-inference",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/stats-inference.json"
+    },
+    {
+      "target": "stats-regression",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/stats-regression.json"
+    },
+    {
+      "target": "stats-bayesian",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/stats-bayesian.json"
+    },
+    {
+      "target": "stats-time-series",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/stats-time-series.json"
+    },
+    {
+      "target": "econ-micro-incentives",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/econ-micro-incentives.json"
+    },
+    {
+      "target": "econ-macro-mechanisms",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/econ-macro-mechanisms.json"
+    },
+    {
+      "target": "econ-causal-evaluation",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/econ-causal-evaluation.json"
+    },
+    {
+      "target": "econ-cost-benefit",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/econ-cost-benefit.json"
+    },
+    {
+      "target": "econ-game-theory",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/econ-game-theory.json"
+    },
+    {
+      "target": "soc-theory-lenses",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/soc-theory-lenses.json"
+    },
+    {
+      "target": "soc-qualitative-design",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/soc-qualitative-design.json"
+    },
+    {
+      "target": "soc-survey-methods",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/soc-survey-methods.json"
+    },
+    {
+      "target": "soc-institutions",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/soc-institutions.json"
+    },
+    {
+      "target": "soc-inequality-networks",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/soc-inequality-networks.json"
+    },
+    {
+      "target": "psych-learning-cognition",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/psych-learning-cognition.json"
+    },
+    {
+      "target": "psych-research-methods",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/psych-research-methods.json"
+    },
+    {
+      "target": "psych-social-behaviour",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/psych-social-behaviour.json"
+    },
+    {
+      "target": "psych-emotion-reflection",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/psych-emotion-reflection.json"
+    },
+    {
+      "target": "psych-communication",
+      "status": "pass",
+      "complete": true,
+      "severity": "LOW",
+      "score": 0,
+      "issues": 0,
+      "report": "data/security/psych-communication.json"
+    },
+    {
+      "target": "mcp",
+      "status": "warning",
+      "complete": true,
+      "severity": "MEDIUM",
+      "score": 48,
+      "issues": 8,
+      "report": "data/security/mcp.json"
+    }
+  ],
+  "status": "warning"
+}

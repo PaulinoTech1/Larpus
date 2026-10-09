@@ -1,0 +1,1473 @@
+{
+  "version": 1,
+  "prepared_at": "2026-10-09T11:44:08.382733+00:00",
+  "database_sha256": "9e8ed06ed760732348d8f9ef3da3b1f853f105d1bc61801bd7b122cf6b8b0cd6",
+  "database_bytes": 81743872,
+  "documents": 263,
+  "passages": 44500,
+  "metadata_only_documents": 11,
+  "rejected_passages": 1681,
+  "role_counts": {
+    "cryptographer": 6878,
+    "home-assistant": 112,
+    "it-larp-coach": 13720,
+    "linux-kernel-expert": 892,
+    "mathematician": 3898,
+    "quantum-mechanics-professor": 5807,
+    "statistician": 6245,
+    "system-administrator": 6948
+  },
+  "sources": [
+    {
+      "id": "ubuntu-24-04",
+      "sha256": "cea77a00d2e95e61c18a7236eb491f999f13225b96259f572d6499612468f24e",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ubuntu-25-04",
+      "sha256": "e995d1531087d04c991772832a7552b155e5583b6688e6b68240396445cb6ca8",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ubuntu-26-04",
+      "sha256": "4b788e12257df4e5ff49baff8d3db5d28dd87cb541889c34b141fb8400710938",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "qubes-requirements",
+      "sha256": "a130916162f4e9983b1f4f5a8e05627b9220726942730f19e9cdc7caf4fec122",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "qubes-architecture",
+      "sha256": "687b265386e3097b215faa3171cd8f340593bc2a7caa9a85add7d7b47ffdaa07",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kali-updating",
+      "sha256": "4fb08dc38d89ce42d7335910bcacd617b92968ca151746e24eeaab2c0d737813",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kali-kernel",
+      "sha256": "1d965fdf5fe0fbf6a727856164742093b068631a0ddb3813c892b58430e22322",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "fedora-kernel",
+      "sha256": "5256c641cebc331d2ceedc979cc6a02618a2a54e7fa18e8b661e17c445a6b010",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "fedora-44-changes",
+      "sha256": "8caa1d45d7bc7f59c48e127d88c337e99c36f785486d74d1c0bfa1f27a2dc78f",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "fedora-kernel-package",
+      "sha256": "0522d5d4f5baff0bca8d2e4fd86562404e303ba47d5ba80a073f7ea646edc466",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-current",
+      "sha256": "d6636e71a1c874db5a9facce9e15dee1160e1b8c0964540e0cd70b819bd03105",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-support",
+      "sha256": "ab28da40ccf13e3ca3e2bef74b7c8041022da43923b1c17298409a2948e4edb3",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-history",
+      "sha256": "3d3a4deef6ae1772d4f327739374032175d0b75a6f22ad484864bccf08f1caa5",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-7",
+      "sha256": "86fcd2bed7d4aac38b622edcd5dde6f6fb10f484596d044c9108cc7f62704826",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-8",
+      "sha256": "8e4e52561c131fdee6d8fc46bf102971a0b3610c870e4f94761082d818ae7079",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-9",
+      "sha256": "cee616df2b084bba98385307712a58e8d926c54af2e8da22a4e10fc3e927929b",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-10",
+      "sha256": "465c6e6c240f3d0c6e87397d343c5888a34d9e9d2502db9ec7ccd9b13e2fde14",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-11",
+      "sha256": "5d9138f00b7cf9912fbc2248cebfc376cfcbf16cca9bb9b56b4928bb39a227c7",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-12",
+      "sha256": "8abbfa46908e3c5bfae5069e514fe16c6b6fbf0a3946cdab31f032f530437a16",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-13",
+      "sha256": "98a5511d236e09987e6701aa6b4b0825d1caeb58016d55212be9d3987ef449df",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-14",
+      "sha256": "75982b5150e8f1a4f1d0afdc16a08547b0fc8284a5107c24793e3b3f784270fd",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-15",
+      "sha256": "fe32f27dcee06621c8f1825b0db807127d8609775ab7069f36f91be53cb950c9",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-16",
+      "sha256": "278e8f9a5d22493ee5494b5202f2eee47fc638b85d1850a46ee66cc8c2ad97f9",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-17",
+      "sha256": "27b46f4d4976a6b2b075ac3a1f3f087e7ed0d930e55893de249db693aa1a5fed",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-18",
+      "sha256": "d91468a65fec57240b46f30d2df21409b1614496b19d701fc61f49e50840cacf",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-6-19",
+      "sha256": "701c7508bf22fd5d09d98220a61bdaf0f958e0894dcaded1b811d25291c10e77",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-7-0",
+      "sha256": "bc52833cf7ca77a7422684818e56a2607f13416e62f70f4ecbf8d9df85985ba1",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-7-1",
+      "sha256": "97588899aa803a43156920b27a4a7ac9a7cb8159e75dc1af760a17508f333715",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-7-2",
+      "sha256": "646ea767aa816a2a1d93fc7205ac2899bf2b2bb8499dacaa1820c38e56161e8d",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "amd-pstate",
+      "sha256": "5f35a51a48f7c161d59c2b542ae89daadc15e7ffafa94c6f0bada5b36dd679c9",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "intel-pstate",
+      "sha256": "d1d1bfeaf91f8ce8a8774cd72b0f5cf5b76aab83883fca582ecbb0c313d4f915",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "cgroup-v2",
+      "sha256": "accd07d731de0c1567117c4d632c8de35bbc49d6e8c26833d5e8e6217a1fe914",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-security",
+      "sha256": "6e32434bade2b2e82882a127c691b8b9ccdb17b43f1f529f1a5b30c1c967f102",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-scheduling",
+      "sha256": "7f698825f87c927f0c18da37ab6b6d816385d9440a27b175dea13e7e874561f8",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "kernel-memory",
+      "sha256": "5a0c2f15abf22b17b05ba695fb5dd41b87b5fc052c231259c2db3285b0e2dded",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "intel-i5-1245u-brief",
+      "sha256": "22c3c52a94f698232a713791c829deae3d5eef921faa81087037a946731ee494",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "amd-5900x-brief",
+      "sha256": "08eb7546f32ba303d5776b1adfd54e17940bac419f74083d4094834fe7a2ba68",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "rhel-9-6-brief",
+      "sha256": "39e64924829250a6b9021f8e86a6d146743634978adb57781d4f0ffefcf3f7be",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "rhel-10-0-brief",
+      "sha256": "f9b254279734f8121884cd371f65ec6377fef494a0f137919acda90b2be8ad9e",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "intel-core-comparison",
+      "sha256": "a46da8fe343bad2e005d1a69b3103f023d8bd7a44b8098d2a815608ea3e46981",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ubuntu-26-04-changes",
+      "sha256": "9c85355c8b1b9f94fd3a00550b5dafb032eed3f0ad73ca17b90c6ccbf9c8c0d8",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ubuntu-26-04-summary",
+      "sha256": "a7737b24029288a69a2fd14191df6086a181b5a0ae9613ec762ec7c9ad5b2ae9",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ubuntu-ga-kernel-comparison",
+      "sha256": "f98e2a312ba0629a68efdddeda557bc001b59bfa83db572a0c81603f8f671852",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "chatgpt-plus-codex-brief",
+      "sha256": "9228baf85bdbd353631b2f8893c89939db452e4a04ef9de79386278e7e0b5de3",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "openai-sol-61-brief",
+      "sha256": "1d024229299a9145fb7be6342cb86f573920256c8a36c62b6dcc0b5872b8e973",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "openai-astra-6-brief",
+      "sha256": "7dbdec22cafb9de5cfb75bb08794ff77fe2744ee337ed57957365abd19e2351e",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "supergrok-pricing-brief",
+      "sha256": "c1f1de5d25f6816e856966cdf02bb461c8405f6ce2d098703b7733016f9f56c3",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "grok-bot-brief",
+      "sha256": "100d30da02a7c85601c67a89ebf6bed9ea7cd9dada9b42dee197ecfbbd164c77",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "claude-pro-brief",
+      "sha256": "7a1281c6749c2eb82b2703b2723e8fdb7b50bc509c71b1b7daaf7ce861e8b85f",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "deepseek-v4-pricing-brief",
+      "sha256": "49ca09144ad56806eca55ecd15cd97b2becfb1fd1e1ff7f303633331b5a19fdb",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "chatgpt-plus-codex",
+      "sha256": "080e152aedd5bc6cd5accdccbbb1562a6a6446f025770ea97f33aa03aab2955e",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "openai-sol-61",
+      "sha256": "34fdf00b7d7651419dd2a1e3a57825aeec7fae44b2ba7a42f3040799ffe862f4",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "openai-astra-6",
+      "sha256": "9d665a434140fa11cd2c6cf18179928cf23071c0e463b1a77ffba132a6d797c3",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "grok-pricing",
+      "sha256": "c7c51281726ef3dd5ab4b4c13faf69716dcba7134df46dfd2c3b162803d5a1e7",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "grok-bot",
+      "sha256": "02db7ddcdbb76cbb11e020176c89725c9d2c3c950045cbf29afc73c519cfe831",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "claude-pro",
+      "sha256": "3ef30c36319d5973a0b84add76280b753280bc4dfe057b626272776c329d7255",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "deepseek-pricing",
+      "sha256": "210f102275ccf1a6542f08a3bc9e4b4c7c83278cb74b35217bffa112df6363b2",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-muse-agent-brief",
+      "sha256": "cc16c360bd03b550a2d25a9a0675cebe038593a074fcde081ce9c5158646cf13",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-muse-referral-brief",
+      "sha256": "e249f1ba7070770dd89fab1c585d849ae24210fbf73ecc0aa093896e1fe14399",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-muse-spark-brief",
+      "sha256": "2ab4699290f00e1b1500ce9d3c7f8b923d1f00b33a52846724ccdc07857295a7",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-muse-api-pricing-brief",
+      "sha256": "c396800b88da7ce8bcc696b0569319cdda9217c101c23c0c7a6a631f5afcf6d2",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-muse-related-models-brief",
+      "sha256": "8cc28c7157587ede0fd02659b7ca11e76f0cd00884a43495bf25c7ff2a737f02",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "grok-muse-agents-comparison-brief",
+      "sha256": "96cb035fbdc93f5380d9db3418b3417cd024d8aad8f191aaf01e9904e715d8af",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-muse-launch",
+      "sha256": "393bd29125ad6689dbf82f08138ebf9ec70e640aa1c33d34238331a4ea7dc4e2",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-models",
+      "sha256": "f22d48817932d4addd4e0e76abd283d7950e40a0715c014bbb539eaa2f180c94",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "meta-api-pricing",
+      "sha256": "38f8f8488bd94f04d07eaa7b7adc8215303f1c1c42555ce1f4c6054c004851d9",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-intune-planning",
+      "sha256": "e26fcb91ced6c7ba10f875660d940bd2f9f22a8e270fecacab686d6d6ef47b96",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-intune-windows",
+      "sha256": "8054583e1be4057a52b78ba5235af58a71ce4665a203549ae6e5bef9f671da74",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-intune-enrollment",
+      "sha256": "506f9d0dc3038860b6be37a12e5166739d7e4904b2c2d283c7b5714ac9820bd6",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-entra-ca",
+      "sha256": "b1e1079f61d4663ffb05220fad6b75c2fa9aca181786ec36f446f0c6f6997f96",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-entra-emergency",
+      "sha256": "25b594b19f97d7e5921fddd37d7f8431618b546622c8b3d0d151a30c1176beeb",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-azure-landing",
+      "sha256": "d547eacf816b51bb0ca1336d8b579d3f8b5a38bb78412970e49867366ab09684",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-azure-rbac",
+      "sha256": "526c98015ee040526342fa999b92404a65ce4ba1f5788a847bd51ac21ab0078b",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-m365-deployment",
+      "sha256": "fcb5183fa5951bec7971da09b2c47b152eb4af59ada300e28948734795ce6a46",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-bitlocker-overview",
+      "sha256": "5d7d2263a3a905931e1dc74c755a58a47274f01e909c459ed8a409b42dc34ac7",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-bitlocker-recovery",
+      "sha256": "c435367a8aaceb9201f1ad0e7b1d7b0aea830262ac46c9379e15724d69ac734c",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-intune-bitlocker",
+      "sha256": "1472978ecf1aa07b3d755e5f2edde0ddbab2ff83a8f62931071fe244d3c5c1da",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-intune-planning-brief",
+      "sha256": "02c9a7beadddf27ac74a3ef4199ee0bafe4fb1bcfb6692be562a3dade07f37a1",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-entra-ca-brief",
+      "sha256": "d47082ed98c4025c2e140a9ce6ba8c01bf4e5833e3baff2a146fd53823068972",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-azure-landing-brief",
+      "sha256": "b742f30d19fe4be83eae37f0a6409696c3d3feca831c8d848c759c92673875d7",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-m365-deployment-brief",
+      "sha256": "96d5d375b898523c40c040d91a2dd5a69e8fd198daa0f029a008ad7b28679698",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "ms-bitlocker-overview-brief",
+      "sha256": "91f264e107d3184e7998ab05ede448996fb7aa1d569440f7c9407137c453d17f",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "id": "mit-71a3fc47-9d1c-4531-ba61-63ab03aa0606",
+      "sha256": "fe28e17e407d001ab67cd0890ec4da89028ca60312a22877b4424261a758f22a",
+      "publication": "2022-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-ac2818b4-03bf-48c3-b02b-4ab9ae5f5627",
+      "sha256": "7c44c3c522ece6cbdba13f03801cc6bcb4d2c466408ccd48d81a7c6ccfd289bf",
+      "publication": "2009",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-d0682cb2-7a20-498d-a11d-0ccaedc1ab63",
+      "sha256": "de4bfd04a5482ebd8e85955bcd439fc2e67dfc69f1851c3ecf52865c95f54856",
+      "publication": "2017",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-03be0fe4-d113-4729-83e9-89e265e997c0",
+      "sha256": "606772cf9eb169ccdd1722fc3b057721b77053cf63b1dca4263d15ced35692ee",
+      "publication": "2017",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-1c6be95f-a703-4fb7-8805-12a226a248cb",
+      "sha256": "7c4ac4cba24bd22f0e65ec0b1408e5ab55993c7bedda62e67b91a2fbe0c7e75b",
+      "publication": "2012",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-5886ff7d-44c2-4fee-a2e7-21d72b1a49fe",
+      "sha256": "b0d6e487e5bca56ea076920a76629591d05b31f63638211b3a1f774a3783fb49",
+      "publication": "2024-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-3879e3e7-9920-48b0-93f2-9e3fb23896ef",
+      "sha256": "b28d5fd8921d21fdbbe21b937df6dd1f939d57b3edc80549eb74ebd36adb2293",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-5dfbb3cd-7db1-4caa-aa0a-5224ffc18cdf",
+      "sha256": "531351ddb7a0c82cad6b2c9df437a4d763110bd4ee0c748d418054b744e9bc81",
+      "publication": "2019",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-b48dd190-4e44-4091-ab98-7a33db282a47",
+      "sha256": "4f17a29f0effb25d68bec49c2749cb357321bd9cc2f7e30c8542ec4cd58a312a",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-bfb89f8a-39a1-4860-a4dc-df27233e360a",
+      "sha256": "1e103d2504b516fdeadd2638cedb62c67227e35d9673c985453b1f4bf5939ac8",
+      "publication": "2021-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-faa7dc71-62d7-4c19-914b-bc7042da1eb0",
+      "sha256": "46ff1f1c002d6d847a062666caa9e87d6e5109f99cacc2ba6746b7d950c629ce",
+      "publication": "1988",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-e25f92d5-8d2e-4377-a8da-d942c42ae308",
+      "sha256": "8b3bf316e2f34e43cf04d5ad8f8ba250e2b9e8490c71bc45fc11e5cada9bdad5",
+      "publication": "2026-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-92497269-647f-4590-ba52-4dc0e4a5d228",
+      "sha256": "f3f1500a922a32cdb8b317ccef09cfc4c50dcda4472f8023becf3ff1677f1c77",
+      "publication": "2019",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-566af8d3-ad89-48fe-8868-639af115f6f5",
+      "sha256": "cfe4e23529188e5f4ed328da54b68942ed8952d318c31151c60bf826e0e757b7",
+      "publication": "2020",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8f0c31a1-bd84-45a1-978f-f6b10eab41ff",
+      "sha256": "bfa78744e8da6238a5e2d3134aac7c2e2307589655a4c6b329ed1937fd918697",
+      "publication": "2002",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "nist-fips197",
+      "sha256": "62c86eb567f13edb8f71826e985da870b04ef6381634f303cdb16e84d47becd1",
+      "publication": "2023",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "crystals-dilithium",
+      "sha256": "3d8c26f44f3b2932b11e6bf05518e78c4d6a0992ae92ebc5d2f390be1d17d458",
+      "publication": "2021",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "crystals-kyber",
+      "sha256": "1c54ad57022e00b77ff7acd40e9b38a962e7fbbd02bea73b183349c53a8f8aee",
+      "publication": "2021",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "nist-sp800186",
+      "sha256": "53c7cf3340528aaa0a7bbeaef947f2099568192367d4341a7d4abceb55f78432",
+      "publication": "2023",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "nist-sp80038d",
+      "sha256": "d99f3921ccebca049e7522426553aba071dae14ec3d5b6041e8c111a6cb57bba",
+      "publication": "2007",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "nist-fips204",
+      "sha256": "57239b9f84c03227eda3ca0991204dc7764c79af9ce2e6824eda774918d46b6b",
+      "publication": "2024",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "nist-fips203",
+      "sha256": "fe1f12f32a7e44ec9fdebbf400cda843a40b506dee676725234dc6f7923b6cac",
+      "publication": "2024",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "nist-sp800227",
+      "sha256": "41e427a461c1ae0ceed2a68dc29507400983d1d495c35631306d0f4803ca4614",
+      "publication": "2025",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-36094b1a-34a3-4b45-945d-86fa1ed0959c",
+      "sha256": "e4ec1f17c65215af0e29b0b289876cd5dbe30e7d2799eb414d9da914763b56a7",
+      "publication": "2001",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-4905e0e4-e9aa-4d6d-bf7b-f0dffb23fc3e",
+      "sha256": "63631c3ad3921487366b0a9f9f84b52126a687b6f3622deb757906eac5b982ef",
+      "publication": "1984",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-65536c37-2e38-4dce-a65e-0a6f0297407a",
+      "sha256": "237e07bc9eeb562eb8f52257e3c055c92f7d422eb31791984e57b8229d210436",
+      "publication": "1999",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-73a8c440-3679-477b-897b-1787af3fdf6f",
+      "sha256": "d82bf26a34daddaf8b6cdee9073075a02960a7fcbd9c3f739d671a2e12525630",
+      "publication": "2002",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "upf-96ebbf0a",
+      "sha256": "10572c1d7784f1d277cf72a5aba6f8496bcce8b1393da72456fb579588e882c5",
+      "publication": "2025",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-ntt",
+      "sha256": "67b89e2aa43b74f3deae12383bb53dee287a1fb3db89d18db3ba9624aff2b4f6",
+      "publication": "2018",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-fourq",
+      "sha256": "bb25c4d5a06a39d8b4559c8909795ffb66f40236fb057f8c9f8e61854b333713",
+      "publication": "2018",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-aes",
+      "sha256": "f8b2753955c4fa2a4ea22c55cfb8794e1ec1d9d86b381b336d3318c54c7750f2",
+      "publication": "2011",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-ab72d6da-7538-4a03-ad15-fa981e5808af",
+      "sha256": "0baa5fb58db27debc6c2a5b431c990a943345fb06d3b8cdf940c70588eba0a7c",
+      "publication": "1996",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-434251a5-d92f-4481-ad77-e5ae287af7f1",
+      "sha256": "adb5b0455cdf3a5c4c9969e0825723ae80fdbedd272273fa092081647cf86e52",
+      "publication": "1978",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-ab884e90-1821-4440-9899-5c4f274120ae",
+      "sha256": "cb6723d84f77055fb79fb90c21102aaf7aa4e602ea8593c9c54d32bb534780a4",
+      "publication": "2002",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-05a7d6ee-bb74-4dd2-9467-e9fbc78f18c0",
+      "sha256": "b92d2d6e526a0cd9beaf16a61cc92a703222dc44f36b2adc279c060ca1540198",
+      "publication": "2002",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-558685ee-5da1-4248-94e5-2396b74b7f97",
+      "sha256": "6b3786b0decfdf3ae3abb9a19f4e683bc02fb410af719e850f9d4850ccb7100e",
+      "publication": "2005",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-2a76a510-7aa2-49c7-90b4-6522cfafaff6",
+      "sha256": "a3ace37df4293d651595e2212fec31ec44218b972cb8b59aec0c5b1967aefbab",
+      "publication": "2002",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8f6b08a1-7f2d-4394-ab8c-c8f6abe99c14",
+      "sha256": "52b51666101fb2adca03e1b999b74e414e5c800215a5d96ac5a9f8ab22311879",
+      "publication": "2022-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-f06cd3dc-a1a4-4046-b6b2-213a9b8a4374",
+      "sha256": "49a41eaefb2407d718804757f0db2a4c43a29beccce61b665e71a328f64dfe42",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-cf9bc349-2c6e-4979-80ab-8fca1ec8051e",
+      "sha256": "ac37e251a4da606e762111927998d9e90f35a6404f150cb1ef699e0528102db3",
+      "publication": "2021-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-fcf65555-b0b0-4eb9-b8c3-78913663c2ea",
+      "sha256": "e28b1875f09b40ff6dfe9cba5b329e4318b90f244cf2b5bced9997d69392bb64",
+      "publication": "2013",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-63079438-77b6-425d-a0a4-8ce989ce1cda",
+      "sha256": "90d3200ef7b6f640172f76fe6aa2ea2e384cecabb97cfaa7ae9f27aa03703139",
+      "publication": "2025-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-e6772e55-424b-4249-aef1-2cbd86ed100a",
+      "sha256": "b4b1a65c63b95cc1061542bcdb50f2616f072a130d7fc45312fdb6d3aa8ae259",
+      "publication": "2018",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-603075d6-a29e-4324-970c-1599e249d95e",
+      "sha256": "b09b89b95639e129813a22a60cac9a21e068e6c6ff1778777cc30ddef7278b3a",
+      "publication": "2005",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-4314233b-15ce-46b1-979e-82b9002a1d39",
+      "sha256": "e1cead8cf3b481b511c947990ab8a8006fb726e35e8814a182310ad52648987d",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-6d328ead-a323-4242-bba8-86692f6dfdfb",
+      "sha256": "abb9fac221e6218a3dcc7eda98de83b2e11164e3eaeefcd7d8d4d3f0b96c876e",
+      "publication": "2000",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-f30b44ae-7b54-4e31-9712-5b17a914999f",
+      "sha256": "6a706d93465d085e686ce2418fbe17da216ea5bf5a50dc67aa55859f352e8a99",
+      "publication": "1987",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-fc75a492-7c93-4074-a521-6783620a08e6",
+      "sha256": "6f638cab44e764a92d5fde8190ca1c8c7816a9830cd5dfbe30803ea7412e3fcc",
+      "publication": "2004",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-2ee36c72-bee6-4416-a7fb-004b46421996",
+      "sha256": "fe8ec9868584c110bc1922a4acd35e48b5d6fa61af7afc3e7c07675957d41dd1",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-55012c72-5459-49b5-91a5-a6dcad19bf6e",
+      "sha256": "24da648ed0521d018c8a6fbb7fe03c852239515de75ac62897a0c9cb813eb371",
+      "publication": "1999",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-0d510d36-5fce-461c-bc3d-56fd8a2a89a4",
+      "sha256": "f09dc2bc15dc30d4a31b5b6b79b65aeea53eef1e21c0d00cf9dc72b69279f439",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-03744e66-e000-44a0-9bfe-df0565d8ea95",
+      "sha256": "1d26b75aaee8efeca364ed97fce9cb974287d6923b3886092a46397c8966c955",
+      "publication": "2000",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-maritime",
+      "sha256": "fc6dc80e9f83f3ca3dc9bbe2543fc8d92e664fae5e5e2f45267fb08725702159",
+      "publication": "2025",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-kubernetes-security",
+      "sha256": "6d23dc4259ca72efca5efa73738a1c0a036262f4138abdd91f23b22427b34fb5",
+      "publication": "2023",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-falco",
+      "sha256": "c107bfebdba4e3038ec8f64044eeab21e8b05da4df0e5db7797edfade492fb36",
+      "publication": "2025",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-756aa40f-ee3e-4cc4-b9ee-10ad2811b393",
+      "sha256": "5afcf73aff59ab1efb09631018587861eb080eccaa763251cbde207969559c34",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-adversarial-prompts",
+      "sha256": "6c876a10cb5bc52595bdeb4da464d60595b9d75faed7f3c4cc1a0474318809f7",
+      "publication": "2025",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-6c8eabc2-4496-4840-8d19-e96ce8400aa9",
+      "sha256": "956bb96d7b7de6fd7c2c515a164c87b1181d55a0d5447fca444ac4e4ccdeeb91",
+      "publication": "2000",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-626d8745-7261-4388-9520-7161ce31d892",
+      "sha256": "11cd35bb8764a492c08b82ce00a889493973beff2c47326806a856b66c3cf437",
+      "publication": "1997",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8e302d8c-9dc0-4268-acf8-68c0bea6eab4",
+      "sha256": "bb3b44de20ed23e8909eef57f4ec4675a9604bc2ba0fd6ad097a97cc12022724",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-702655f8-7a73-4a1b-bc43-2e1dc7476f87",
+      "sha256": "9524db59e6667642f57284fbfb097b562684b08ccbde9eee9d05b85cd36ecc10",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-47b00fe2-a90c-415d-8ab9-a92cd186c7aa",
+      "sha256": "82a401fcaa13924f6c594df6ec5f35196668d9ccbdf4b4df310f697e10f80e7b",
+      "publication": "1959",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-1bb9b7b6-e3bb-4f66-8ca1-3be4a464a42b",
+      "sha256": "945c292b55b9dd3c8b144ea99207dc1cf88f4e9cda2df70024e14c10d6ef5b5e",
+      "publication": "1985",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-95e9fe8c-78b7-4f4b-bafb-7305fe3654b9",
+      "sha256": "757785f5f44e05099bc5287f8224177b2f7c718489f2c9b283aa016f7ca254b3",
+      "publication": "2013",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-45f7b5c4-a1ba-4939-9545-213751bbc73f",
+      "sha256": "ad3f445c4eab79aba78da5614834bffa3a49109e98141c8e5f7b6fe2abfe4858",
+      "publication": "2021-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-c6671196-46b6-4ba2-8198-75e330a0b112",
+      "sha256": "5ffa10a7dde9aa52939ad800486deb031d5344b67e8a18531d5460a1457923c2",
+      "publication": "2001",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-3b3c8b88-caa0-40a2-82ff-4138dc4e0838",
+      "sha256": "aa4e0841bbbd2c2df8f23b2bc11bb152eb74726b05759eb1f052cc11a9fae908",
+      "publication": "2010",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-38ea4135-4a43-4d3a-9a8f-c1847915c5d0",
+      "sha256": "d15e5ae1f8fc5b6797a8cc6d92815d1fd4b1216594a120a7e178c9c8d3030b9d",
+      "publication": "2011",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-94d70011-859f-4ce3-8bfe-9d302776180e",
+      "sha256": "f2b1772bdb717f4ddc450f8772939a892932d40d1f58b5ed6838d5843cad0316",
+      "publication": "2023-02",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-722fb978-e5ec-4c05-b935-9b8262e58959",
+      "sha256": "e8421436257a1acdb23e26ff72199cb18a289f31776f8cdc6a5c395e552252b6",
+      "publication": "1966",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-af6a2cb5-d83c-43fc-8fc2-25efb8111cb8",
+      "sha256": "3e61f322459a6b9fbc08dd9be3b620e53222b3cd916a8aed938df35fcaa1ae12",
+      "publication": "2000",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-6c39f577-bc45-4238-af62-97efe82a70ce",
+      "sha256": "143b96adf27ff9bed306ff71ad5c91d1d7f68a84fd80caa0be03fef98d6d0c9e",
+      "publication": "2009",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-72a81fa6-a46d-4bda-b6c6-20e9404413ee",
+      "sha256": "045f54d573d2c004278d2389eb9a6625b6c276a5e308b32d086bf1921cec5d4f",
+      "publication": "1981",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-0b811b44-b985-4ef0-89b1-fdbabfa4cb4e",
+      "sha256": "16a96a3f78cc78130889d86f1a86df43a7acd7cc938eb6591b28da6c846d1d6a",
+      "publication": "1956",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-38718bfd-9cd0-402b-8346-be8df35eb976",
+      "sha256": "db7310a523582ecd9ff2a620b06ff34b08289786dc77c14333c161cf3c710ef7",
+      "publication": "1956",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-97ed42cf-92cd-4f55-8eba-2081cea97b10",
+      "sha256": "bdb74f9795904bc3087d8aec746fcd2c2ae502ae796ee5d30b2d398c4df53283",
+      "publication": "1937",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-75f22260-94f9-4609-a42c-090bb259845c",
+      "sha256": "4eb4b97ecf03e6669d1d9ddaf69f206fd84079b951f3bcf5d71fc761a1878366",
+      "publication": "1936",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-3a3cfdbf-8fcf-4a0d-99e6-d95553743e93",
+      "sha256": "19260e2e62bfa46c8992999b10bf992fbcf4768b77858768d258edbe41840e9d",
+      "publication": "2016",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-88834748-1dfb-4411-833c-c87487d6c5ed",
+      "sha256": "dfe3e48819c6faa881c98895370f0a7542fd9b4f4482a930b49efaab8c0cc039",
+      "publication": "2013",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-54715ba9-fabc-4bd9-9a13-531065aa5c73",
+      "sha256": "014d5a64c76f4d7cead282860926e7440bcb533ba9720c107e0666f777e6aba5",
+      "publication": "2010",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-003582e9-2210-4571-af86-d08f085571d8",
+      "sha256": "bf4dba5c7be5685da9c73fb4f2c79eed46db89d3b72429ad791c0725f9184886",
+      "publication": "1956",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-4c06bdf1-a78a-4d05-b1cd-8de41dd1c1f7",
+      "sha256": "0d3253d9eef31e27aff62bdd719a9e25feb6ce5d12b91b23f7e775bdbe560dad",
+      "publication": "1950",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8a1e3416-6524-47d8-8777-45ffcb9fcb4b",
+      "sha256": "cfafe3dfcc65bf84a2c25ec12fdb02e73392f74cb3105defdada44e4d974e3a4",
+      "publication": "2005",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-a316e95f-6a0e-4d2d-85c8-3dee48a8b0b3",
+      "sha256": "bc06a6705c148c34dcad792faa47125118255f66ad8bcb06df00dfca0f1ea6e5",
+      "publication": "2001",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-eae14043-809b-428c-9972-7e96235bab6f",
+      "sha256": "4a3cb967f6723ccf67bdd3bd0a31c412f28afb7277178f3815b8f78c1e87ada5",
+      "publication": "2020",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-3c297b60-806a-4c2b-87b4-18c9fcaa7556",
+      "sha256": "0e227de07e25545596b3af32b18c95b0c7bbedf8073adf6900501980921b0e83",
+      "publication": "2021-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-cf01f99f-211f-4dbd-8e14-29d8db0e6c95",
+      "sha256": "258dc136bc18399b8a6800ab44b35bf885f49f83fa9fdf3ba852b3a06b802353",
+      "publication": "1949",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-acad59db-5b91-423f-a8a2-1d1b6c3a8a35",
+      "sha256": "999640617c1b1378ff6363baa7019675562c2c7f5f1f9e47d5bc58548e2a8faa",
+      "publication": "2011",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-2b16416f-66ad-42b4-928b-2399020f8df0",
+      "sha256": "6d59159647bcc30ca39487acbcff6f3d8a398da1a18e199b1ac3aea56aed52a8",
+      "publication": "1963",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-439a28d3-6b91-4978-b748-7e9dadb53a3c",
+      "sha256": "a860c68fa99c42deecce524c4d129efc2add10beb9d4466100a27e5dec853c2a",
+      "publication": "2008",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-b80b1aca-2484-4b2e-9a99-9af9036de7f7",
+      "sha256": "1e359e6415329a1e2d62a05823c7f2dfd5b055b00864a45ecf4dd9d1d1e17fa9",
+      "publication": "2015",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-e29b0ec0-ed15-4602-9b4a-9aec4ff5dbe4",
+      "sha256": "11dd6f2d861ed6ee2653b3ef0e7602dd71b0b2772787a524dcd7595aef2a3b87",
+      "publication": "2014",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-efd85c44-cd96-4606-8032-bfbe17a54054",
+      "sha256": "1ee16445e077c272943977d96337b675dc7634d4eb52b528fb549360a9ebefe8",
+      "publication": "2024-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-c563723b-2c42-4408-8618-de9426ad6acd",
+      "sha256": "de13bebcbec014fcf7d9df0f9aff7892aa7c39fcb078154ed5171ea9e74d0d2d",
+      "publication": "2002",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-599863ce-70e6-4d4d-b562-a847182e583a",
+      "sha256": "5035f8e346ae27a01da025afd1ab0e6a27a2e817468859db8ba5c9bbe5297346",
+      "publication": "2021",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-82501941-46cb-4f14-bd84-bbbc6c072034",
+      "sha256": "84e0e169d36d29c58ce3f2ae3790dfe79d0d119f2dea83756e95ec8127daa070",
+      "publication": "2023-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-d540fb86-8085-4721-8abf-ffc6a03f3a9d",
+      "sha256": "d8ac9d0d99b1ae471c877d115bc1dc024e93f899c9b92e0d3403ab63554094af",
+      "publication": "2023-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-84033887-c00f-4ae0-8e6c-0cb4032d079f",
+      "sha256": "abf47bc452a0b054629c6becc8c535d841049532019149c7c9aa2f4f40a3974b",
+      "publication": "2022-09",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-1b0d5533-083f-4e5f-ae80-a593b097384f",
+      "sha256": "4c694825c2a4cbd575b8471d37e468c1131b31e106ce1eee8d2c221a322e7bee",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-ca2630b9-ecc6-4142-be0c-a37a8d7ca9bb",
+      "sha256": "d1cf3fb68b2a237ba6a58551fc673499a56169f007594a2f415ed01b7d62c8c3",
+      "publication": "2009",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-0fff1dd1-8d3e-4f0a-9e42-757e60783e04",
+      "sha256": "27dfd0a90711f4504ced8a0731412adf36650e03ec109c5b14d79ff2ebdfa6d7",
+      "publication": "2022-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-bbdce9ff-93a2-49ea-829f-0bae01e97de1",
+      "sha256": "dea61c08f026de85764edfb8b3bbacaaed46b4f024ff914dce0ca2c32af38fd8",
+      "publication": "1967",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-bdb096c2-2285-43e2-bf60-00c83d124317",
+      "sha256": "d1e27061edcc46c7eebc83defd1876760a58fe107f6943edae8d7ee42be66a10",
+      "publication": "2005",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-9c7d547b-ece7-4901-a5f9-f7d5ceccd0b4",
+      "sha256": "669833408a44dbe5637665ba42e5198c864fd2186e4cd5fe2b43384bb41f6783",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8d6cf310-5c50-4de4-a77d-a612aa077f2a",
+      "sha256": "d3b843106559a4d77e6b6437a3a8bcbd50207f225f5f99ad964a2ae68acef231",
+      "publication": "2008",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-807643a7-ce20-4399-9725-20a14b5f3786",
+      "sha256": "1908c2797cede49df9ccf0bb77d4120da0ad04afb34efd01888846f4f8b901bd",
+      "publication": "2015",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-b61b51fa-c1c8-4970-9037-eb679e9e245f",
+      "sha256": "a278bb2b224cacd3c00f40e575cb7b87ba7be4146c92e7ef0e5182acede0ec31",
+      "publication": "1978",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-a13ca090-590e-410b-a7f9-db2866082e4e",
+      "sha256": "d822d91863fe13f5c950e1d664eae7f9c5ab513d03bd44a47515bb0f6d701f6b",
+      "publication": "2014",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-5a45e8c8-47db-4dbe-b922-3f897fc20892",
+      "sha256": "6b082880055ab2151559ab60f01eb77a3661c128e4e6ac2d4d04d1ebb1f7b7a6",
+      "publication": "2013",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-9c911dc4-0994-43c3-9776-ae0931628eaa",
+      "sha256": "52e2db9de80677ff600172899fea8e0b0d2d242b3c7d140e04ceba187a30570d",
+      "publication": "2022-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-9c65ebfd-f7f3-4907-a78a-f4875e7af97a",
+      "sha256": "e0591d330112e500324dd4ad93b8ec3e804537412a97d065cced78912cfbb70c",
+      "publication": "2020",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-54e4a80f-1ee2-4b20-92b3-d9858ab79c64",
+      "sha256": "4d09882afb242649a5e0bf8d4673d1cb30a89f37e376f35ced2528a1358cbe85",
+      "publication": "2019",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-2651a716-e0cc-41af-8cf0-0515d060cbfc",
+      "sha256": "5f51b4ae4c1167a5ac29130601cd1853eaa7bf3fd7f5d1ec194f17ada09d99c6",
+      "publication": "2020",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-54dee97a-e7ee-43b3-a8c5-497e573974b9",
+      "sha256": "0be2db79761c79a7722a542afad93823f1f5de22398233cb5e7098ac62731c5b",
+      "publication": "2025-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-0197052d-c4ff-4716-b713-1da15b73270d",
+      "sha256": "5b26f9c2e14eb9cdc0a53f5d963b7625fe4712b95b9757c03eb69829ebe0d102",
+      "publication": "2014",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-feeb7653-ae03-4454-8a6c-130ea1ae901a",
+      "sha256": "8ffe48c66bf735c4f50016641b3215c88b90e4666ba0b4ed7a662eb5e18f96ee",
+      "publication": "2012",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-fb421d82-a37b-4656-8c00-88e846365927",
+      "sha256": "12e9d30961bacf1c06504212483946ed5d7c4ca3542d2f86b21ef3abbb9f2f1c",
+      "publication": "2014",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-e214f85d-2e79-4143-a171-e55fa14a304d",
+      "sha256": "a340b1c5f9fc8512b4e559912ec2074311c83a13225f5aba048f8498be90c947",
+      "publication": "2025-02",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-840d5386-2270-4812-9c88-b5b0344fcf8c",
+      "sha256": "0cdaf9008d5a1b424725165eef8d3fe05ed08a3272d3a9264d4ca17fc7406b91",
+      "publication": "2025-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-954dcfa4-9f5c-4b6a-8345-4a695e817a90",
+      "sha256": "d74edff5b8a8dbcf54cf302c846b641f1b5a983bb28ed55f04deca243d895a19",
+      "publication": "2025-09",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-612350e6-bbc1-474a-81fb-0d15fdb01da1",
+      "sha256": "40cc53b0e920b09808d33f875c368e90f3fb5b1ddc3f8992445fdc8d4aa64e92",
+      "publication": "2017",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-ba9c2f47-7191-48aa-96a4-6252c872f0bd",
+      "sha256": "bf8c999d3e1822ba783403c40a4bb0a92422257f54d9ac7c5b5bf9350f6e158a",
+      "publication": "2022-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-bb27a990-9a12-49b7-8e56-3d0fd888de0c",
+      "sha256": "16c52a04253dd377ccba0656ec704ba78321aa4954b06a0de17d866e1aefaf3f",
+      "publication": "2020",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-831602ee-f5f1-41c0-9e72-15642ed45ee8",
+      "sha256": "44912e2966f1d2271913b993f4f3f31d164459e7978d498772a924e07ca059f3",
+      "publication": "2003",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-0f6b270d-5c2f-4e58-bf47-11f6f1f05283",
+      "sha256": "95ffdf3f259c23ae9f2dc52918e9f9d2f7b8de78a0b44887bad8fbae883196e0",
+      "publication": "2003",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-18e8e23e-5c6a-4efd-b6b8-30f82b013921",
+      "sha256": "84111d748192ce423db93664e629eed82ea224265e3a236c8053b97f1c9fa1c1",
+      "publication": "2017",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-04c4ebc4-9b56-459c-9a9e-4edfe6aba4ee",
+      "sha256": "5ca4a8ffdeb74c2cc25f3f0bdda47afcfad6d9064538b528be227532bf3cd9bc",
+      "publication": "2025-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-869096a4-0767-4d6a-9d66-ee84c77f4fd0",
+      "sha256": "3bf4815978d6aad2dff0e367284f46e90c4e946f46017e6fbb2afdf3c1942a78",
+      "publication": "1965",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-742a136e-ab72-4a05-a765-df81ae203afc",
+      "sha256": "208899bbe9cd560ac7ba1600040bedad8ba1d919b54063ceefc13cac294353da",
+      "publication": "2018",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-3ef00a65-2c33-48f2-83e6-d55a597fb665",
+      "sha256": "3b6e8ed0a52db1a06ad8812adb12e14e9ed6668ee37ef5bcdb1d35e4a8fb9f1c",
+      "publication": "1986",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-99059c4b-a25f-47fe-afe5-0d5202ec6a3c",
+      "sha256": "46c49d380157dd49d04d6c312c901102dae8515a3a3b7bde3d38c750c52ab285",
+      "publication": "2011",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8e2032dd-72d3-4c06-94bb-41b2688f2842",
+      "sha256": "f6a9f353bbb30302e1d8814ec8fed54fa9116c0edebce087026659b90cbce394",
+      "publication": "2011",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-b655ca08-0913-4cf5-8707-9a09eca8ac54",
+      "sha256": "d4097faf3a9e5865edf32af95d3447408ecbbcea442423bb8dccee005d73c609",
+      "publication": "2015",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-85292616-2f9c-4e94-ba86-698d9b4a96d2",
+      "sha256": "a53121e539feeef31701f98f672ee02d74840dbd0532f6d86bbce1affa16d2fd",
+      "publication": "2001",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-a8099982-81a6-4bc0-be42-1b485725f349",
+      "sha256": "ebc55d70496c4ad9c002a12082bd301b3c348c5c009ccf33603a429bfca279d4",
+      "publication": "2013",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-2370612b-96a3-4a60-b09c-2e8cb3fca7e2",
+      "sha256": "bcb69015e03526b096b52fb62db658cf3f33882a28b29c70a4f7ce31d6ef6676",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-757ec9d0-b19f-474a-8c8e-18d7761e4eaa",
+      "sha256": "6b0aca265a1ceb03f9e543ee91f64f3974b9543f5cb06b61d9fae5a76b18d642",
+      "publication": "2011",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-783ede36-65d2-4ab6-bb55-6fb43081f122",
+      "sha256": "32e050262f50da62300d3c732d335b787158e054a2356d7dfc782ce2b11e2d9e",
+      "publication": "2021-06",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-f78a697a-4cfd-4563-9744-0e2ec46787c6",
+      "sha256": "55ef8a0520c97aafa3058f4329ab965c077fc70c80f3f213fa30ac088e3b77f8",
+      "publication": "2016",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-956fbcb1-de5a-4f4c-957b-57e3e1b2f867",
+      "sha256": "ff8dae0de61eb562d24e404dd93c565c6b941f925176da9290db2f505d6550b5",
+      "publication": "2025-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-53501520-9ccf-4ea9-a6dc-ad385b5646af",
+      "sha256": "ab4c1eebd680c5eaa5b08147a86aaed2e5861985f52117ebeb0aac6db299f21f",
+      "publication": "2019",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-d5dc21ae-d873-4e98-8f03-7d73ed156733",
+      "sha256": "38f8c85f017744a356319ca45f8a60b5be139e51a204dd194ffad2f5bcc73da9",
+      "publication": "2014",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-77ccc43a-eb33-46f1-89e8-34499dd59752",
+      "sha256": "d53ed26e3fa84eee6ac2fec2a729b43a90fb0df152a415d40747e9eebe9244c0",
+      "publication": "2016",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-995a5207-d85d-4ebc-8108-93786476e807",
+      "sha256": "456f14807033ae86b6d0bf65ba9e22aa63230f99306eb7c8bd732c08e5c692f1",
+      "publication": "2006",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-c2f28a81-76e0-4b89-8b14-acb3c3c68ec6",
+      "sha256": "1e321367235b6ded007bb865d98536b733ed1f3361ecdb29b67802669df9bd6e",
+      "publication": "2012",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-8f599c8a-1373-4996-9e0f-95c317be572c",
+      "sha256": "9d39a84a86ece0bad1cc8a932460447cab62ba8c4152e4780272ab486b8852de",
+      "publication": "2023-02",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-9c5c3bdc-8bad-48dc-b4ac-1444fde28af4",
+      "sha256": "5a6a72fc6ad116d1224264369c9b7053e418fd27054cde1cc67ee9e71335b6c3",
+      "publication": "2001",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-0472c9bb-cac2-4008-a2ed-64b4fdb840f6",
+      "sha256": "776f24b147ec5193547026a3e731473ea2735abb6df1cd02e461ee9309d2267d",
+      "publication": "2022-05",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-543df230-6406-44be-aaf9-7c0c9b2b9cab",
+      "sha256": "9e32d4f751ae280a8e5b2d5e0ba462fdab273004abbb65d7fffc296ffd3c1882",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-11aaf9f1-d5b0-49de-b4d2-7a71c66692b2",
+      "sha256": "74bc55c666311c3c570a8b741fee8a609cdc8ea7b50702b795f11c070c22e7d9",
+      "publication": "1989",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-85ab81b6-f077-4764-bd2d-9dd4d8fc550d",
+      "sha256": "ff8c01f016a7328fed3fe8b3a9bad45688403e6d9898b56fd8236d8ee3627552",
+      "publication": "1989",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-6bbe9080-d608-4ddd-9b7d-825ad2c233e1",
+      "sha256": "baad5d3e88ed6bdbd87971280c4ce617e061153031f67a9a3b7b16f4bbf4b23d",
+      "publication": "1999",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-3aeaed77-dd5c-4259-9e08-eff37029aa80",
+      "sha256": "9c12e874ffe77641e4e0e04e80d1443a759d3e3d4fad0068a95e1876f2f57e6d",
+      "publication": "1986",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-cca02e40-5bdf-45f2-9e0f-a6d4a55e2862",
+      "sha256": "6e70a2d83972e1acb69b0ebfe1eee06b98aa60665794a5f025e4fcd4a618487b",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-1755cbcb-d452-492b-8f9d-9643b724f1a0",
+      "sha256": "b90507a3a2242e7d61df12fb92cef9f825604cc6de5dfcf42184c4637520d069",
+      "publication": "1989",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "radboud-kubernetes-scaling",
+      "sha256": "67dce347434d2d519744061bb9d850d233647e478d93f85ec2bdb193c60faa64",
+      "publication": "2022",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-897e8567-9b1e-4ed9-9f7c-1efe622f736e",
+      "sha256": "61157906c5ae67c49f545a85efce66d2532b213e71a38dc767c864a91fb1d852",
+      "publication": "1998",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "mit-790cf43f-3a9f-46c7-8521-acac796be4b0",
+      "sha256": "7f39498c28738e1fa9c10f4e78015e4f06ea5a5c04fbfb9c013ca64f68a84ad8",
+      "publication": "2000",
+      "snapshot": "2026-10-08"
+    },
+    {
+      "id": "github-archive",
+      "sha256": "563ecf1de8a40b9519fa34b2b9f0799f0a49a20c734314824780beda2e3d9a3b",
+      "publication": null,
+      "snapshot": "2026-10-09"
+    }
+  ],
+  "github": {
+    "repositories": 22,
+    "passages": 7853,
+    "screening_decisions": 18313
+  }
+}

@@ -165,9 +165,11 @@ is installed as a skill, appended to a persona system prompt, or exposed as a
 new MCP operation. The isolated model cannot browse these directories or the
 internet. The output-DLP quarantine retains its separate investigation purpose.
 
-Any future retrieval integration must treat extracted passages as untrusted
-source data, preserve citations, use bounded read-only access, and pass through
-the existing input/output controls. Downloaded PDF code, commands, links and
+The deployed [local retrieval integration](APPROVED_KNOWLEDGE.md) treats extracted
+passages as untrusted source data, preserves supplied source metadata, uses bounded
+read-only access, and passes through the existing input/output controls. Every
+persona can search approved documents, with native-role relevance preference.
+Downloaded PDF code, commands, links and
 embedded actions must not become tool instructions. The current validation
 proves PDF structure/readability where inspected, checksum consistency,
 unique downloaded student documents, ZIP integrity, and catalog counts; it

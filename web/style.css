@@ -6,3 +6,16 @@
 .login-panel{max-width:440px;margin:80px auto;padding:24px}.login-panel form{padding:20px}.login-panel label{margin-top:0}.login-panel input{width:100%;padding:14px;background:var(--bg);color:#e4eff2;border:1px solid var(--line);font:inherit}.login-panel button{width:100%;min-height:48px;margin-top:20px;background:var(--cyan);color:#071417;border:0;font:inherit}#login-error{color:#ffd592;line-height:1.8}
 #logout{background:none;border:1px solid var(--line);color:var(--cyan);min-height:44px;padding:8px;font:inherit;font-size:10px}
 .station-health{margin:18px 4% 0;border:1px solid var(--line);padding:12px;color:var(--muted);font-size:11px}.station-health summary{cursor:pointer;color:var(--cyan);min-height:24px;line-height:24px}.station-health p{line-height:1.7;overflow-wrap:anywhere}.station-health summary:focus-visible{outline:2px solid var(--cyan)}
+
+.voice-controls{border:1px solid var(--line);padding:12px;margin:8px 0;color:var(--muted);font-size:11px}.voice-controls summary{cursor:pointer;color:var(--cyan);padding:6px 0}.voice-controls label{margin:14px 0 8px}.voice-controls select{padding:10px}.voice-controls button,.replay-reply{background:var(--panel);border:1px solid var(--line);color:var(--cyan);font:inherit;min-height:36px;padding:8px}.voice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.voice-options label{display:flex;align-items:center;gap:8px;letter-spacing:0;line-height:1.5}.voice-controls input[type=range]{width:100%;accent-color:var(--cyan)}#voice-status{line-height:1.6}.replay-reply{display:block;margin-top:10px;font-size:10px}.voice-controls button:disabled{cursor:default}
+.reply-sources{white-space:pre-wrap;font-size:.7rem;line-height:1.5;color:var(--muted,#86a4ad);border-top:1px solid #28414b;margin-top:1rem;padding-top:.8rem;overflow-wrap:anywhere}
+
+/* Technical context readout follows the existing cyan reactor palette. */
+.context-usage{margin:1.25rem 0;padding-top:1rem;border-top:1px solid #28434c;min-width:0}
+.context-usage label{font-size:.65rem;letter-spacing:.1em}
+.context-usage progress{display:block;width:100%;height:8px;margin:.75rem 0;accent-color:#69e5e7;border:0;background:#142a32}
+.context-usage progress::-webkit-progress-bar{background:#142a32}
+.context-usage progress::-webkit-progress-value{background:#69e5e7}
+.context-usage progress::-moz-progress-bar{background:#69e5e7}
+.context-usage strong{display:block;font: .7rem/1.5 monospace;color:#a7e1e6;overflow-wrap:anywhere}
+.context-usage p{font-size:.7rem;line-height:1.5;color:#8ca6b0;margin:.5rem 0 0}

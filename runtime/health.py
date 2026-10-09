@@ -12,7 +12,7 @@ from runtime.mcp_client import health as model_health
 from runtime.security_scan import APPROVED, DATA, discover, fingerprint, scan, timestamp, write_json
 from runtime.text_filter import inspect_message, TextHeld
 
-LATEST=ROOT/'data/health/latest.json'
+LATEST=ROOT/('release-state/health/latest.json' if (ROOT/'deployment.json').is_file() else 'data/health/latest.json')
 
 def check(scan_if_changed=True):
     checks=[]
@@ -28,6 +28,14 @@ def check(scan_if_changed=True):
         record('local_skills','pass',f'{len(skills)} registered local prompt-only skills; hashes match')
     except (OSError,ValueError,TypeError,KeyError):
         record('local_skills','error','Local skill registration, hash or policy validation failed')
+    try:
+        from runtime.knowledge import status as knowledge_status
+        library=knowledge_status()
+        if not library['documents'] or not library['passages']:
+            raise ValueError('Empty local library')
+        record('approved_knowledge','pass',f"Read-only hash-verified shared library: {library['documents']} documents, {library['passages']} passages with role preferences")
+    except Exception:
+        record('approved_knowledge','error','Approved knowledge index missing, changed or unreadable; grounded chat fails closed')
     try:
         inspect_message('Hello from the local health probe.')
         try:
@@ -69,6 +77,10 @@ def check(scan_if_changed=True):
             from runtime.agents import load_personas
             missing=sorted({p['model'] for p in load_personas().values()}-set(status['models']))
             record('models','error' if missing else 'pass','Missing configured models: '+', '.join(missing) if missing else 'Configured local model tags are installed')
+            processors=status.get('model_processors',{})
+            configured={p['model'] for p in load_personas().values()}
+            full_gpu=all(processors.get(tag)=='GPU' for tag in configured)
+            record('model_gpu','pass' if full_gpu else 'warning','Configured model fully GPU-resident (Ollama placement verified)' if full_gpu else 'Model unloaded, CPU-offloaded or placement unavailable; GPU residency is unverified')
     except Exception:
         record('models','error','Local model status check failed')
     try:

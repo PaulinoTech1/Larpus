@@ -7,6 +7,7 @@ COPY runtime/ /app/runtime/
 COPY agents/ /app/agents/
 COPY skills/ /app/skills/
 COPY config/ /app/config/
+COPY knowledge/ /app/knowledge/
 COPY LICENSE LICENSE-NOTICE.md /app/
 RUN mkdir -p /app/data/quarantine && chown -R 1000:1000 /app/data && chmod 700 /app/data/quarantine
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUTF8=1 PYTHONIOENCODING=utf-8 HOME=/tmp/larpus OTEL_SDK_DISABLED=true OLLAMA_NO_CLOUD=1

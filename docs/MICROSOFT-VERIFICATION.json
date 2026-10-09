@@ -1,0 +1,50 @@
+{
+  "recorded_on": "2026-10-09",
+  "release": "807c76f50c2c4f38ac9d859be935c713",
+  "previous": "1fb042ecf3a74d4ea4c0d4604d7a1534",
+  "source_fingerprint": "d83f3083aa591dc9266e018d7389ab9b03ee69c4eeee52aae6472fe8b6689707",
+  "python_tests": 103,
+  "node_regression_suites": 3,
+  "isolation_probes": 6,
+  "scan_targets": 70,
+  "clean_skills": 69,
+  "mcp": {
+    "status": "warning",
+    "complete": true,
+    "severity": "MEDIUM",
+    "score": 48,
+    "issues": 8
+  },
+  "microsoft_articles": 11,
+  "microsoft_briefs": 5,
+  "library_documents": 263,
+  "library_passages": 44500,
+  "local_http": 200,
+  "lan_api_unauthenticated": 401,
+  "lan_root_redirects_login": true,
+  "tls_ca_verified": true,
+  "hud_assets_served": true,
+  "pilot_name_retained_across_skill_switch": true,
+  "live_contexts": [
+    {
+      "capacity": 4096,
+      "prompt_tokens": 1439,
+      "output_tokens": 101,
+      "output_limit": 1024,
+      "omitted_messages": 0,
+      "measurement": "ollama-final"
+    },
+    {
+      "capacity": 4096,
+      "prompt_tokens": 1637,
+      "output_tokens": 83,
+      "output_limit": 1024,
+      "omitted_messages": 0,
+      "measurement": "ollama-final"
+    }
+  ],
+  "functional_health": true,
+  "overall_health": "degraded",
+  "browser_visual_validation": "unverified: no available browser automation surfaces",
+  "scan_receipt_sha256": "111f2c75b7920061a7c1d57dcc3e73817f3dbbe5dc09121fb432c54c528fe713"
+}

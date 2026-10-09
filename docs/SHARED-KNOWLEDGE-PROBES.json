@@ -1,0 +1,160 @@
+{
+  "recorded_on": "2026-10-09",
+  "fingerprint": "de484e3e6c51794f12c9aca359a15abe219a340a9e57cc5796117d076d57d13c",
+  "scope": "Focused sealed offline data-path probes; no broad quality or security guarantee.",
+  "observed_limitations": [
+    "Sol/Astra answer gave correct cache prices but falsely generalised their ratios as one-tenth; cache-write ratio is one-fifth. It omitted base input/output rates despite the request.",
+    "Claude plan answer described Claude Code as within the chat interface; the supplied source only establishes Claude Code access, not that interface claim.",
+    "Several replies omitted inline source IDs although the HUD receives actual selected-source metadata."
+  ],
+  "probes": [
+    {
+      "persona": "home-assistant",
+      "prompt": "Using approved references, give DeepSeek V4 Pro and Flash API input cache-hit, input cache-miss, and output prices for peak and off-peak, in USD per million tokens. State snapshot date and Flash alias change. Keep it concise.",
+      "status": 200,
+      "sources": [
+        {
+          "id": "deepseek-v4-pricing-brief",
+          "title": "DeepSeek V4 Pro Flash V4.1 current API pricing peak off-peak cache rates",
+          "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "deepseek-pricing",
+          "title": "Official DeepSeek V4 Pro and Flash API pricing",
+          "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 758"
+        }
+      ],
+      "answer": "Snapshot date: 2026-10-09. Note that legacy names like `deepseek-v4-flash` now route to **V4.1-Flash** and bill at Flash rates.\n\n**DeepSeek V4 Pro** (USD per 1M tokens):\n*   **Peak:** Cache-hit $0.044, Cache-miss $1.32, Output $3.96.\n*   **Off-peak:** Cache-hit $0.022, Cache-miss $0.66, Output $1.98.\n\n**DeepSeek Flash (V4.1)** (USD per 1M tokens):\n*   **Peak:** Cache-hit $0.006, Cache-miss $0.30, Output $1.20.\n*   **Off-peak:** Cache-hit $0.003, Cache-miss $0.15, Output $0.60.\n\nPeak hours are 01:00\u201304:00 and 06:00\u201310:00 UTC, Monday to Friday (excluding Chinese public holidays); everything else is off-peak. Flash supports vision; Pro does not. These are static figures, not a live connection.",
+      "error": null,
+      "seconds": 11.26
+    },
+    {
+      "persona": "home-assistant",
+      "prompt": "Using approved references compare GPT Sol 6.1 and Astra 6.0 standard API prices, including cached input and cache writes. Give official model IDs and the snapshot date. Answer in four sentences.",
+      "status": 200,
+      "sources": [
+        {
+          "id": "openai-sol-61-brief",
+          "title": "GPT-6.1 Sol model standard API pricing and capabilities",
+          "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "openai-astra-6-brief",
+          "title": "GPT-6 Astra 6.0 model standard API pricing and capabilities",
+          "url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "openai-sol-61",
+          "title": "Official GPT-6.1 Sol API model",
+          "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ],
+      "answer": "Based on the 2026-10-09 snapshot, GPT-6.1 Sol (ID: `gpt-6.1-sol`) costs $0.10 for cached input and $2.50 for cache writes per million tokens, while Astra 6.0 (`gpt-6-astra`) charges $1.00 and $12.50 respectively. Essentially, Sol is one-tenth the price of Astra for caching operations, which is rather handy if you're trying to keep your digital wallet from weeping. Both models share the same snapshot date, but remember these are API costs separate from any ChatGPT subscription allowances. If you need the standard input or output rates as well, just say the word and I'll recite them without a single dramatic pause.",
+      "error": null,
+      "seconds": 8.48
+    },
+    {
+      "persona": "home-assistant",
+      "prompt": "Using approved local references compare ChatGPT Plus with Claude Pro monthly US prices and whether API usage is included. Mention Codex and Claude Code. Answer in four sentences.",
+      "status": 200,
+      "sources": [
+        {
+          "id": "chatgpt-plus-codex-brief",
+          "title": "ChatGPT Plus Codex subscription pricing and usage",
+          "url": "https://learn.chatgpt.com/docs/pricing",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "claude-pro-brief",
+          "title": "Claude Pro USD 20 subscription pricing Claude Code and API distinction",
+          "url": "https://support.claude.com/en/articles/8325606-what-is-the-pro-plan",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "chatgpt-plus-codex",
+          "title": "Official ChatGPT Plus Codex pricing",
+          "url": "https://learn.chatgpt.com/docs/pricing",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ],
+      "answer": "As of the 2026-10-09 snapshot, both ChatGPT Plus and Claude Pro are priced at USD 20 per month in the US. Neither subscription includes separate API usage; those costs are billed distinctly from your plan allowance. ChatGPT Plus bundles access to Codex for coding tasks, while Claude Pro offers its own \"Claude Code\" feature within the chat interface. It is worth noting that neither service guarantees unlimited use, as both enforce weekly limits and session caps depending on your activity.",
+      "error": null,
+      "seconds": 6.698
+    },
+    {
+      "persona": "linux-kernel-expert",
+      "prompt": "Using approved local references explain Grok Bot and how SuperGrok is priced. Is Grok Bot hosted or running here? Answer in three sentences.",
+      "status": 200,
+      "sources": [
+        {
+          "id": "supergrok-pricing-brief",
+          "title": "SuperGrok Grok subscription pricing and features",
+          "url": "https://x.ai/pricing",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "grok-bot-brief",
+          "title": "Grok Bot capabilities subscription usage and cloud computer",
+          "url": "https://x.ai/bot",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "grok-pricing",
+          "title": "Official Grok SuperGrok pricing",
+          "url": "https://x.ai/pricing",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 3107"
+        }
+      ],
+      "answer": "Grok Bot is a hosted assistant running on an external persistent cloud computer, not here on this station, as confirmed by the reference data stating no Grok service is connected to Larpus. SuperGrok is priced at USD 30/month and includes access to Grok Bot alongside higher rate limits and generation features, while SuperGrok Plus costs USD 100/month for priority access and video capabilities. These figures are dated snapshots from October 2026 and represent subscription costs rather than per-token API rates or local entitlements.",
+      "error": null,
+      "seconds": 6.667
+    },
+    {
+      "persona": "home-assistant",
+      "prompt": "According to the approved local evidence, what initial GA kernel shipped with Ubuntu 26.04? Cite its source ID and distinguish later updates. Answer in two sentences.",
+      "status": 200,
+      "sources": [
+        {
+          "id": "ubuntu-ga-kernel-comparison",
+          "title": "Reviewed comparison: Ubuntu 24.04 25.04 26.04 GA Linux kernels",
+          "url": "https://documentation.ubuntu.com/release-notes/26.04/changes-since-previous-interim/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "ubuntu-26-04-summary",
+          "title": "Ubuntu 26.04 summary since 24.04 LTS",
+          "url": "https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 55361"
+        },
+        {
+          "id": "ubuntu-26-04-changes",
+          "title": "Ubuntu 26.04 changes since 25.10",
+          "url": "https://documentation.ubuntu.com/release-notes/26.04/changes-since-previous-interim/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 25712"
+        }
+      ],
+      "answer": "According to the local evidence, Ubuntu 26.04 LTS initially shipped with the Linux 7.0 kernel as its general-availability baseline [ubuntu-ga-kernel-comparison]. This version serves as the starting point for the GA stack, though later updates via Hardware Enablement (HWE) or specific vendor packages may differ from this initial release [ubuntu-26-04-summary].",
+      "error": null,
+      "seconds": 6.361
+    }
+  ]
+}

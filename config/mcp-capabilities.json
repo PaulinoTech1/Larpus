@@ -1,9 +1,22 @@
 {
-  "permissions": ["env:allowlisted", "mcp:stdio-fixed-child", "network:127.0.0.1:11434", "file_read:fixed-dlp-policy", "file_write:output-quarantine", "shell:fixed-windows-acl-helper"],
+  "permissions": [
+    "env:allowlisted",
+    "mcp:stdio-fixed-child",
+    "network:127.0.0.1:11434",
+    "file_read:fixed-dlp-policy",
+    "file_write:output-quarantine",
+    "shell:fixed-windows-acl-helper",
+    "file_read:fixed-approved-knowledge"
+  ],
   "environment": "Fixed child environment allowlist in bundled mcp_client.py; no credentials forwarded",
   "process": "Configured Python interpreter and runtime.mcp_server stdio child; trusted Windows DLP also invokes the fixed ACL helper",
   "output_guard": "Trusted DLP reads fixed policy, stages generated text in restricted quarantine and invokes only the fixed Windows ACL helper with a fixed directory argument. None of these are model-callable tools. Owner CLI can inspect and delete inert evidence.",
-  "network": "Only fixed Ollama /api/chat and /api/tags routes at literal IPv4 loopback port 11434; no proxies or redirects",
-  "tools": ["chat_local", "list_personas", "local_status"],
-  "enforcement_limit": "Descriptive scope; OS outbound denial and OpenShell containment remain unverified"
+  "network": "Only fixed Ollama /api/chat, /api/tags and /api/ps routes at literal IPv4 loopback port 11434; no proxies or redirects. Production rootless Podman pod has network=none and no published inference ports.",
+  "tools": [
+    "chat_local",
+    "list_personas",
+    "local_status"
+  ],
+  "enforcement_limit": "The fixed WSL2/rootless Podman executor validates readonly images, mounts and namespaces; behavior probes verify external/LAN/DNS denial. This does not prove every side channel or semantic prompt-injection defense.",
+  "knowledge": "Trusted runtime reads only the hash-pinned /app/knowledge/approved.sqlite image file. All configured personas can retrieve approved documents, with a modest relevance-based preference for their role. Bounded evidence is untrusted data, never instructions. No browsing or filesystem tool is exposed."
 }

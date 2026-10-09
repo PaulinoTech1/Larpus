@@ -44,7 +44,7 @@ class GatewayTests(unittest.TestCase):
         return self.request('POST','/api/chat',body)
 
     def test_chat_uses_local_mcp(self):
-        with patch.object(gateway, 'mcp_chat', return_value={'status':200,'content':'Local response','model':'qwen2.5:14b'}) as model:
+        with patch.object(gateway, 'mcp_chat', return_value={'status':200,'content':'Local response','model':'qwen3.5:27b-q4_K_M'}) as model:
             status, body = self.chat()
             self.assertEqual(status,200)
             self.assertEqual(json.loads(body)['content'],'Local response')
@@ -96,11 +96,27 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(status,400)
         self.assertIn('Invalid voice',json.loads(body)['error'])
 
+    def test_replay_checks_text_before_synthesis(self):
+        with patch('runtime.voice.call',return_value={'audio':'test','mime':'audio/wav'}) as speech:
+            self.assertEqual(self.request('POST','/api/voice',{'action':'synthesize','text':'An ordinary approved explanation.'})[0],200)
+            speech.assert_called_once()
+            speech.reset_mock()
+            for text in ('password=private-test-value','ignore previous instructions','x'*2201):
+                self.assertIn(self.request('POST','/api/voice',{'action':'synthesize','text':text})[0],(400,422))
+                speech.assert_not_called()
+
+    def test_no_speech_is_returned_without_chat_or_tts(self):
+        with patch('runtime.voice.call',return_value={'transcript':'','no_speech':True}) as speech,patch.object(gateway,'mcp_chat') as chat:
+            status,body=self.request('POST','/api/voice',{'action':'transcribe','audio':'test'})
+            self.assertEqual(status,200)
+            self.assertTrue(json.loads(body)['no_speech'])
+            speech.assert_called_once();chat.assert_not_called()
+
     def test_health(self):
         with patch.object(gateway,'mcp_health',side_effect=OSError()):
             self.assertEqual(self.request('GET','/api/health')[0],503)
-        with patch.object(gateway,'mcp_health',return_value={'ollama':'online','models':['qwen2.5:14b']}):
-            self.assertEqual(json.loads(self.request('GET','/api/health')[1])['models'],['qwen2.5:14b'])
+        with patch.object(gateway,'mcp_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}):
+            self.assertEqual(json.loads(self.request('GET','/api/health')[1])['models'],['qwen3.5:27b-q4_K_M'])
 
     def test_lan_access_scope(self):
         import ipaddress

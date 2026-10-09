@@ -1,0 +1,173 @@
+{
+  "recorded_on": "2026-10-09",
+  "fingerprint": "1ed1f33ae1346f3e4e1122c472994c1feb9032a21365e07b74b8b44449fe068d",
+  "boundary": "sealed network-disabled MCP through local Ollama and output DLP",
+  "limitation": "Focused path checks, not broad factual accuracy or scientific validation. The earlier CPU comparison exposed a retrieval gap; the final entry records its corrected retry. Sources identify supplied evidence, not automatic entailment of every claim.",
+  "probes": [
+    {
+      "persona": "linux-kernel-expert",
+      "prompt": "Compare the initial GA kernel versions of Ubuntu 24.04, 25.04 and 26.04 using the approved local evidence. Cite source IDs. Answer in at most four sentences.",
+      "status": 200,
+      "seconds": 8.448,
+      "sources": [
+        {
+          "id": "ubuntu-ga-kernel-comparison",
+          "title": "Reviewed comparison: Ubuntu 24.04 25.04 26.04 GA Linux kernels",
+          "url": "https://documentation.ubuntu.com/release-notes/26.04/changes-since-previous-interim/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "ubuntu-26-04-summary",
+          "title": "Ubuntu 26.04 summary since 24.04 LTS",
+          "url": "https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 56137"
+        },
+        {
+          "id": "ubuntu-26-04-changes",
+          "title": "Ubuntu 26.04 changes since 25.10",
+          "url": "https://documentation.ubuntu.com/release-notes/26.04/changes-since-previous-interim/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 37409"
+        }
+      ],
+      "answer": "Based on the provided evidence, Ubuntu 24.04 LTS initially shipped with Linux kernel 6.8, while 25.04 launched with 6.14 and 26.04 LTS with 7.0 [ubuntu-ga-kernel-comparison]. These figures represent the general-availability baselines found in the official release notes, not necessarily the kernels currently running on any specific system due to potential Hardware Enablement updates. It is worth noting that this snapshot also clarifies that these versions do not imply ongoing support for interim releases like 25.04 [ubuntu-ga-kernel-comparison]. As always, one should verify the exact package build for hardware-specific requirements rather than relying solely on the release baseline.",
+      "error": null
+    },
+    {
+      "persona": "linux-kernel-expert",
+      "prompt": "Compare the i5-1245U and AMD 5900X core/thread counts and nominal power ratings using local references. Cite source IDs. These are public product specifications, not station inventory. Answer in at most four sentences.",
+      "status": 200,
+      "seconds": 7.533,
+      "sources": [
+        {
+          "id": "amd-5900x-brief",
+          "title": "Reviewed brief: AMD Ryzen 9 5900X specifications",
+          "url": "https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-9-5900x.html",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ],
+      "answer": "I can confirm from the provided reference that the AMD Ryzen 9 5900X features 12 cores, 24 threads, and a default TDP of 105 W (source: `amd-5900x-brief`). However, your request includes the Intel Core i5-1245U, for which I have no corresponding local reference data to cite. Without an attached document detailing the Intel processor's specifications, I cannot provide a verified comparison or claim those figures as fact within this roleplay. Shall we proceed by focusing solely on the AMD 5900X, or would you like to supply the missing Intel data?",
+      "error": null
+    },
+    {
+      "persona": "linux-kernel-expert",
+      "prompt": "Why can RHEL 9.6 have eBPF features from Linux 6.12 while its base kernel is older? Use the approved local reference and cite it. Answer in at most three sentences.",
+      "status": 200,
+      "seconds": 6.787,
+      "sources": [
+        {
+          "id": "rhel-9-6-brief",
+          "title": "Reviewed brief: Red Hat Enterprise Linux 9.6 kernel",
+          "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/9.6_release_notes/index",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "rhel-10-0-brief",
+          "title": "Reviewed brief: Red Hat Enterprise Linux 10.0 kernel and architecture",
+          "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/10.0_release_notes/index",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ],
+      "answer": "RHEL 9.6 retains its base kernel version of 5.14 but selectively rebases specific eBPF facilities to upstream Linux 6.12, introducing features like BPF tokens and arena support without upgrading the entire kernel [rhel-9-6-brief]. This approach allows enterprise distributions to backport critical improvements while maintaining stability on an older core version. Consequently, the presence of newer eBPF capabilities does not imply the distribution is running a full Linux 6.12 kernel [rhel-9-6-brief].",
+      "error": null
+    },
+    {
+      "persona": "linux-kernel-expert",
+      "prompt": "According to the approved snapshot, what is the latest stable Linux kernel version and how does it differ from the mainline release candidate? Cite the source. Answer in at most three sentences.",
+      "status": 200,
+      "seconds": 7.376,
+      "sources": [
+        {
+          "id": "kernel-support",
+          "title": "Linux kernel release categories and longterm support",
+          "url": "https://www.kernel.org/releases.html",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 2347"
+        },
+        {
+          "id": "kernel-current",
+          "title": "Linux kernel current stable mainline and longterm releases",
+          "url": "https://www.kernel.org/",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "fedora-kernel",
+          "title": "Fedora Linux kernel policy and update process",
+          "url": "https://fedoraproject.org/wiki/Kernel",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        }
+      ],
+      "answer": "Based on the provided snapshot from 2026-10-09, the latest stable release is 7.2.9, while the mainline release candidate is 7.3-rc6 (Source: `kernel-current`). The stable version represents a finalized, bug-fixed branch intended for production, whereas the release candidate is an intermediate snapshot undergoing final stabilization before becoming the next major mainline release (Source: `kernel-support`). Please note these versions are specific to that archival date and may not reflect the current live state of the kernel.",
+      "error": null
+    },
+    {
+      "persona": "mathematician",
+      "prompt": "Using the approved archived research, explain one limitation of a numerical PDE method. Cite a provided source ID and distinguish evidence from inference. Answer in at most three sentences.",
+      "status": 200,
+      "seconds": 9.75,
+      "sources": [
+        {
+          "id": "mit-702655f8-7a73-4a1b-bc43-2e1dc7476f87",
+          "title": "Domain partitioning to bound moments of differential equations using semidefinite optimization",
+          "url": "https://dspace.mit.edu/handle/1721.1/39213",
+          "snapshot": "2026-10-08",
+          "locator": "page 17 offset 779"
+        },
+        {
+          "id": "mit-c6671196-46b6-4ba2-8198-75e330a0b112",
+          "title": "Solving linear partial differential equations via semidefinite optimization",
+          "url": "https://dspace.mit.edu/handle/1721.1/8949",
+          "snapshot": "2026-10-08",
+          "locator": "page 12 offset 0"
+        },
+        {
+          "id": "mit-94d70011-859f-4ce3-8bfe-9d302776180e",
+          "title": "Error behavior and optimal discretization of chaotic differential equations",
+          "url": "https://dspace.mit.edu/handle/1721.1/150280",
+          "snapshot": "2026-10-08",
+          "locator": "page 77 offset 0"
+        }
+      ],
+      "answer": "Based on the provided archive, source `mit-702655f8-7a73-4a1b-bc43-2e1dc7476f87` explicitly states that while numerical techniques are imperative for complex geometric domains and nonlinear properties, it only notes that literature exists regarding the \"limitations\" of methods like Finite Difference without detailing a specific limitation itself. Therefore, I cannot cite a specific limitation from this text as the evidence merely acknowledges their existence rather than describing them; any attempt to name one would be an inference unsupported by the provided excerpts. As a mathematician, I must distinguish between what is documented and what is assumed, so I cannot fabricate a limitation not present in the source.\n\nWould you like to explore how we might mathematically derive such limitations for a specific class of PDEs, or shall we examine the Finite Difference method's approximation error in a controlled example?",
+      "error": null
+    },
+    {
+      "persona": "linux-kernel-expert",
+      "prompt": "Compare the i5-1245U and AMD 5900X core/thread counts and nominal power ratings using local references. Cite source IDs. These are public product specifications, not station inventory. Answer in at most four sentences.",
+      "status": 200,
+      "sources": [
+        {
+          "id": "amd-5900x-brief",
+          "title": "Reviewed brief: AMD Ryzen 9 5900X specifications",
+          "url": "https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-9-5900x.html",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "intel-i5-1245u-brief",
+          "title": "Reviewed brief: Intel Core i5-1245U specifications",
+          "url": "https://www.intel.com/content/www/us/en/products/sku/226260/intel-core-i51245u-processor-12m-cache-up-to-4-40-ghz/specifications.html",
+          "snapshot": "2026-10-09",
+          "locator": "document offset 0"
+        },
+        {
+          "id": "intel-core-comparison",
+          "title": "Intel Core laptop CPU comparison chart",
+          "url": "https://cdrdv2-public.intel.com/841783/Intel-Core-Comparsion.pdf",
+          "snapshot": "2026-10-09",
+          "locator": "page 3 offset 3895"
+        }
+      ],
+      "answer": "The AMD Ryzen 9 5900X features 12 cores and 24 threads with a default TDP of 105 W, while the Intel Core i5-1245U offers 10 cores (2P + 8E) and 12 threads with a base power of 15 W and maximum turbo power of 55 W. These specifications are drawn from the reviewed product briefs for the AMD processor [amd-5900x-brief] and the Intel mobile chip [intel-i5-1245u-brief], which also appear in the comparison chart [intel-core-comparison]. It is worth noting that the 5900X is a desktop part requiring discrete graphics, whereas the i5-1245U is a power-efficient mobile processor. Do you wish to explore how these architectural differences might impact kernel scheduling policies or thermal throttling behaviour in a simulated environment?",
+      "seconds": 9.084,
+      "after_mixed_vendor_fix": true
+    }
+  ]
+}

@@ -4,3 +4,5 @@ data/
 vendor/
 *.log
 .env
+knowledge/*.sqlite
+knowledge/github-manifest.json

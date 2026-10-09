@@ -1,0 +1,21 @@
+{
+  "recorded_on": "2026-10-09",
+  "release": "0aa208337b6e479ebfdf97af0554213e",
+  "previous": "807c76f50c2c4f38ac9d859be935c713",
+  "source_fingerprint": "2ab9c4dfb5f5587904fc45db81904b7295075f7e7e1644e82262cb6b5da4d7ef",
+  "python_tests": 105,
+  "node_regression_suites": 3,
+  "isolation_probes": 6,
+  "clean_skills": 69,
+  "mcp_issues": 8,
+  "mcp_severity": "MEDIUM",
+  "indexed_repositories": 22,
+  "live_reply_missing_repositories": 0,
+  "live_http_status": 200,
+  "live_reply_seconds": 9.95,
+  "owner_attribution_confirmed": true,
+  "shared_guidance_all_personas": true,
+  "private_archives_and_index_excluded_from_commit": true,
+  "functional_health": true,
+  "overall_health": "degraded"
+}

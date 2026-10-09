@@ -448,6 +448,41 @@
       "description": "Rehearse respectful listening and boundary-setting.",
       "origin": "local-authored",
       "sha256": "25437891fdd40b392c749503f709df6c56f08e87e7df9fcbbd6d76da122a638a"
+    },
+    {
+      "id": "ms-intune-implementation",
+      "name": "Intune rollout",
+      "description": "Plan a staged Intune enrollment, compliance and app deployment.",
+      "origin": "local-authored",
+      "sha256": "07bec3b7ee039bd451c61900521c396a446c96f013ca6f37ed5d79fe79402abf"
+    },
+    {
+      "id": "ms-entra-implementation",
+      "name": "Entra identity rollout",
+      "description": "Design Entra identity and Conditional Access changes without locking out administrators.",
+      "origin": "local-authored",
+      "sha256": "d3d71c7e4fbb02998f206040045e4a83285e79dbced247ad9ace7cff7d45c705"
+    },
+    {
+      "id": "ms-azure-implementation",
+      "name": "Azure landing zone",
+      "description": "Prepare an Azure foundation with scoped access, governance and operations.",
+      "origin": "local-authored",
+      "sha256": "d8a1baa96571d3f578efce2d7669676ff4b6d98fcf4c419e386ce49f9d86bd97"
+    },
+    {
+      "id": "ms-m365-implementation",
+      "name": "Microsoft 365 rollout",
+      "description": "Plan Microsoft 365 identity, collaboration and app deployment.",
+      "origin": "local-authored",
+      "sha256": "476aaba39c4ccec0a037af932d48d52880fe64fd24707ae7ff12867493f2f92e"
+    },
+    {
+      "id": "ms-bitlocker-implementation",
+      "name": "BitLocker deployment & recovery",
+      "description": "Plan edition-aware encryption with verified recovery before rollout.",
+      "origin": "local-authored",
+      "sha256": "b2f7a529f981ca01b327de7d0fdc50d7831682fd679df277ab4028812df0a236"
     }
   ]
 }

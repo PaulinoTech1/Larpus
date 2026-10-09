@@ -1,14 +1,26 @@
 """Server-owned inference service shared only through the local MCP interface."""
 import json
+import re
 import threading
 from runtime.agents import load_personas, messages_for
-from runtime.local_ollama import ollama
+from runtime.local_ollama import ollama, chat_stream
 from runtime.text_filter import TextHeld
 from runtime.skills import summaries
-from runtime.dlp import gate
+from runtime.dlp import gate, stream_pending
+from runtime.knowledge import augment
 
 PERSONAS=load_personas()
 LOCK=threading.Lock()
+
+def gpu_placement(tag):
+    """Require Ollama's full GPU residency report, not host RAM/usage guesses."""
+    loaded=next((m for m in ollama('/api/ps',timeout=5)['models'] if m.get('name')==tag),None)
+    if loaded is None:
+        return 'unloaded'
+    size=loaded.get('size');vram=loaded.get('size_vram')
+    if type(size) is not int or type(vram) is not int or size<=0 or vram<0:
+        raise ValueError('Invalid GPU placement report')
+    return 'GPU' if vram>=size else 'CPU/GPU' if vram else 'CPU'
 
 def personas():
     return {'personas':[{key:p.get(key,[]) for key in ('id','name','description','model','skills')} for p in PERSONAS.values()],'skills':summaries()}
@@ -17,11 +29,21 @@ def health():
     try:
         result=ollama('/api/tags',timeout=2)
         models=[m['name'] for m in result['models'] if isinstance(m['name'],str)]
-        return {'ollama':'online','models':models,'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
+        placements={tag:gpu_placement(tag) for tag in sorted({p['model'] for p in PERSONAS.values()})}
+        return {'ollama':'online','models':models,'model_processors':placements,'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
     except (OSError,ValueError,KeyError,TypeError):
         return {'ollama':'offline','models':[],'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
 
-def chat(persona, messages, skill=None):
+def context_usage(frame, omitted=0):
+    # Ollama reports actual tokenization after generation. Return counts only;
+    # instruction and evidence text never belong in these diagnostics.
+    prompt=frame.get('prompt_eval_count');output=frame.get('eval_count')
+    if type(prompt) is not int or type(output) is not int or not 0<=prompt<=4096 or not 0<=output<=4096:
+        return None
+    return {'capacity':4096,'prompt_tokens':prompt,'output_tokens':output,
+            'output_limit':1024,'omitted_messages':omitted,'measurement':'ollama-final'}
+
+def chat(persona, messages, skill=None, on_chunk=None):
     try:
         if len(json.dumps({'persona':persona,'messages':messages}).encode())>65536:
             raise ValueError('Input too large')
@@ -33,14 +55,57 @@ def chat(persona, messages, skill=None):
         return {'status':503 if exc.unavailable else 422,'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.','reason':exc.reason,'message_index':exc.index}
     except (ValueError,TypeError):
         return {'status':400,'error':'Invalid persona or conversation'}
+    try:
+        prepared,evidence=augment(prepared,persona)
+    except Exception:
+        return {'status':503,'error':'Approved local evidence unavailable, rejected or exceeds the context budget. Shorten the question or check the library; no internet fallback is used.'}
     if not LOCK.acquire(blocking=False):
         return {'status':409,'error':'Inference busy. Try again shortly.'}
     try:
-        result=ollama('/api/chat',{'model':selected['model'],'messages':prepared,'stream':False,'options':{'temperature':selected['temperature'],'num_ctx':4096,'num_predict':1024}})
+        def release(text, frame):
+            result=gate(text,prepared[0]['content'])
+            if result.get('status')==200:
+                usage=context_usage(frame,max(0,len(messages)+1-len(prepared)))
+                if usage is not None:result['context']=usage
+                result['sources']=[{k:s[k] for k in ('id','title','url','snapshot','locator')} for s in evidence]
+            return result
+        if on_chunk is not None:
+            content='';released=0;placed=False;final_frame={}
+            for frame in chat_stream({'model':selected['model'],'messages':prepared,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':4096,'num_predict':1024,'num_gpu':99}}):
+                delta=frame.get('message',{}).get('content','')
+                if not isinstance(delta,str):
+                    raise ValueError('Invalid model content')
+                content+=delta
+                if len(content.encode())>65536:
+                    return {'status':422,'error':'Output held by local DLP.'}
+                done=frame.get('done') is True
+                if done:final_frame=frame
+                boundaries=list(re.finditer(r'[.!?]["\x27)\]]*\s+|\n\n',content[released:]))
+                cut=len(content) if done else released+boundaries[-1].end() if boundaries else released
+                if cut<=released or (not done and stream_pending(content,prepared[0]['content'])):
+                    continue
+                if not placed or done:
+                    if gpu_placement(selected['model'])!='GPU':
+                        return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
+                    placed=True
+                # Stage and inspect the ENTIRE generated prefix, including
+                # lookahead; never inspect isolated token fragments.
+                checked=gate(content,prepared[0]['content'])
+                if checked.get('status')!=200:
+                    return checked
+                on_chunk(content[released:cut]);released=cut
+            if not content.strip():
+                raise ValueError('Empty model response')
+            if gpu_placement(selected['model'])!='GPU':
+                return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
+            return release(content,final_frame)
+        result=ollama('/api/chat',{'model':selected['model'],'messages':prepared,'stream':False,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':4096,'num_predict':1024,'num_gpu':99}})
+        if gpu_placement(selected['model'])!='GPU':
+            return {'status':503,'error':'Full GPU model placement unavailable. Free GPU memory and retry; CPU fallback replies are disabled.'}
         content=result['message']['content']
         if not isinstance(content,str) or not content.strip():
             raise ValueError('Empty model response')
-        return gate(content,prepared[0]['content'])
+        return release(content,result)
     except (OSError,ValueError,KeyError,TypeError):
         return {'status':502,'error':'Local Ollama unavailable or model missing. No cloud fallback is used.'}
     finally:

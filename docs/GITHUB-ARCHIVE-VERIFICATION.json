@@ -1,0 +1,20 @@
+{
+  "recorded_on": "2026-10-09",
+  "owner": "PaulinoTech1",
+  "repositories": 22,
+  "private_repositories": 2,
+  "materialised_files": 19534,
+  "materialised_bytes": 416186199,
+  "mirror_only_paths": 200,
+  "git_fsck_all_passed": true,
+  "github_index_rows": 7853,
+  "combined_library_documents": 247,
+  "combined_library_passages": 44034,
+  "all_personas_access_verified": true,
+  "python_tests": 97,
+  "ui_checks": 2,
+  "isolation_probes": 6,
+  "mcp_warnings_retained": 8,
+  "raw_private_probe_reports": "ignored data/github",
+  "no_runtime_github_tool": true
+}

@@ -14,6 +14,7 @@ from runtime.skills import ROOT
 POLICY=ROOT/'config/dlp.json'
 QUARANTINE=ROOT/'data/quarantine'
 RULES=(
+    ('host_inventory_claim', re.compile(r'\b(?:my|our|this)\s+(?:station|setup|host|machine|system|cpu|processor|hardware)\b.{0,30}\b(?:uses?|runs?|has|is|powered|equipped)\b.{0,60}\b(?:5900x|ryzen|1245u|3090|rtx)\b|\blarpus\b.{0,60}\b(?:runs on|uses|powered by|equipped with)\b.{0,60}\b(?:5900x|ryzen|1245u|3090|rtx)\b',re.I|re.S)),
     ('credential_token', re.compile(r'\bAKIA[A-Z0-9]{16}\b|\bgh[pousr]_[A-Za-z0-9]{20,}\b|\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b')),
     ('credential', re.compile(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:api[_ -]?key|access[_ -]?token|password|secret)["\x27]?\s*[:=]\s*["\x27]?[^\s"\x27]{8,}',re.I)),
     ('private_address', re.compile(r'\b(?:127|10)\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|\b192\.168\.\d{1,3}\.\d{1,3}\b|\b172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}\b|\blocalhost\b|(?<!\w)::1(?!\w)|\b(?:fc|fd)[0-9a-f]{2}:[0-9a-f:]+',re.I)),
@@ -57,6 +58,28 @@ def inspect_output(text,system_prompt='',settings=None):
             reasons.append('encoded_protected_value')
             break
     return sorted(set(reasons))
+
+def stream_pending(text,system_prompt=''):
+    """Hold incomplete protected strings, including their encoded forms.
+
+    Credential introductions switch to whole-reply buffering. Sentence cuts
+    must include following whitespace so incomplete addresses/tokens stay held.
+    This is deterministic pattern DLP, not semantic confidentiality assurance.
+    """
+    normalized=unicodedata.normalize('NFKC',text)
+    if re.search(r'\b(?:api[_ -]?key|access[_ -]?token|password|secret)["\x27]?\s*[:=]|-----BEGIN',normalized,re.I):
+        return True
+    settings=policy()
+    protected=[str(ROOT),str(Path.home())]+settings['private_values']
+    protected += [line.strip() for line in system_prompt.splitlines() if len(line.strip())>=40]
+    folded=shadow(text)
+    for value in protected:
+        for candidate,output in ((shadow(value),folded),(base64.b64encode(value.encode()).decode(),text),(value.encode().hex(),text.casefold())):
+            # Never release the start of a protected phrase while its completion
+            # is still possible in subsequent model frames.
+            if any(output.endswith(candidate[:n]) for n in range(1,min(len(candidate),len(output))+1)):
+                return True
+    return False
 
 def secure_directory():
     for path in (QUARANTINE.parent,QUARANTINE):

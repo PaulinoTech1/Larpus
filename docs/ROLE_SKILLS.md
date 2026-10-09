@@ -97,3 +97,7 @@ Five locally authored specialist skills per role (60 total). Existing shared ski
 - [Social psychology reasoning](../skills/psych-social-behaviour/SKILL.md): Explain social behaviour with competing hypotheses.
 - [Emotion reflection](../skills/psych-emotion-reflection/SKILL.md): Support non-clinical reflection on emotions and coping.
 - [Communication practice](../skills/psych-communication/SKILL.md): Rehearse respectful listening and boundary-setting.
+
+## Shared Microsoft implementation skills
+
+System Administrator and IT/Cybersecurity LARP Coach additionally offer Intune rollout, Entra identity rollout, Azure landing zone, Microsoft 365 rollout, and BitLocker deployment & recovery. Their original exclusive skills remain. These five local prompt skills coach scoped pilots, verification and rollback; they grant no tenant access. See [references and controls](MICROSOFT_IMPLEMENTATION.md).

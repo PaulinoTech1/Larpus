@@ -1,0 +1,93 @@
+# Updates while Larpus remains usable
+
+The running gateway now uses a frozen source, HUD and knowledge-index snapshot
+under `data/releases/<32-hex-ID>`. Editing this checkout does not change its
+fingerprint, static files or selected agent. Preparation runs beside production;
+only activation briefly interrupts the gateway listeners.
+
+## Owner workflow
+
+From the Windows project directory:
+
+```powershell
+python scripts/releases.py status
+# Edit code/personas/knowledge and prepare reviewed data in the checkout.
+python scripts/releases.py stage
+# Use the ID printed by stage:
+python scripts/releases.py prepare ID
+# After preparation succeeds, apply the update:
+python scripts/releases.py activate ID
+```
+
+Preparation does not activate. It snapshots fixed public source directories plus
+the private approved index, pins every payload file including HUD assets, checks
+that the checkout did not change during copying, and builds a separate rootless
+agent with `--pull=never --network=none`. The existing GPU model and CPU voice
+stay running; a second GPU model is not loaded. Linux runtime wheels come from
+`/home/larpus/build/vendor/runtime-wheels`, with SHA256SUMS checked. The cached
+Python image is resolved to its local immutable image ID before the build.
+
+The candidate must pass Python tests, voice/chat UI tests, isolation probes,
+exact approved MCP discovery and complete static scans. Skills must be clean.
+The MCP finding inventory must match the previously reviewed category/pattern/
+severity/file counts; a changed inventory blocks release for review. This is
+regression screening, not a security guarantee or suppression of warnings.
+Preparation failures leave the current gateway untouched. Fix the checkout and
+stage a new ID; failed snapshots/containers remain available for investigation.
+
+Activation checks payload hashes, deployment and scan receipt pins and live
+isolation again before touching production. The owner-only drain marker refuses
+new inference/voice work with a short retry response while existing gateway
+requests finish. Listeners close, the prepared gateway binds the same local/LAN
+addresses, and functional health must pass within 60 seconds. A failed candidate
+is stopped and the previous release restarted automatically. The active pointer
+is replaced only after readiness succeeds. No update-control HTTP/MCP tool exists.
+
+## Rollback and restart
+
+```powershell
+python scripts/releases.py rollback
+python scripts/releases.py start
+python scripts/releases.py status
+```
+
+`start` recovers a recorded interrupted cutover to the previous release (or keeps
+an already committed/restored healthy gateway recorded in the active pointer), starts
+the existing offline pod/voice/selected agent after reboot, and starts the frozen
+gateway. Existing `start-lan.ps1` and `run-isolated.ps1` prefer this active release.
+Process creation identity is checked before signalling; reused PIDs are not killed.
+Owner update operations use an exclusive Windows file lock; status is read-only.
+If a drain cannot finish within 180 seconds, the updater refuses forced termination.
+An OS/owner-process failure at the instant of launching before recording a PID,
+or a stuck process/occupied port, can still need owner investigation. The journal
+and per-release gateway logs remain under `data/releases`.
+
+## State, ports and limits
+
+- Local HTTP stays `127.0.0.1:8080`, password-free; home LAN HTTPS stays
+  `192.168.1.2:8080`, with the existing password, certificate and subnet rules.
+- Release `data` junctions refer to the same existing owner data. Password hashes,
+  TLS keys, voice deployment profile, recordings and original-document caches
+  are neither copied into release payloads nor rolled back. Release `vendor`
+  junctions use the existing owner preparation/scanner dependencies.
+- Each release has its own `deployment.json`, agent image/container pin and
+  `release-state/security` and `release-state/health`. Its agent is named
+  `larpus-agent-<ID>` in the same `network=none` pod, with the same single
+  quarantine-volume mount and no new ports/devices. Prior containers/images and
+  source snapshots are retained; no automated pruning or model deletion occurs.
+- The first legacy frozen release uses `larpus-agent` and the previous scan/data
+  paths. Its gateway predates graceful draining; the one-time transition requires
+  a quiet chat/voice period. Subsequent releases use the drain watcher.
+- Port rebinding is a brief interruption, not zero downtime. Browser history stays
+  in its existing tab; there is no forced reload. LAN login sessions are held in
+  process memory, so another login is needed after switching gateway processes.
+- Shared Python/scanner dependencies, model/voice replacement, CUDA drivers,
+  Windows/WSL and incompatible data migrations need separate maintenance and
+  rollback plans. Do not replace shared dependencies while production uses them.
+  Never recursively back up through release `data`/`vendor` junctions: select
+  payload files and owner state separately to avoid traversal cycles.
+
+The update manager is an owner Windows CLI, not an agent skill or model tool.
+Use it from this working checkout; frozen release copies are execution payloads,
+not the place to edit or upgrade the owner tooling. Source-tree integrity failures
+remain fail-closed within each release rather than being disabled for availability.

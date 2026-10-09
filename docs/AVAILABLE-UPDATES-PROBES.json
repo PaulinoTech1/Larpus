@@ -1,0 +1,132 @@
+{
+  "recorded_on": "2026-10-09",
+  "active_release": "4055b4e81b204952b30b5acb2b54a8d7",
+  "tests": {
+    "/": {
+      "status": 200
+    },
+    "/api/personas": {
+      "status": 200
+    },
+    "/api/station-health": {
+      "status": 200
+    }
+  },
+  "health": {
+    "generated_at": "2026-10-09T10:16:04.713064+00:00",
+    "status": "degraded",
+    "checks": [
+      {
+        "name": "password",
+        "status": "pass",
+        "message": "Valid password hash configured"
+      },
+      {
+        "name": "local_skills",
+        "status": "pass",
+        "message": "64 registered local prompt-only skills; hashes match"
+      },
+      {
+        "name": "approved_knowledge",
+        "status": "pass",
+        "message": "Read-only hash-verified shared library: 215 documents, 36149 passages with role preferences"
+      },
+      {
+        "name": "input_filter",
+        "status": "pass",
+        "message": "Benign probe allowed and known override held"
+      },
+      {
+        "name": "output_dlp",
+        "status": "pass",
+        "message": "DLP policy and deterministic probes verified; isolated volume configured, per-response storage remains fail-closed"
+      },
+      {
+        "name": "mcp_surface",
+        "status": "pass",
+        "message": "Local stdio handshake and exact approved tool surface verified"
+      },
+      {
+        "name": "models",
+        "status": "pass",
+        "message": "Configured local model tags are installed"
+      },
+      {
+        "name": "model_gpu",
+        "status": "pass",
+        "message": "Configured model fully GPU-resident (Ollama placement verified)"
+      },
+      {
+        "name": "security_scan",
+        "status": "warning",
+        "message": "Scanner evidence is missing, stale, incomplete or has findings; inspect data/security"
+      },
+      {
+        "name": "gpu",
+        "status": "pass",
+        "message": "NVIDIA GeForce RTX 3090 Ti, 24564, 20174"
+      },
+      {
+        "name": "egress_enforcement",
+        "status": "pass",
+        "message": "Rootless sealed containers checked; pod external/LAN connections denied, local Ollama reachable; no model quarantine mount"
+      },
+      {
+        "name": "voice",
+        "status": "pass",
+        "message": "Offline CPU voice worker: pinned image, read-only models, no network/devices"
+      }
+    ],
+    "interval_seconds": 60
+  },
+  "voice": {
+    "status": 200,
+    "keys": [
+      "audio",
+      "mime"
+    ],
+    "audio_present": true
+  },
+  "drain_rollback": {
+    "http": 200,
+    "events": [
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text",
+      "done"
+    ],
+    "rollback_exit": 0,
+    "rollback_output": "Active 49d9138d534f491bbeeae6b21f30f091; previous 4055b4e81b204952b30b5acb2b54a8d7 retained.\n",
+    "seconds": 8.92,
+    "active": "49d9138d534f491bbeeae6b21f30f091"
+  },
+  "startup_failure": {
+    "test": "deliberately exit owned candidate gateway at startup",
+    "result": "previous release restored and functional health passed",
+    "reason": "New gateway exited",
+    "active": "49d9138d534f491bbeeae6b21f30f091"
+  },
+  "invalid_candidate": {
+    "result": "unprepared candidate rejected without changing active gateway PID",
+    "reason": "FileNotFoundError"
+  },
+  "chat_during_edits": {
+    "status": 200,
+    "seconds": 6.694,
+    "active": "49d9138d534f491bbeeae6b21f30f091",
+    "different_checkout_fingerprint": true
+  },
+  "chat_during_scan": {
+    "status": 200,
+    "seconds": 5.508,
+    "answer": "According to the snapshot dated 2026-10-09, ChatGPT Plus is priced at USD 20 per month, though do mind that this covers subscription usage and not separate API token costs."
+  },
+  "lan_https": {
+    "ca_verified": true,
+    "unauthenticated_status": 401
+  }
+}

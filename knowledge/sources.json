@@ -1,0 +1,2119 @@
+{
+  "version": 1,
+  "prepared_for": "Shared approved library; roles identify retrieval preferences, not read restrictions",
+  "documents": [
+    {
+      "id": "ubuntu-24-04",
+      "title": "Ubuntu 24.04 release notes",
+      "url": "https://documentation.ubuntu.com/release-notes/24.04/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Ubuntu",
+        "24.04",
+        "release",
+        "kernel"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "cea77a00d2e95e61c18a7236eb491f999f13225b96259f572d6499612468f24e",
+      "bytes": 180155,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:52.211558+00:00",
+      "status": "downloaded",
+      "indexed_passages": 98
+    },
+    {
+      "id": "ubuntu-25-04",
+      "title": "Ubuntu 25.04 release notes",
+      "url": "https://documentation.ubuntu.com/release-notes/25.04/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Ubuntu",
+        "25.04",
+        "release",
+        "kernel"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "e995d1531087d04c991772832a7552b155e5583b6688e6b68240396445cb6ca8",
+      "bytes": 150720,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:52.532116+00:00",
+      "status": "downloaded",
+      "indexed_passages": 76
+    },
+    {
+      "id": "ubuntu-26-04",
+      "title": "Ubuntu 26.04 release notes",
+      "url": "https://documentation.ubuntu.com/release-notes/26.04/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Ubuntu",
+        "26.04",
+        "release",
+        "kernel"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "4b788e12257df4e5ff49baff8d3db5d28dd87cb541889c34b141fb8400710938",
+      "bytes": 34702,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:53.047928+00:00",
+      "status": "downloaded",
+      "indexed_passages": 4
+    },
+    {
+      "id": "ubuntu-release-cycle",
+      "title": "Ubuntu release and kernel support cycle",
+      "url": "https://ubuntu.com/about/release-cycle/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Ubuntu",
+        "GA",
+        "HWE",
+        "support"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "status": "unavailable",
+      "error": "FileNotFoundError: Cached snapshot unavailable",
+      "download_error": "Unreviewed redirect refused"
+    },
+    {
+      "id": "qubes-requirements",
+      "title": "Qubes OS system requirements",
+      "url": "https://doc.qubes-os.org/en/latest/user/hardware/system-requirements.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Qubes",
+        "VT-d",
+        "AMD-V",
+        "IOMMU",
+        "microcode"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "a130916162f4e9983b1f4f5a8e05627b9220726942730f19e9cdc7caf4fec122",
+      "bytes": 52773,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:56.793039+00:00",
+      "status": "downloaded",
+      "indexed_passages": 10
+    },
+    {
+      "id": "qubes-architecture",
+      "title": "Qubes OS 4.2 architecture",
+      "url": "https://doc.qubes-os.org/en/r4.2/developer/system/architecture.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Qubes",
+        "Xen",
+        "dom0",
+        "isolation"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "687b265386e3097b215faa3171cd8f340593bc2a7caa9a85add7d7b47ffdaa07",
+      "bytes": 44290,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:57.443858+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kali-updating",
+      "title": "Kali Linux updating and rolling snapshots",
+      "url": "https://www.kali.org/docs/general-use/updating-kali/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Kali",
+        "rolling",
+        "snapshot",
+        "update"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "4fb08dc38d89ce42d7335910bcacd617b92968ca151746e24eeaab2c0d737813",
+      "bytes": 40060,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:57.916650+00:00",
+      "status": "downloaded",
+      "indexed_passages": 4
+    },
+    {
+      "id": "kali-kernel",
+      "title": "Kali Linux custom kernel preparation",
+      "url": "https://www.kali.org/docs/development/recompiling-the-kali-linux-kernel/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Kali",
+        "kernel",
+        "build"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "1d965fdf5fe0fbf6a727856164742093b068631a0ddb3813c892b58430e22322",
+      "bytes": 43762,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:56:58.441663+00:00",
+      "status": "downloaded",
+      "indexed_passages": 8
+    },
+    {
+      "id": "rhel-9-6",
+      "title": "Red Hat Enterprise Linux 9.6 release notes",
+      "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/9.6_release_notes/index",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "RHEL",
+        "Red Hat",
+        "9.6",
+        "enterprise",
+        "kernel"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "status": "unavailable",
+      "error": "FileNotFoundError: Cached snapshot unavailable",
+      "download_error": "Publisher HTTP 403"
+    },
+    {
+      "id": "rhel-10-0",
+      "title": "Red Hat Enterprise Linux 10.0 release notes",
+      "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/10.0_release_notes/index",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "RHEL",
+        "Red Hat",
+        "10.0",
+        "enterprise",
+        "kernel"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "status": "unavailable",
+      "error": "FileNotFoundError: Cached snapshot unavailable",
+      "download_error": "Publisher HTTP 403"
+    },
+    {
+      "id": "rhel-10-1",
+      "title": "Red Hat Enterprise Linux 10.1 release notes",
+      "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/10.1_release_notes/index",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "RHEL",
+        "Red Hat",
+        "10.1",
+        "enterprise",
+        "kernel"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "status": "unavailable",
+      "error": "FileNotFoundError: Cached snapshot unavailable",
+      "download_error": "Publisher HTTP 403"
+    },
+    {
+      "id": "fedora-kernel",
+      "title": "Fedora Linux kernel policy and update process",
+      "url": "https://fedoraproject.org/wiki/Kernel",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Fedora",
+        "kernel",
+        "updates",
+        "backports"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "5256c641cebc331d2ceedc979cc6a02618a2a54e7fa18e8b661e17c445a6b010",
+      "bytes": 29289,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:00.406971+00:00",
+      "status": "downloaded",
+      "indexed_passages": 12
+    },
+    {
+      "id": "fedora-44-changes",
+      "title": "Fedora Linux 44 approved changes",
+      "url": "https://fedoraproject.org/wiki/Releases/44/ChangeSet",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Fedora",
+        "44",
+        "changes"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "8caa1d45d7bc7f59c48e127d88c337e99c36f785486d74d1c0bfa1f27a2dc78f",
+      "bytes": 70086,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:02.059262+00:00",
+      "status": "downloaded",
+      "indexed_passages": 27
+    },
+    {
+      "id": "fedora-kernel-package",
+      "title": "Fedora kernel stable and testing package versions",
+      "url": "https://packages.fedoraproject.org/pkgs/kernel/kernel/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Fedora",
+        "kernel",
+        "stable",
+        "testing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "0522d5d4f5baff0bca8d2e4fd86562404e303ba47d5ba80a073f7ea646edc466",
+      "bytes": 6116,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:03.344808+00:00",
+      "status": "downloaded",
+      "indexed_passages": 3
+    },
+    {
+      "id": "kernel-current",
+      "title": "Linux kernel current stable mainline and longterm releases",
+      "url": "https://www.kernel.org/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "stable",
+        "mainline",
+        "2026"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "d6636e71a1c874db5a9facce9e15dee1160e1b8c0964540e0cd70b819bd03105",
+      "bytes": 19137,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:03.695657+00:00",
+      "status": "downloaded",
+      "indexed_passages": 2
+    },
+    {
+      "id": "kernel-support",
+      "title": "Linux kernel release categories and longterm support",
+      "url": "https://www.kernel.org/releases.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "LTS",
+        "support",
+        "2024",
+        "2025",
+        "2026"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "ab28da40ccf13e3ca3e2bef74b7c8041022da43923b1c17298409a2948e4edb3",
+      "bytes": 14973,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:04.019525+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-history",
+      "title": "Linux kernel versioned documentation release index",
+      "url": "https://www.kernel.org/doc/html/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "versions",
+        "2024",
+        "2025",
+        "2026"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "3d3a4deef6ae1772d4f327739374032175d0b75a6f22ad484864bccf08f1caa5",
+      "bytes": 10564,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:04.311635+00:00",
+      "status": "downloaded",
+      "indexed_passages": 4
+    },
+    {
+      "id": "kernel-6-7",
+      "title": "Linux kernel 6.7 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.7/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.7",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "86fcd2bed7d4aac38b622edcd5dde6f6fb10f484596d044c9108cc7f62704826",
+      "bytes": 27516,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:04.592896+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-8",
+      "title": "Linux kernel 6.8 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.8/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.8",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "8e4e52561c131fdee6d8fc46bf102971a0b3610c870e4f94761082d818ae7079",
+      "bytes": 28412,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:04.916095+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-9",
+      "title": "Linux kernel 6.9 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.9/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.9",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "cee616df2b084bba98385307712a58e8d926c54af2e8da22a4e10fc3e927929b",
+      "bytes": 28701,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:05.234964+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-10",
+      "title": "Linux kernel 6.10 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.10/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.10",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "465c6e6c240f3d0c6e87397d343c5888a34d9e9d2502db9ec7ccd9b13e2fde14",
+      "bytes": 28702,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:05.552967+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-11",
+      "title": "Linux kernel 6.11 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.11/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.11",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "5d9138f00b7cf9912fbc2248cebfc376cfcbf16cca9bb9b56b4928bb39a227c7",
+      "bytes": 28433,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:05.861736+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-12",
+      "title": "Linux kernel 6.12 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.12/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.12",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "8abbfa46908e3c5bfae5069e514fe16c6b6fbf0a3946cdab31f032f530437a16",
+      "bytes": 28447,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:06.191954+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-13",
+      "title": "Linux kernel 6.13 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.13/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.13",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "98a5511d236e09987e6701aa6b4b0825d1caeb58016d55212be9d3987ef449df",
+      "bytes": 28447,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:06.499022+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "kernel-6-14",
+      "title": "Linux kernel 6.14 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.14/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.14",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "75982b5150e8f1a4f1d0afdc16a08547b0fc8284a5107c24793e3b3f784270fd",
+      "bytes": 31702,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:06.830927+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-6-15",
+      "title": "Linux kernel 6.15 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.15/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.15",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "fe32f27dcee06621c8f1825b0db807127d8609775ab7069f36f91be53cb950c9",
+      "bytes": 31434,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:07.130789+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-6-16",
+      "title": "Linux kernel 6.16 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.16/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.16",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "278e8f9a5d22493ee5494b5202f2eee47fc638b85d1850a46ee66cc8c2ad97f9",
+      "bytes": 31434,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:07.479200+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-6-17",
+      "title": "Linux kernel 6.17 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.17/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.17",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "27b46f4d4976a6b2b075ac3a1f3f087e7ed0d930e55893de249db693aa1a5fed",
+      "bytes": 31434,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:07.809378+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-6-18",
+      "title": "Linux kernel 6.18 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.18/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.18",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "d91468a65fec57240b46f30d2df21409b1614496b19d701fc61f49e50840cacf",
+      "bytes": 31296,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:08.109233+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-6-19",
+      "title": "Linux kernel 6.19 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v6.19/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "6.19",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "701c7508bf22fd5d09d98220a61bdaf0f958e0894dcaded1b811d25291c10e77",
+      "bytes": 31296,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:08.449188+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-7-0",
+      "title": "Linux kernel 7.0 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v7.0/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "7.0",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "bc52833cf7ca77a7422684818e56a2607f13416e62f70f4ecbf8d9df85985ba1",
+      "bytes": 31295,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:08.779367+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-7-1",
+      "title": "Linux kernel 7.1 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v7.1/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "7.1",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "97588899aa803a43156920b27a4a7ac9a7cb8159e75dc1af760a17508f333715",
+      "bytes": 31558,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:09.094028+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "kernel-7-2",
+      "title": "Linux kernel 7.2 administrator documentation",
+      "url": "https://www.kernel.org/doc/html/v7.2/admin-guide/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "7.2",
+        "2024-present"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "646ea767aa816a2a1d93fc7205ac2899bf2b2bb8499dacaa1820c38e56161e8d",
+      "bytes": 31558,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:09.382927+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "amd-pstate",
+      "title": "AMD P-State CPU performance scaling driver",
+      "url": "https://www.kernel.org/doc/html/latest/admin-guide/pm/amd-pstate.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "CPU",
+        "power",
+        "memory"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "5f35a51a48f7c161d59c2b542ae89daadc15e7ffafa94c6f0bada5b36dd679c9",
+      "bytes": 83738,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:09.799421+00:00",
+      "status": "downloaded",
+      "indexed_passages": 43
+    },
+    {
+      "id": "intel-pstate",
+      "title": "Intel P-State CPU performance scaling driver",
+      "url": "https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "CPU",
+        "power",
+        "memory"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "d1d1bfeaf91f8ce8a8774cd72b0f5cf5b76aab83883fca582ecbb0c313d4f915",
+      "bytes": 81213,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:10.207943+00:00",
+      "status": "downloaded",
+      "indexed_passages": 51
+    },
+    {
+      "id": "cgroup-v2",
+      "title": "Linux cgroup v2 resource control",
+      "url": "https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "CPU",
+        "power",
+        "memory"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "accd07d731de0c1567117c4d632c8de35bbc49d6e8c26833d5e8e6217a1fe914",
+      "bytes": 172971,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:10.592720+00:00",
+      "status": "downloaded",
+      "indexed_passages": 162
+    },
+    {
+      "id": "kernel-security",
+      "title": "Linux security modules",
+      "url": "https://www.kernel.org/doc/html/latest/admin-guide/LSM/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "CPU",
+        "power",
+        "memory"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "6e32434bade2b2e82882a127c691b8b9ccdb17b43f1f529f1a5b30c1c967f102",
+      "bytes": 13627,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:10.903651+00:00",
+      "status": "downloaded",
+      "indexed_passages": 3
+    },
+    {
+      "id": "kernel-scheduling",
+      "title": "Linux CPU scheduling documentation",
+      "url": "https://www.kernel.org/doc/html/latest/scheduler/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "CPU",
+        "power",
+        "memory"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "7f698825f87c927f0c18da37ab6b6d816385d9440a27b175dea13e7e874561f8",
+      "bytes": 11557,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:11.232200+00:00",
+      "status": "downloaded",
+      "indexed_passages": 1
+    },
+    {
+      "id": "kernel-memory",
+      "title": "Linux memory management documentation",
+      "url": "https://www.kernel.org/doc/html/latest/mm/index.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Linux",
+        "kernel",
+        "CPU",
+        "power",
+        "memory"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "sha256": "5a0c2f15abf22b17b05ba695fb5dd41b87b5fc052c231259c2db3285b0e2dded",
+      "bytes": 15696,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T07:57:11.507051+00:00",
+      "status": "downloaded",
+      "indexed_passages": 3
+    },
+    {
+      "id": "intel-i5-1245u",
+      "title": "Intel Core i5-1245U official product specifications",
+      "url": "https://www.intel.com/content/www/us/en/products/sku/226260/intel-core-i51245u-processor-12m-cache-up-to-4-40-ghz/specifications.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "CPU",
+        "Intel",
+        "Alder Lake",
+        "i5-1245U",
+        "consumer",
+        "hybrid"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "status": "unavailable",
+      "error": "FileNotFoundError: Cached snapshot unavailable",
+      "download_error": "TLS certificate chain could not be verified; verification was not disabled"
+    },
+    {
+      "id": "amd-5900x",
+      "title": "AMD Ryzen 9 5900X official product specifications",
+      "url": "https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-9-5900x.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "CPU",
+        "AMD",
+        "Zen 3",
+        "Ryzen",
+        "5900X",
+        "consumer"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, do not redistribute without reviewing source terms.",
+      "status": "unavailable",
+      "error": "FileNotFoundError: Cached snapshot unavailable",
+      "download_error": "Publisher challenge/error page refused"
+    },
+    {
+      "id": "intel-i5-1245u-brief",
+      "title": "Reviewed brief: Intel Core i5-1245U specifications",
+      "url": "https://www.intel.com/content/www/us/en/products/sku/226260/intel-core-i51245u-processor-12m-cache-up-to-4-40-ghz/specifications.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "content_type": "text/plain",
+      "sha256": "22c3c52a94f698232a713791c829deae3d5eef921faa81087037a946731ee494",
+      "bytes": 537,
+      "rights": "Original factual paraphrase of the cited publisher document; source retains its rights.",
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T08:03:44.103355+00:00"
+    },
+    {
+      "id": "amd-5900x-brief",
+      "title": "Reviewed brief: AMD Ryzen 9 5900X specifications",
+      "url": "https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-9-5900x.html",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "content_type": "text/plain",
+      "sha256": "08eb7546f32ba303d5776b1adfd54e17940bac419f74083d4094834fe7a2ba68",
+      "bytes": 522,
+      "rights": "Original factual paraphrase of the cited publisher document; source retains its rights.",
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T08:03:44.103355+00:00"
+    },
+    {
+      "id": "rhel-9-6-brief",
+      "title": "Reviewed brief: Red Hat Enterprise Linux 9.6 kernel",
+      "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/9.6_release_notes/index",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "content_type": "text/plain",
+      "sha256": "39e64924829250a6b9021f8e86a6d146743634978adb57781d4f0ffefcf3f7be",
+      "bytes": 462,
+      "rights": "Original factual paraphrase of the cited publisher document; source retains its rights.",
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T08:03:44.103355+00:00"
+    },
+    {
+      "id": "rhel-10-0-brief",
+      "title": "Reviewed brief: Red Hat Enterprise Linux 10.0 kernel and architecture",
+      "url": "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/10/html-single/10.0_release_notes/index",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "content_type": "text/plain",
+      "sha256": "f9b254279734f8121884cd371f65ec6377fef494a0f137919acda90b2be8ad9e",
+      "bytes": 499,
+      "rights": "Original factual paraphrase of the cited publisher document; source retains its rights.",
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T08:03:44.103355+00:00"
+    },
+    {
+      "id": "intel-core-comparison",
+      "title": "Intel Core laptop CPU comparison chart",
+      "url": "https://cdrdv2-public.intel.com/841783/Intel-Core-Comparsion.pdf",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Local publisher snapshot; review terms before redistribution.",
+      "sha256": "a46da8fe343bad2e005d1a69b3103f023d8bd7a44b8098d2a815608ea3e46981",
+      "bytes": 2216381,
+      "content_type": "application/pdf",
+      "fetched_at": "2026-10-09T08:03:45.125186+00:00",
+      "status": "downloaded",
+      "indexed_passages": 121
+    },
+    {
+      "id": "ubuntu-26-04-changes",
+      "title": "Ubuntu 26.04 changes since 25.10",
+      "url": "https://documentation.ubuntu.com/release-notes/26.04/changes-since-previous-interim/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Local publisher snapshot; review terms before redistribution.",
+      "sha256": "9c85355c8b1b9f94fd3a00550b5dafb032eed3f0ad73ca17b90c6ccbf9c8c0d8",
+      "bytes": 171880,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T08:03:45.462316+00:00",
+      "status": "downloaded",
+      "indexed_passages": 75
+    },
+    {
+      "id": "ubuntu-26-04-summary",
+      "title": "Ubuntu 26.04 summary since 24.04 LTS",
+      "url": "https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/",
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Local publisher snapshot; review terms before redistribution.",
+      "sha256": "a7737b24029288a69a2fd14191df6086a181b5a0ae9613ec762ec7c9ad5b2ae9",
+      "bytes": 179350,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T08:03:45.769516+00:00",
+      "status": "downloaded",
+      "indexed_passages": 80
+    },
+    {
+      "id": "ubuntu-ga-kernel-comparison",
+      "title": "Reviewed comparison: Ubuntu 24.04 25.04 26.04 GA Linux kernels",
+      "url": "https://documentation.ubuntu.com/release-notes/26.04/changes-since-previous-interim/",
+      "evidence_urls": [
+        "https://documentation.ubuntu.com/release-notes/24.04/",
+        "https://documentation.ubuntu.com/release-notes/25.04/",
+        "https://documentation.ubuntu.com/release-notes/26.04/"
+      ],
+      "roles": [
+        "linux-kernel-expert",
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "content_type": "text/plain",
+      "sha256": "f98e2a312ba0629a68efdddeda557bc001b59bfa83db572a0c81603f8f671852",
+      "bytes": 565,
+      "rights": "Original factual comparison; publisher sources retain their rights.",
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T08:11:50.500921+00:00"
+    },
+    {
+      "id": "chatgpt-plus-codex-brief",
+      "title": "ChatGPT Plus Codex subscription pricing and usage",
+      "url": "https://learn.chatgpt.com/docs/pricing",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.736190+00:00",
+      "sha256": "9228baf85bdbd353631b2f8893c89939db452e4a04ef9de79386278e7e0b5de3",
+      "bytes": 707,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "openai-sol-61-brief",
+      "title": "GPT-6.1 Sol model standard API pricing and capabilities",
+      "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.737190+00:00",
+      "sha256": "1d024229299a9145fb7be6342cb86f573920256c8a36c62b6dcc0b5872b8e973",
+      "bytes": 790,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "openai-astra-6-brief",
+      "title": "GPT-6 Astra 6.0 model standard API pricing and capabilities",
+      "url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.737190+00:00",
+      "sha256": "7dbdec22cafb9de5cfb75bb08794ff77fe2744ee337ed57957365abd19e2351e",
+      "bytes": 746,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "supergrok-pricing-brief",
+      "title": "SuperGrok Grok subscription pricing and features",
+      "url": "https://x.ai/pricing",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.737190+00:00",
+      "sha256": "c1f1de5d25f6816e856966cdf02bb461c8405f6ce2d098703b7733016f9f56c3",
+      "bytes": 568,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "grok-bot-brief",
+      "title": "Grok Bot capabilities subscription usage and cloud computer",
+      "url": "https://x.ai/bot",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.737190+00:00",
+      "sha256": "100d30da02a7c85601c67a89ebf6bed9ea7cd9dada9b42dee197ecfbbd164c77",
+      "bytes": 757,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "claude-pro-brief",
+      "title": "Claude Pro USD 20 subscription pricing Claude Code and API distinction",
+      "url": "https://support.claude.com/en/articles/8325606-what-is-the-pro-plan",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.738308+00:00",
+      "sha256": "7a1281c6749c2eb82b2703b2723e8fdb7b50bc509c71b1b7daaf7ce861e8b85f",
+      "bytes": 717,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "deepseek-v4-pricing-brief",
+      "title": "DeepSeek V4 Pro Flash V4.1 current API pricing peak off-peak cache rates",
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T09:04:49.738308+00:00",
+      "sha256": "49ca09144ad56806eca55ecd15cd97b2becfb1fd1e1ff7f303633331b5a19fdb",
+      "bytes": 741,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase of reviewed official publisher facts; not a full publisher manual or service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "chatgpt-plus-codex",
+      "title": "Official ChatGPT Plus Codex pricing",
+      "url": "https://learn.chatgpt.com/docs/pricing",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "080e152aedd5bc6cd5accdccbbb1562a6a6446f025770ea97f33aa03aab2955e",
+      "bytes": 696691,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:13.069639+00:00",
+      "status": "downloaded",
+      "indexed_passages": 21
+    },
+    {
+      "id": "openai-sol-61",
+      "title": "Official GPT-6.1 Sol API model",
+      "url": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "34fdf00b7d7651419dd2a1e3a57825aeec7fae44b2ba7a42f3040799ffe862f4",
+      "bytes": 445767,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:13.573312+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "openai-astra-6",
+      "title": "Official GPT-6 Astra API model",
+      "url": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "9d665a434140fa11cd2c6cf18179928cf23071c0e463b1a77ffba132a6d797c3",
+      "bytes": 444870,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:14.017721+00:00",
+      "status": "downloaded",
+      "indexed_passages": 4
+    },
+    {
+      "id": "grok-pricing",
+      "title": "Official Grok SuperGrok pricing",
+      "url": "https://x.ai/pricing",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "c7c51281726ef3dd5ab4b4c13faf69716dcba7134df46dfd2c3b162803d5a1e7",
+      "bytes": 273020,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:14.397801+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "grok-bot",
+      "title": "Official Grok Bot overview",
+      "url": "https://x.ai/bot",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "02db7ddcdbb76cbb11e020176c89725c9d2c3c950045cbf29afc73c519cfe831",
+      "bytes": 282248,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:14.772479+00:00",
+      "status": "downloaded",
+      "indexed_passages": 8
+    },
+    {
+      "id": "claude-pro",
+      "title": "Official Claude Pro plan",
+      "url": "https://support.claude.com/en/articles/8325606-what-is-the-pro-plan",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "3ef30c36319d5973a0b84add76280b753280bc4dfe057b626272776c329d7255",
+      "bytes": 208455,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:15.708717+00:00",
+      "status": "downloaded",
+      "indexed_passages": 6
+    },
+    {
+      "id": "deepseek-pricing",
+      "title": "Official DeepSeek V4 Pro and Flash API pricing",
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Publisher retains copyright; local reference snapshot, review terms before redistribution.",
+      "sha256": "210f102275ccf1a6542f08a3bc9e4b4c7c83278cb74b35217bffa112df6363b2",
+      "bytes": 23982,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T09:05:16.147649+00:00",
+      "status": "downloaded",
+      "indexed_passages": 1
+    },
+    {
+      "id": "meta-muse-agent-brief",
+      "title": "Meta Muse personal AI agent free tier capabilities and cloud VM",
+      "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T10:38:43.406567+00:00",
+      "sha256": "cc16c360bd03b550a2d25a9a0675cebe038593a074fcde081ce9c5158646cf13",
+      "bytes": 712,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase and explicitly labelled uncertainty; documentation only, no service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "meta-muse-referral-brief",
+      "title": "Meta Muse referral recommendations invite billion token credit conditions",
+      "url": "https://x.com/alexandr_wang/status/2100256890559308197",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T10:38:43.406567+00:00",
+      "sha256": "e249f1ba7070770dd89fab1c585d849ae24210fbf73ecc0aa093896e1fe14399",
+      "bytes": 764,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase and explicitly labelled uncertainty; documentation only, no service integration.",
+      "review_basis": "Owner-provided claim and secondary reports; primary announcement inaccessible; brief explicitly states uncertainty.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "meta-muse-spark-brief",
+      "title": "Meta Muse Spark AI model family versions 1.1 1.2 1.3 capabilities",
+      "url": "https://dev.meta.ai/docs/models",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T10:38:43.406567+00:00",
+      "sha256": "2ab4699290f00e1b1500ce9d3c7f8b923d1f00b33a52846724ccdc07857295a7",
+      "bytes": 666,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase and explicitly labelled uncertainty; documentation only, no service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "meta-muse-api-pricing-brief",
+      "title": "Meta Muse Spark API pricing standard contributor token credits distinction",
+      "url": "https://dev.meta.ai/docs/pricing-rate-limits",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T10:38:43.406567+00:00",
+      "sha256": "c396800b88da7ce8bcc696b0569319cdda9217c101c23c0c7a6a631f5afcf6d2",
+      "bytes": 616,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase and explicitly labelled uncertainty; documentation only, no service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "meta-muse-related-models-brief",
+      "title": "Meta Muse Spark related AI families Image Voice Transcribe SAM Glimmer",
+      "url": "https://dev.meta.ai/docs/models",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T10:38:43.406567+00:00",
+      "sha256": "8cc28c7157587ede0fd02659b7ca11e76f0cd00884a43495bf25c7ff2a737f02",
+      "bytes": 586,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase and explicitly labelled uncertainty; documentation only, no service integration.",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "grok-muse-agents-comparison-brief",
+      "title": "Grok Bot versus Meta Muse agents practical recommendation differences",
+      "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "products",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "kind": "reviewed-local-brief",
+      "snapshot": "2026-10-09",
+      "created_at": "2026-10-09T10:38:43.406567+00:00",
+      "sha256": "96cb035fbdc93f5380d9db3418b3417cd024d8aad8f191aaf01e9904e715d8af",
+      "bytes": 835,
+      "content_type": "text/plain",
+      "rights": "Original factual paraphrase and explicitly labelled uncertainty; documentation only, no service integration.",
+      "reference_urls": [
+        "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+        "https://x.ai/bot"
+      ],
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "meta-muse-launch",
+      "title": "Meta Muse official personal agent launch free tier Secure VM",
+      "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "snapshot": "2026-10-09",
+      "sha256": "393bd29125ad6689dbf82f08138ebf9ec70e640aa1c33d34238331a4ea7dc4e2",
+      "bytes": 646783,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T10:39:03.611796+00:00",
+      "status": "downloaded",
+      "indexed_passages": 9
+    },
+    {
+      "id": "meta-models",
+      "title": "Meta Muse Spark model family official catalogue",
+      "url": "https://dev.meta.ai/docs/models",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "snapshot": "2026-10-09",
+      "sha256": "f22d48817932d4addd4e0e76abd283d7950e40a0715c014bbb539eaa2f180c94",
+      "bytes": 261621,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T10:39:04.222490+00:00",
+      "status": "downloaded",
+      "indexed_passages": 8
+    },
+    {
+      "id": "meta-api-pricing",
+      "title": "Meta Muse Spark Model API official pricing",
+      "url": "https://dev.meta.ai/docs/pricing-rate-limits",
+      "roles": [
+        "home-assistant"
+      ],
+      "topics": [
+        "AI",
+        "agents",
+        "models",
+        "pricing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "snapshot": "2026-10-09",
+      "sha256": "38f8f8488bd94f04d07eaa7b7adc8215303f1c1c42555ce1f4c6054c004851d9",
+      "bytes": 220493,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T10:39:04.788111+00:00",
+      "status": "downloaded",
+      "indexed_passages": 9
+    },
+    {
+      "id": "ms-intune-planning",
+      "title": "Microsoft Intune deployment planning",
+      "url": "https://learn.microsoft.com/en-us/intune/fundamentals/planning-guide",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Intune",
+        "deployment",
+        "licensing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "e26fcb91ced6c7ba10f875660d940bd2f9f22a8e270fecacab686d6d6ef47b96",
+      "bytes": 112519,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:03.349424+00:00",
+      "status": "downloaded",
+      "indexed_passages": 56
+    },
+    {
+      "id": "ms-intune-windows",
+      "title": "Microsoft Intune Windows deployment",
+      "url": "https://learn.microsoft.com/en-us/intune/fundamentals/platform-guide-windows",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Intune",
+        "Windows",
+        "enrollment"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "8054583e1be4057a52b78ba5235af58a71ce4665a203549ae6e5bef9f671da74",
+      "bytes": 76549,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:03.657245+00:00",
+      "status": "downloaded",
+      "indexed_passages": 24
+    },
+    {
+      "id": "ms-intune-enrollment",
+      "title": "Microsoft Intune enrollment guide",
+      "url": "https://learn.microsoft.com/en-us/intune/device-enrollment/guide",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Intune",
+        "MDM",
+        "MAM",
+        "enrollment"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "506f9d0dc3038860b6be37a12e5166739d7e4904b2c2d283c7b5714ac9820bd6",
+      "bytes": 60519,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:03.931460+00:00",
+      "status": "downloaded",
+      "indexed_passages": 11
+    },
+    {
+      "id": "ms-entra-ca",
+      "title": "Microsoft Entra ID Conditional Access deployment",
+      "url": "https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Entra",
+        "Conditional Access",
+        "report-only"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "b1e1079f61d4663ffb05220fad6b75c2fa9aca181786ec36f446f0c6f6997f96",
+      "bytes": 80410,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:04.218098+00:00",
+      "status": "downloaded",
+      "indexed_passages": 28
+    },
+    {
+      "id": "ms-entra-emergency",
+      "title": "Microsoft Entra ID emergency access accounts",
+      "url": "https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Entra",
+        "emergency access",
+        "lockout"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "25b594b19f97d7e5921fddd37d7f8431618b546622c8b3d0d151a30c1176beeb",
+      "bytes": 73496,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:04.548448+00:00",
+      "status": "downloaded",
+      "indexed_passages": 24
+    },
+    {
+      "id": "ms-azure-landing",
+      "title": "Microsoft Azure landing zone design areas",
+      "url": "https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-areas",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Azure",
+        "landing zone",
+        "governance"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "d547eacf816b51bb0ca1336d8b579d3f8b5a38bb78412970e49867366ab09684",
+      "bytes": 54310,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:04.859126+00:00",
+      "status": "downloaded",
+      "indexed_passages": 7
+    },
+    {
+      "id": "ms-azure-rbac",
+      "title": "Microsoft Azure RBAC best practices",
+      "url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/best-practices",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Azure",
+        "RBAC",
+        "least privilege"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "526c98015ee040526342fa999b92404a65ce4ba1f5788a847bd51ac21ab0078b",
+      "bytes": 53743,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:05.212034+00:00",
+      "status": "downloaded",
+      "indexed_passages": 7
+    },
+    {
+      "id": "ms-m365-deployment",
+      "title": "Microsoft 365 enterprise deployment",
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/enterprise/setup-overview-for-enterprises?view=o365-worldwide",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Microsoft 365",
+        "M365",
+        "deployment"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "fcb5183fa5951bec7971da09b2c47b152eb4af59ada300e28948734795ce6a46",
+      "bytes": 52545,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:28.822240+00:00",
+      "status": "downloaded",
+      "indexed_passages": 5
+    },
+    {
+      "id": "ms-bitlocker-overview",
+      "title": "Microsoft BitLocker overview and edition requirements",
+      "url": "https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "BitLocker",
+        "Windows Home",
+        "encryption"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "5d7d2263a3a905931e1dc74c755a58a47274f01e909c459ed8a409b42dc34ac7",
+      "bytes": 63528,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:29.442264+00:00",
+      "status": "downloaded",
+      "indexed_passages": 15
+    },
+    {
+      "id": "ms-bitlocker-recovery",
+      "title": "Microsoft BitLocker recovery overview",
+      "url": "https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/recovery-overview",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "BitLocker",
+        "recovery",
+        "escrow"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "c435367a8aaceb9201f1ad0e7b1d7b0aea830262ac46c9379e15724d69ac734c",
+      "bytes": 72427,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:30.057942+00:00",
+      "status": "downloaded",
+      "indexed_passages": 24
+    },
+    {
+      "id": "ms-intune-bitlocker",
+      "title": "Microsoft Intune BitLocker encryption deployment",
+      "url": "https://learn.microsoft.com/en-us/intune/device-configuration/endpoint-security/encrypt-bitlocker-windows",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Intune",
+        "BitLocker",
+        "encryption"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "sha256": "1472978ecf1aa07b3d755e5f2edde0ddbab2ff83a8f62931071fe244d3c5c1da",
+      "bytes": 82388,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-09T11:32:30.680055+00:00",
+      "status": "downloaded",
+      "indexed_passages": 27
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/intune/fundamentals/planning-guide",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Intune",
+        "deployment",
+        "licensing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "id": "ms-intune-planning-brief",
+      "title": "Intune deployment implementation brief",
+      "kind": "reviewed-local-brief",
+      "sha256": "02c9a7beadddf27ac74a3ef4199ee0bafe4fb1bcfb6692be562a3dade07f37a1",
+      "bytes": 477,
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Entra",
+        "Conditional Access",
+        "report-only"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "id": "ms-entra-ca-brief",
+      "title": "Entra ID Conditional Access implementation brief",
+      "kind": "reviewed-local-brief",
+      "sha256": "d47082ed98c4025c2e140a9ce6ba8c01bf4e5833e3baff2a146fd53823068972",
+      "bytes": 522,
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-areas",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Azure",
+        "landing zone",
+        "governance"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "id": "ms-azure-landing-brief",
+      "title": "Azure landing zone implementation brief",
+      "kind": "reviewed-local-brief",
+      "sha256": "b742f30d19fe4be83eae37f0a6409696c3d3feca831c8d848c759c92673875d7",
+      "bytes": 464,
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/microsoft-365/enterprise/setup-overview-for-enterprises?view=o365-worldwide",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Microsoft 365",
+        "M365",
+        "deployment"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "id": "ms-m365-deployment-brief",
+      "title": "Microsoft 365 M365 implementation brief",
+      "kind": "reviewed-local-brief",
+      "sha256": "96d5d375b898523c40c040d91a2dd5a69e8fd198daa0f029a008ad7b28679698",
+      "bytes": 481,
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09"
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/",
+      "roles": [
+        "system-administrator",
+        "it-larp-coach"
+      ],
+      "topics": [
+        "BitLocker",
+        "Windows Home",
+        "encryption"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-09",
+      "rights": "Microsoft retains copyright; owner-only local reference snapshot. Review source terms before redistribution.",
+      "id": "ms-bitlocker-overview-brief",
+      "title": "BitLocker Windows edition and recovery implementation brief",
+      "kind": "reviewed-local-brief",
+      "sha256": "91f264e107d3184e7998ab05ede448996fb7aa1d569440f7c9407137c453d17f",
+      "bytes": 545,
+      "status": "prepared-brief",
+      "indexed_passages": 1,
+      "snapshot": "2026-10-09"
+    }
+  ]
+}

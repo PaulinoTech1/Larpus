@@ -17,11 +17,14 @@ class LocalSkillTests(unittest.TestCase):
         personas=load_personas()
         registered=skills.load_skills()
         self.assertEqual(len(personas),12)
-        self.assertEqual(len(registered),64)
+        self.assertEqual(len(registered),69)
+        microsoft={s for s in registered if s.startswith('ms-')}
+        self.assertEqual(len(microsoft),5)
         used=set()
         history=[{'role':'user','content':'Explain a scoped example.'}]
         for persona in personas.values():
-            specialist=set(persona['skills'])-shared
+            specialist=set(persona['skills'])-shared-microsoft
+            self.assertEqual(set(persona['skills']) & microsoft,microsoft if persona['id'] in ('system-administrator','it-larp-coach') else set())
             self.assertEqual(len(specialist),5,persona['id'])
             self.assertFalse(used & specialist,persona['id'])
             used.update(specialist)
@@ -33,7 +36,7 @@ class LocalSkillTests(unittest.TestCase):
                     if other['id']!=persona['id']:
                         with self.assertRaises(ValueError):
                             messages_for(other,history,identifier)
-        self.assertEqual(used,set(registered)-shared)
+        self.assertEqual(used,set(registered)-shared-microsoft)
 
     def test_registry_capacity_is_bounded(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -92,7 +95,7 @@ class HealthTests(unittest.TestCase):
             tools=[{'name':name} for name in ('chat_local','list_personas','local_status')]
             write_json(approved,{'tools':tools})
             write_json(root/'summary.json',{'fingerprint':'fixture','status':'pass'})
-            with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'discover',return_value=tools),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen2.5:14b']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
+            with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'discover',return_value=tools),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
                 report=health.check(False)
                 self.assertEqual(report['status'],'degraded')
                 self.assertTrue(any(c['status']=='unverified' for c in report['checks']))

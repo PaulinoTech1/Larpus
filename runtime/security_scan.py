@@ -12,7 +12,7 @@ from mcp import Client
 from runtime.mcp_client import child_parameters
 from runtime.skills import ROOT, load_skills
 
-DATA=ROOT/'data/security'
+DATA=ROOT/('release-state/security' if (ROOT/'deployment.json').is_file() else 'data/security')
 APPROVED=ROOT/'config/mcp-approved.json'
 SCAN_LOCK=threading.Lock()
 
@@ -30,6 +30,10 @@ def fingerprint():
     paths += [ROOT/'scripts/offline_skillspector.py',ROOT/'scripts/protect-quarantine.ps1',ROOT/'config/dlp.json',ROOT/'config/models.json',ROOT/'config/mcp-capabilities.json',APPROVED]
     paths += [ROOT/'scripts/run-isolated.ps1',ROOT/'scripts/export-isolation-source.ps1',ROOT/'scripts/transfer-isolation-source.py',ROOT/'scripts/setup-voice.py']+list((ROOT/'deploy/windows-home').rglob('*'))+list((ROOT/'deploy/voice').rglob('*'))
     paths += [ROOT/'.containerignore',ROOT/'.gitattributes',ROOT/'config/isolation.json']
+    paths += [ROOT/'knowledge/manifest.json',ROOT/'knowledge/sources.json',ROOT/'scripts/prepare-knowledge.py']
+    paths += [ROOT/'scripts/test-local.py',ROOT/'requirements-knowledge.txt']+list((ROOT/'knowledge/briefs').glob('*.txt'))
+    paths += [ROOT/'scripts/releases.py']
+    paths += [ROOT/'scripts/github_archive.py',ROOT/'knowledge/github-manifest.json']
     digest=hashlib.sha256()
     for path in sorted({p for p in paths if p.is_file()}):
         if '__pycache__' in path.parts:
@@ -60,7 +64,7 @@ def scan(descriptors):
         capabilities=json.loads((ROOT/'config/mcp-capabilities.json').read_text(encoding='utf-8'))
         (target/'SKILL.md').write_text('---\nname: larpus-mcp\ndescription: Local Larpus MCP server inventory and source.\npermissions: '+json.dumps(capabilities['permissions'])+'\n---\n\n# Local MCP inventory\n\n'+json.dumps(descriptors,indent=2)+'\n\n# Declared scope (documentation, not an OS grant)\n'+json.dumps(capabilities,indent=2),encoding='utf-8')
         # Only fixed source files; never include credentials, recordings or prompts.
-        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py'):
+        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py'):
             shutil.copyfile(ROOT/'runtime'/name,target/name)
         (target/'scripts').mkdir(exist_ok=True)
         shutil.copyfile(ROOT/'scripts/protect-quarantine.ps1',target/'scripts/protect-quarantine.ps1')

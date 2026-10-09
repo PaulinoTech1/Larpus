@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "private_values": ["RTX 3090 Ti", "Ryzen 9 5900X", "qwen2.5:14b", "qwen3:14b", "qwen3:30b-a3b-instruct-2507-q4_K_M"],
+  "private_values": ["RTX 3090 Ti", "qwen2.5:14b", "qwen3:14b", "qwen3:30b-a3b-instruct-2507-q4_K_M"],
   "max_output_bytes": 65536,
   "max_quarantine_bytes": 67108864,
   "max_records": 1024

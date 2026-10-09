@@ -1,0 +1,37 @@
+{
+  "recorded_on": "2026-10-09",
+  "path": "candidate sealed MCP agent, production unchanged",
+  "seconds": 25.0,
+  "response": {
+    "status": 200,
+    "content": "Both are agents, yes\u2014capable of using apps and browsers in the cloud\u2014but they play different roles. Grok Bot leans towards parallel teamwork and scheduled routines, while Muse focuses on personal goals and proactive help within a secure VM.\n\nAs for that billion-token reward: it's conditional, not a guaranteed handout. Reports suggest both you and your invitee get 1 billion *usage* tokens each if the code is valid and redeemed within 48 hours of joining. However, I must note a verification gap: the primary source for this offer returned an error, so these terms aren't independently verified here. Treat it as a \"maybe\" until you check your in-app settings.\n\nAnd do remember: these are agent usage tokens, not cash, API credits, or a magic 1-billion-token context window. They don't cover the separate Spark API costs, which run on a per-million-token basis depending on whether you're a Standard or Contributor user. Don't expect free API access just because you have a referral bonus; that's a different kettle of fish entirely.",
+    "sources": [
+      {
+        "id": "grok-muse-agents-comparison-brief",
+        "title": "Grok Bot versus Meta Muse agents practical recommendation differences",
+        "url": "https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/",
+        "snapshot": "2026-10-09",
+        "locator": "document offset 0"
+      },
+      {
+        "id": "meta-muse-referral-brief",
+        "title": "Meta Muse referral recommendations invite billion token credit conditions",
+        "url": "https://x.com/alexandr_wang/status/2100256890559308197",
+        "snapshot": "2026-10-09",
+        "locator": "document offset 0"
+      },
+      {
+        "id": "meta-muse-api-pricing-brief",
+        "title": "Meta Muse Spark API pricing standard contributor token credits distinction",
+        "url": "https://dev.meta.ai/docs/pricing-rate-limits",
+        "snapshot": "2026-10-09",
+        "locator": "document offset 0"
+      }
+    ]
+  },
+  "limits": [
+    "Combined comparison reply did not explicitly restate the free tier; a separate focused free-tier probe did.",
+    "Focused product probes verify these replies and supplied references, not general answer accuracy or actual vendor-account eligibility.",
+    "Primary referral announcement was inaccessible; no account or promotional balance was verified."
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "model": "qwen3.5:27b-q4_K_M",
+  "digest": "64ae5b1d651fb2709d5928ccb8dcfb4bb2cc9c2c8001ac34497e36a6cf905b59",
+  "quantization": "Q4_K_M",
+  "context": 4096,
+  "output_cap": 160,
+  "probes": [
+    {
+      "probe": "greeting",
+      "elapsed_seconds": 31.587,
+      "load_seconds": 26.256,
+      "prompt_tokens": 34,
+      "prompt_seconds": 4.46,
+      "output_tokens": 34,
+      "generation_seconds": 0.867,
+      "tokens_per_second": 39.21,
+      "processor": "GPU",
+      "size_bytes": 16638866881,
+      "vram_bytes": 16638866881,
+      "context": 4096,
+      "thinking_emitted": false
+    },
+    {
+      "probe": "cryptography",
+      "elapsed_seconds": 3.876,
+      "load_seconds": 0.109,
+      "prompt_tokens": 38,
+      "prompt_seconds": 0.255,
+      "output_tokens": 130,
+      "generation_seconds": 3.182,
+      "tokens_per_second": 40.86,
+      "processor": "GPU",
+      "size_bytes": 16638866881,
+      "vram_bytes": 16638866881,
+      "context": 4096,
+      "thinking_emitted": false
+    },
+    {
+      "probe": "enterprise",
+      "elapsed_seconds": 3.361,
+      "load_seconds": 0.084,
+      "prompt_tokens": 37,
+      "prompt_seconds": 0.202,
+      "output_tokens": 114,
+      "generation_seconds": 2.742,
+      "tokens_per_second": 41.57,
+      "processor": "GPU",
+      "size_bytes": 16638866881,
+      "vram_bytes": 16638866881,
+      "context": 4096,
+      "thinking_emitted": false
+    }
+  ],
+  "quality_review": "NOT_RUN",
+  "note": "Fixed owner probes; generated answers were not retained. Elapsed time excludes browser, MCP, DLP and voice.",
+  "generated_at": "2026-10-09T06:37:25.402748+00:00"
+}
