@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "kernel-crash-triage",
+    "kernel-concurrency",
+    "kernel-memory",
+    "kernel-driver-review",
+    "kernel-config-tradeoffs"
   ]
 }

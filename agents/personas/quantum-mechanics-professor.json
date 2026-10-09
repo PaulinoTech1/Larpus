@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "quantum-state-measurement",
+    "quantum-schrodinger",
+    "quantum-spin-angular-momentum",
+    "quantum-perturbation",
+    "quantum-entanglement"
   ]
 }

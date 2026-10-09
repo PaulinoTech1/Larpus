@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "math-real-analysis",
+    "math-continuous-calculus",
+    "math-differential-equations",
+    "math-continuous-optimisation",
+    "math-functional-analysis"
   ]
 }

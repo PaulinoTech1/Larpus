@@ -51,8 +51,8 @@ python -m runtime.gateway
 
 Open **http://127.0.0.1:8080** without a password; LAN HTTPS requires it. See
 [password setup and rate limits](docs/AUTH.md). Select a persona and send a message.
-Responses render as plain text; the torus accelerates while thinking. The mic button calls
-the voice stub and reports that capture is not yet enabled. History lives only
+Responses render as plain text; the torus accelerates while thinking. The mic button enables opt-in local listening and British English spoken replies;
+see [voice setup](docs/VOICE_INTEGRATION.md). History lives only
 in browser memory and is reset on reload or persona change. No tools execute.
 
 ```powershell
@@ -101,7 +101,9 @@ before reaching MCP or the HUD. Held replies remain outside web access; inspecti
 is available only through the local owner CLI. The deployed private quarantine is inside the isolated runtime and is never
 mounted into the model container.
 
-The HUD offers four [locally authored, hash-checked prompt skills](docs/SKILLS.md).
+The HUD offers five dedicated skills for each of its twelve roles, plus four
+preserved shared [locally authored, hash-checked prompt skills](docs/SKILLS.md).
+Browse the [60 specialist skills](docs/ROLE_SKILLS.md); select one per conversation.
 No downloaded or executable skills are accepted. [Model selection and benchmarking](docs/MODELS.md)
 recommend Qwen3 14B for the 3090 Ti, keeping the existing baseline until tested locally.
 The gateway runs [continuous local health checks](docs/HEALTH.md), including
@@ -109,11 +111,23 @@ OWASP-recommended SkillSpector static scans and exact MCP tool-schema drift chec
 Health appears in the HUD; missing services and unverified containment
 remain visible. No cloud scanner is used.
 
+## Persona research archives
+
+Six [research catalogs](research/CATALOG.md) cover cryptography, IT/cybersecurity,
+continuous mathematics, statistics, enterprise systems administration, and quantum
+physics. Each catalogs 10 undergraduate student reports, 8 master's theses, and
+7 doctoral theses. All 150 student PDFs are downloaded and verified. Cryptography also
+has 8 supplementary primary references covering AES, ECC, ML-KEM, ML-DSA and
+implementation constraints. See [archive paths, verification and rebuild steps](docs/RESEARCH_ARCHIVES.md).
+
+The private PDFs/ZIPs stay in ignored `data/research/`. These are reference
+documents, not skills or agent instructions; the runtime does not ingest them.
+
 ## Licensing
 
 Larpus source retains the repository's [MIT license](LICENSE). KaTeX is MIT and
-its license is copied beside the locally prepared assets. VoiceStudio is not
-bundled: it is AGPL-3.0-only. Personal home use is compatible with this plan;
+its license is copied beside the locally prepared assets. The deployed private voice worker uses a pinned VoiceStudio ASR adapter;
+its source checkout is external and it is AGPL-3.0-only. Personal home use is compatible with this plan;
 redistributing it or a combined/modified application can require corresponding
 source and preservation of notices. Modified versions offered over a network
 must offer their corresponding source to those users. A sidecar boundary does

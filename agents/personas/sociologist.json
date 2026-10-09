@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "soc-theory-lenses",
+    "soc-qualitative-design",
+    "soc-survey-methods",
+    "soc-institutions",
+    "soc-inequality-networks"
   ]
 }

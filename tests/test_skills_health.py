@@ -12,6 +12,37 @@ from runtime.auth import password_record
 from runtime.security_scan import write_json
 
 class LocalSkillTests(unittest.TestCase):
+    def test_each_role_has_five_exclusive_specialist_skills(self):
+        shared={'home-planning','it-interview','larp-character','scenario-debrief'}
+        personas=load_personas()
+        registered=skills.load_skills()
+        self.assertEqual(len(personas),12)
+        self.assertEqual(len(registered),64)
+        used=set()
+        history=[{'role':'user','content':'Explain a scoped example.'}]
+        for persona in personas.values():
+            specialist=set(persona['skills'])-shared
+            self.assertEqual(len(specialist),5,persona['id'])
+            self.assertFalse(used & specialist,persona['id'])
+            used.update(specialist)
+            for identifier in specialist:
+                prepared=messages_for(persona,history,identifier)
+                self.assertIn(registered[identifier]['text'],prepared[0]['content'])
+                self.assertEqual(prepared[1:],history)
+                for other in personas.values():
+                    if other['id']!=persona['id']:
+                        with self.assertRaises(ValueError):
+                            messages_for(other,history,identifier)
+        self.assertEqual(used,set(registered)-shared)
+
+    def test_registry_capacity_is_bounded(self):
+        with tempfile.TemporaryDirectory() as temp:
+            registry=Path(temp)/'registry.json'
+            write_json(registry,{'version':1,'skills':[{}]*129})
+            with patch.object(skills,'REGISTRY',registry):
+                with self.assertRaisesRegex(ValueError,'Too many local skills'):
+                    skills.load_skills()
+
     def test_local_skill_changes_system_prompt_only(self):
         persona=load_personas()['it-larp-coach']
         history=[{'role':'user','content':'Let us practice DNS troubleshooting.'}]

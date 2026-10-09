@@ -12,6 +12,7 @@ disconnected reboot and second-device UI acceptance remain pending.
 
 ```powershell
 wsl --distribution Larpus --user larpus --exec env XDG_RUNTIME_DIR=/run/user/1000 podman pod start larpus-offline
+wsl --distribution Larpus --user larpus --exec env XDG_RUNTIME_DIR=/run/user/1000 podman start larpus-voice
 python -m runtime.isolation check
 # Continue only after a successful check:
 .\scripts\start-lan.ps1

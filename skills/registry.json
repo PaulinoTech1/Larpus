@@ -28,6 +28,426 @@
       "description": "Practice and debrief an authorized IT lab or fictional incident.",
       "origin": "local-authored",
       "sha256": "9fd7835cc10cb336485ad0e7a028c1c8f274c8b85e2c55a7dcf338a26cb74480"
+    },
+    {
+      "id": "home-day-plan",
+      "name": "Daily planning",
+      "description": "Plan a day around energy, deadlines and dependencies.",
+      "origin": "local-authored",
+      "sha256": "2e7d8593f18eb510d5b5bea8d1b29640e52b5b7c30ea85fd0d81d3c42c1d5a49"
+    },
+    {
+      "id": "home-household-routines",
+      "name": "Household routines",
+      "description": "Build realistic recurring household checklists.",
+      "origin": "local-authored",
+      "sha256": "237044636a087d40e84c878facafdaba980b07e8d0252cee296f2439bfb63ce6"
+    },
+    {
+      "id": "home-meal-prep",
+      "name": "Meal preparation",
+      "description": "Plan meals from owner-supplied ingredients and constraints.",
+      "origin": "local-authored",
+      "sha256": "6cbe862603b604cb7d3f7fae1ebe0b022990d86ef23b75984646723b1008b9b3"
+    },
+    {
+      "id": "home-explain-reference",
+      "name": "Everyday explanations",
+      "description": "Explain an unfamiliar everyday topic with useful analogies.",
+      "origin": "local-authored",
+      "sha256": "f109e99835ba6a27a1fbc2f40aab0aa4b109d23fe8af35da8007308d99d16497"
+    },
+    {
+      "id": "home-character-workshop",
+      "name": "Fictional character workshop",
+      "description": "Prepare an original character for a fictional setting.",
+      "origin": "local-authored",
+      "sha256": "6c0a8e47edde73b83b3cbbfa83e3ae11346bfed25bdc90f13825a886c339d16c"
+    },
+    {
+      "id": "cyber-interview-rehearsal",
+      "name": "IT interview rehearsal",
+      "description": "Rehearse evidence-based IT and cybersecurity interview answers.",
+      "origin": "local-authored",
+      "sha256": "afc544b07795eae1f99b5cd19c26ac44d540139c27ad52d04a26ab046080f8fe"
+    },
+    {
+      "id": "cyber-incident-tabletop",
+      "name": "Incident tabletop",
+      "description": "Rehearse defensive incident triage in a fictional organisation.",
+      "origin": "local-authored",
+      "sha256": "913b9582f81331b6f1ec5f1148f066990e230f04982f97feccef1a20710891f9"
+    },
+    {
+      "id": "cyber-threat-modelling",
+      "name": "Threat modelling",
+      "description": "Map trust boundaries and defensive controls for a scoped design.",
+      "origin": "local-authored",
+      "sha256": "1b37cd6ad5bcebac9b3746b7c05e6cf5993a3ccb39604aacbc44b2ed75a24171"
+    },
+    {
+      "id": "cyber-identity-review",
+      "name": "Identity access review",
+      "description": "Practise least-privilege and identity lifecycle reasoning.",
+      "origin": "local-authored",
+      "sha256": "a09074ded397565040ccad3bde31f8b79da1b9fb7f5cd8393fbeb47294201995"
+    },
+    {
+      "id": "cyber-lab-debrief",
+      "name": "Defensive lab debrief",
+      "description": "Turn an authorised defensive lab into a reproducible learning record.",
+      "origin": "local-authored",
+      "sha256": "c710aff46062909a67d44098f54f89a9a26646501a7d17729af4fcf52131d045"
+    },
+    {
+      "id": "kernel-crash-triage",
+      "name": "Kernel crash triage",
+      "description": "Reason about owner-supplied oops, panic and stack traces.",
+      "origin": "local-authored",
+      "sha256": "d1a225faee8faae89322c25c4adcd5b866bdbcef4075b55440ee3e10576628cb"
+    },
+    {
+      "id": "kernel-concurrency",
+      "name": "Kernel concurrency review",
+      "description": "Review locking, lifetime and memory-order reasoning.",
+      "origin": "local-authored",
+      "sha256": "97d3954ab82ff76d3e3c6f1b2888f5aabc3598d71c674e266935fff103b66e4c"
+    },
+    {
+      "id": "kernel-memory",
+      "name": "Kernel memory analysis",
+      "description": "Explain allocation constraints and memory pressure.",
+      "origin": "local-authored",
+      "sha256": "b4a33a2e2acec569b0eb13fdbc76b6533ee6328eacdc22c351dbe94d4dcff16a"
+    },
+    {
+      "id": "kernel-driver-review",
+      "name": "Driver lifecycle review",
+      "description": "Review a supplied driver's probe, I/O and teardown lifecycle.",
+      "origin": "local-authored",
+      "sha256": "fe2a58f2f316f13f00c5a2feabc6fbda5c1e9b0e2a29e3b6f8731f4303a62ae2"
+    },
+    {
+      "id": "kernel-config-tradeoffs",
+      "name": "Kernel configuration trade-offs",
+      "description": "Assess a proposed kernel configuration change on paper.",
+      "origin": "local-authored",
+      "sha256": "cf546a37cbd980cb545343a24d71e1d0d3199aba47b60adaeec4c933bffdff97"
+    },
+    {
+      "id": "sysadmin-enterprise-change",
+      "name": "Enterprise change planning",
+      "description": "Prepare an enterprise change with owners, rollback and acceptance gates.",
+      "origin": "local-authored",
+      "sha256": "898d6c8cdcbc30f4ad4f416c3bccab5958df1f1edb519a370274947b6a9f6ba0"
+    },
+    {
+      "id": "sysadmin-directory-lifecycle",
+      "name": "Directory lifecycle design",
+      "description": "Design enterprise identity provisioning and deprovisioning workflows.",
+      "origin": "local-authored",
+      "sha256": "cd79d70ae4aafd43deff57b63fb7f47349358605b7afc6ce69981d25c765d18b"
+    },
+    {
+      "id": "sysadmin-backup-recovery",
+      "name": "Backup and recovery planning",
+      "description": "Plan enterprise backups against stated RPO and RTO.",
+      "origin": "local-authored",
+      "sha256": "ab5ee27fc0cad56bfef12d365ce4b06969903265fa74875d041c6f4ca9a075fc"
+    },
+    {
+      "id": "sysadmin-capacity-reliability",
+      "name": "Capacity and service reliability",
+      "description": "Assess enterprise capacity using supplied workload evidence.",
+      "origin": "local-authored",
+      "sha256": "d957731755ff4071f20675df6b782f8b1468ae2374d62a3c0673d10035033a50"
+    },
+    {
+      "id": "sysadmin-incident-runbooks",
+      "name": "Enterprise incident runbooks",
+      "description": "Draft operational runbooks for enterprise service failures.",
+      "origin": "local-authored",
+      "sha256": "38f15bef5e690520a10c30b705ad0d47620ee3524479868a126a10e92511dcd9"
+    },
+    {
+      "id": "network-packet-path",
+      "name": "Packet path troubleshooting",
+      "description": "Trace a supplied connectivity failure through network layers.",
+      "origin": "local-authored",
+      "sha256": "87802614b543436e3260334fd84c8907031b30c74dd4b7edb2863d294531c799"
+    },
+    {
+      "id": "network-segmentation",
+      "name": "Segmentation design",
+      "description": "Design scoped VLAN, subnet and policy boundaries.",
+      "origin": "local-authored",
+      "sha256": "6cfa575bae3d3b140043955e5fcff2ba71a7eaac8c0e6eb3f127db10d509b810"
+    },
+    {
+      "id": "network-routing-resilience",
+      "name": "Routing and resilience",
+      "description": "Reason about routing choices and failure convergence.",
+      "origin": "local-authored",
+      "sha256": "f03eaa4ede4a6d2e7bdbd539623126a5e29fd5a7daea4c615d8e7d032dc9c178"
+    },
+    {
+      "id": "network-performance",
+      "name": "Network performance analysis",
+      "description": "Investigate latency, loss and throughput from supplied evidence.",
+      "origin": "local-authored",
+      "sha256": "6240489f62f020b2919cd670314514c3b8f4336c7999e7c33239afe896d9d7cd"
+    },
+    {
+      "id": "network-dns-services",
+      "name": "DNS and service discovery",
+      "description": "Diagnose name resolution and service discovery.",
+      "origin": "local-authored",
+      "sha256": "b2427638a40b3fb13e24740ee6081c59e1d5541bf8b81143cee61a28bfa79b7c"
+    },
+    {
+      "id": "crypto-aes-modes",
+      "name": "AES and mode reasoning",
+      "description": "Explain AES constructions and practical symmetric-encryption constraints.",
+      "origin": "local-authored",
+      "sha256": "92edb391ad5e14fd8fba264dd051eaac8f8173671a10d49a4d4272578110edda"
+    },
+    {
+      "id": "crypto-ecc-protocols",
+      "name": "ECC protocol review",
+      "description": "Reason about elliptic-curve signatures and key agreement.",
+      "origin": "local-authored",
+      "sha256": "82955f813403c4c45afb8502fbc1b6080eabf18f701a527303f797557e60f1d1"
+    },
+    {
+      "id": "crypto-mlkem",
+      "name": "ML-KEM integration reasoning",
+      "description": "Review ML-KEM encapsulation and deployment assumptions.",
+      "origin": "local-authored",
+      "sha256": "f62489bff9f09aa03027ab8d7a296001fffc67a9655f737e3aef584a86e8ab6c"
+    },
+    {
+      "id": "crypto-mldsa",
+      "name": "ML-DSA signature reasoning",
+      "description": "Review ML-DSA signing and verification integration.",
+      "origin": "local-authored",
+      "sha256": "2f28091aa6f216fc693c388b18f7de7fd523d2a73bb41f1172628f0cf4ab0fa2"
+    },
+    {
+      "id": "crypto-implementation-review",
+      "name": "Cryptographic implementation constraints",
+      "description": "Review side-channel, randomness and key-handling assumptions.",
+      "origin": "local-authored",
+      "sha256": "47166fe9ea3776696bd45a77fda094d96405c6472e978164fb877d8d3755016d"
+    },
+    {
+      "id": "math-real-analysis",
+      "name": "Real analysis reasoning",
+      "description": "Develop proofs involving limits, continuity and convergence.",
+      "origin": "local-authored",
+      "sha256": "e2c2375d97e0646a5d21e35a913ef413c26d26e541b56c081686aa87579e85a4"
+    },
+    {
+      "id": "math-continuous-calculus",
+      "name": "Multivariable calculus",
+      "description": "Derive continuous integrals and coordinate transformations.",
+      "origin": "local-authored",
+      "sha256": "3449ab0463c791fc8cddcc964974fa6003d83bc00155bebdcf017ea5f09f5e36"
+    },
+    {
+      "id": "math-differential-equations",
+      "name": "Differential equations",
+      "description": "Analyse continuous ODE and PDE models under stated conditions.",
+      "origin": "local-authored",
+      "sha256": "827ce75739e26653033cb23d631656c284bf97a74fe35cd6ee9c122e76fe0254"
+    },
+    {
+      "id": "math-continuous-optimisation",
+      "name": "Continuous optimisation",
+      "description": "Reason about smooth constrained and unconstrained optimisation.",
+      "origin": "local-authored",
+      "sha256": "6292cfab3e0323ddd80b9c01a44b0bf3e6c9632bce2874f55b9b1a4434f01274"
+    },
+    {
+      "id": "math-functional-analysis",
+      "name": "Functional analysis",
+      "description": "Explain normed spaces, operators and convergence.",
+      "origin": "local-authored",
+      "sha256": "f5ac0b0920d2cfc86979e3d6f10e47313885b1fa053ab5c897aa33b9f28e997e"
+    },
+    {
+      "id": "quantum-state-measurement",
+      "name": "States and measurement",
+      "description": "Teach quantum state and measurement calculations.",
+      "origin": "local-authored",
+      "sha256": "2f46b428b3b8b9eedf7d1ff3c3dc22363d5f6235e55dcd160f0a074da98405d5"
+    },
+    {
+      "id": "quantum-schrodinger",
+      "name": "Schrodinger equation",
+      "description": "Derive model-system wavefunctions and time evolution.",
+      "origin": "local-authored",
+      "sha256": "460f1b0c9b00a1c72454dd1d09e98948bd0f3bde154a7e822290746b87a7822a"
+    },
+    {
+      "id": "quantum-spin-angular-momentum",
+      "name": "Spin and angular momentum",
+      "description": "Explain spin, commutators and angular-momentum coupling.",
+      "origin": "local-authored",
+      "sha256": "804fd122b272b520315867e929a94ce45b95e66a17d2b4c3fa13553ea9172bb8"
+    },
+    {
+      "id": "quantum-perturbation",
+      "name": "Perturbation methods",
+      "description": "Assess perturbative quantum approximations.",
+      "origin": "local-authored",
+      "sha256": "e485b8e73ab28437d29d7b5aee893f91e32458d082dcdfa818d9d7b4d885eeb9"
+    },
+    {
+      "id": "quantum-entanglement",
+      "name": "Entanglement and open systems",
+      "description": "Explain composite states, reduced states and decoherence.",
+      "origin": "local-authored",
+      "sha256": "5d07c8e9f4a79edd35888817b984c60146ef8c229adf3cc55c316d4fefc9a573"
+    },
+    {
+      "id": "stats-study-design",
+      "name": "Statistical study design",
+      "description": "Design sampling and estimands before analysis.",
+      "origin": "local-authored",
+      "sha256": "635acb225c3d20e3b5cc79793af603af9216d4fa99d522564b51608ba4c2970f"
+    },
+    {
+      "id": "stats-inference",
+      "name": "Inference and uncertainty",
+      "description": "Interpret confidence intervals and hypothesis tests.",
+      "origin": "local-authored",
+      "sha256": "8f467cc2ff217d7aea4f426a7b0b5569f81dbf2894b22e168e26b37d1bbf038b"
+    },
+    {
+      "id": "stats-regression",
+      "name": "Regression diagnostics",
+      "description": "Assess regression models from supplied data summaries.",
+      "origin": "local-authored",
+      "sha256": "dbb62a067f98d03bb9df8a24c1aa1de1d7ddfdf2fefc066a25c1e9b07adca0f1"
+    },
+    {
+      "id": "stats-bayesian",
+      "name": "Bayesian reasoning",
+      "description": "Develop a Bayesian model with transparent prior assumptions.",
+      "origin": "local-authored",
+      "sha256": "c25381cff0491d5ecb0f78a1179becdfc1e332e5d1deb429ce51f32d331db415"
+    },
+    {
+      "id": "stats-time-series",
+      "name": "Time-series reasoning",
+      "description": "Assess dependence and forecasting assumptions.",
+      "origin": "local-authored",
+      "sha256": "cd6993435ff4d6e35bdac41a9f9f8d1231bdf145b43f9797582cd54458b34b25"
+    },
+    {
+      "id": "econ-micro-incentives",
+      "name": "Microeconomic incentives",
+      "description": "Reason about incentives, elasticity and market structure.",
+      "origin": "local-authored",
+      "sha256": "cf47814f87e01e06efb78571f10a00e345358e6ee220787793771c1835f5e1c9"
+    },
+    {
+      "id": "econ-macro-mechanisms",
+      "name": "Macroeconomic mechanisms",
+      "description": "Explain inflation, growth and policy transmission.",
+      "origin": "local-authored",
+      "sha256": "4ee306f95489cd5f203321333682625043911b6a45f362ae8c493e04b435fc79"
+    },
+    {
+      "id": "econ-causal-evaluation",
+      "name": "Economic policy evaluation",
+      "description": "Design an identification strategy for a policy question.",
+      "origin": "local-authored",
+      "sha256": "57744e67351af1f25d5d222f11bed663b50f070b70e2d9d009e8cf11d944ec0f"
+    },
+    {
+      "id": "econ-cost-benefit",
+      "name": "Cost-benefit analysis",
+      "description": "Structure a transparent cost-benefit comparison.",
+      "origin": "local-authored",
+      "sha256": "66fe71e3eafbdf6f533f36c23571c25b628572b48afb6f86e31de3003df05e66"
+    },
+    {
+      "id": "econ-game-theory",
+      "name": "Game theory scenarios",
+      "description": "Analyse strategic interaction in a scoped hypothetical game.",
+      "origin": "local-authored",
+      "sha256": "ffa753af171767640c8ea1ac8aa3c258bf1499fcfbd5a75bcd532153806e8d97"
+    },
+    {
+      "id": "soc-theory-lenses",
+      "name": "Sociological theory lenses",
+      "description": "Compare theoretical explanations of a social phenomenon.",
+      "origin": "local-authored",
+      "sha256": "1561144b44e70c68b87c2e0d2756907b417770ab3b77298b15265089afc49757"
+    },
+    {
+      "id": "soc-qualitative-design",
+      "name": "Qualitative research design",
+      "description": "Plan interviews or fieldwork with ethical boundaries.",
+      "origin": "local-authored",
+      "sha256": "04d99ac52f4871d6512d129c4f99fe91ea47767e0852b07343ee46c4fba1928c"
+    },
+    {
+      "id": "soc-survey-methods",
+      "name": "Social survey methods",
+      "description": "Assess social measurement and survey design.",
+      "origin": "local-authored",
+      "sha256": "c73b00eb2e407fff9404a065fc092d90d9b7477b8922e2799ad17e955a4dc6cc"
+    },
+    {
+      "id": "soc-institutions",
+      "name": "Institutions and organisations",
+      "description": "Analyse norms, power and organisational structures.",
+      "origin": "local-authored",
+      "sha256": "8f26fde80cab358ea2b69e44c4f4d2ec3001f9d3389fec10099f51937b437568"
+    },
+    {
+      "id": "soc-inequality-networks",
+      "name": "Inequality and social networks",
+      "description": "Reason about stratification and relational patterns.",
+      "origin": "local-authored",
+      "sha256": "87b3a2125d4cca266703f1656e892f10b89522a54322b6f4a463dbd7d1a79571"
+    },
+    {
+      "id": "psych-learning-cognition",
+      "name": "Learning and cognition",
+      "description": "Explain cognitive and learning concepts educationally.",
+      "origin": "local-authored",
+      "sha256": "71037a9fa13e9df9f572b44b8c8eaa154b2e92c24af88403dce68889e69a4340"
+    },
+    {
+      "id": "psych-research-methods",
+      "name": "Psychology research methods",
+      "description": "Evaluate psychological study designs and claims.",
+      "origin": "local-authored",
+      "sha256": "38d6209196d9e165da5c9018ae33e6695102d3db2376da1e846ce3658c1bf261"
+    },
+    {
+      "id": "psych-social-behaviour",
+      "name": "Social psychology reasoning",
+      "description": "Explain social behaviour with competing hypotheses.",
+      "origin": "local-authored",
+      "sha256": "e8c49253b57186b6e67e1851d8d85baf199e40e19997f4f827fa15273ffd96c3"
+    },
+    {
+      "id": "psych-emotion-reflection",
+      "name": "Emotion reflection",
+      "description": "Support non-clinical reflection on emotions and coping.",
+      "origin": "local-authored",
+      "sha256": "65320a126417db63e77904da0a32dbe7f109f98bbbcf2c28e1361e3373bf0350"
+    },
+    {
+      "id": "psych-communication",
+      "name": "Communication practice",
+      "description": "Rehearse respectful listening and boundary-setting.",
+      "origin": "local-authored",
+      "sha256": "25437891fdd40b392c749503f709df6c56f08e87e7df9fcbbd6d76da122a638a"
     }
   ]
 }

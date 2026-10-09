@@ -28,7 +28,7 @@ def write_json(path,data):
 def fingerprint():
     paths=list((ROOT/'runtime').glob('*.py'))+list((ROOT/'skills').rglob('*'))+list((ROOT/'agents/personas').glob('*.json'))
     paths += [ROOT/'scripts/offline_skillspector.py',ROOT/'scripts/protect-quarantine.ps1',ROOT/'config/dlp.json',ROOT/'config/models.json',ROOT/'config/mcp-capabilities.json',APPROVED]
-    paths += [ROOT/'scripts/run-isolated.ps1',ROOT/'scripts/export-isolation-source.ps1',ROOT/'scripts/transfer-isolation-source.py']+list((ROOT/'deploy/windows-home').rglob('*'))
+    paths += [ROOT/'scripts/run-isolated.ps1',ROOT/'scripts/export-isolation-source.ps1',ROOT/'scripts/transfer-isolation-source.py',ROOT/'scripts/setup-voice.py']+list((ROOT/'deploy/windows-home').rglob('*'))+list((ROOT/'deploy/voice').rglob('*'))
     paths += [ROOT/'.containerignore',ROOT/'.gitattributes',ROOT/'config/isolation.json']
     digest=hashlib.sha256()
     for path in sorted({p for p in paths if p.is_file()}):

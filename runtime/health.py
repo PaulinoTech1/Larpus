@@ -100,6 +100,12 @@ def check(scan_if_changed=True):
             record('egress_enforcement','unverified','Host runtime: OS firewall denial and OpenShell containment are not behaviorally verified')
     except Exception:
         record('egress_enforcement','error','Selected isolation mode failed; no host fallback')
+    try:
+        from runtime.voice import preflight as voice_preflight
+        voice_preflight()
+        record('voice','pass','Offline CPU voice worker: pinned image, read-only models, no network/devices')
+    except Exception:
+        record('voice','warning','Voice worker unavailable or boundary check failed; no cloud fallback')
     report={'generated_at':timestamp(),'status':'error' if any(c['status']=='error' for c in checks) else 'degraded' if any(c['status']!='pass' for c in checks) else 'healthy','checks':checks,'interval_seconds':60}
     write_json(LATEST,report)
     return report

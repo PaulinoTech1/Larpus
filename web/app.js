@@ -31,13 +31,13 @@ $('chat').onsubmit = async e => {
   if (history.length >= 38) { $('notice').textContent = 'Session limit reached. Reset to begin a new conversation.'; return; }
   $('messages').querySelector('.empty')?.remove(); message('user', content); $('prompt').value = ''; $('notice').textContent = ''; setBusy(true);
   const next = [...history,{role:'user',content}];
-  try { const result = await api('/api/chat',{persona:$('persona').value,messages:next,skill:$('skill').value||null}); history = [...next,{role:'assistant',content:result.content}]; message('assistant',result.content); }
+  try { const result = await api('/api/chat',{persona:$('persona').value,messages:next,skill:$('skill').value||null,speak:window.larpusVoice?.enabled||false}); history = [...next,{role:'assistant',content:result.content}]; message('assistant',result.content); if(result.voice_error)$('notice').textContent=result.voice_error; await window.larpusVoice?.play(result); }
   catch (err) { $('notice').textContent = err.message; $('prompt').value = content; }
   finally {setBusy(false); $('prompt').focus();}
 };
-$('mic').onclick = async () => {try {await api('/api/voice', {action:'listen'});} catch(e) {$('notice').textContent=e.message;}};
+
 async function boot() {
-  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas[0]; $('description').textContent=p.description; $('model').textContent=p.model;refreshSkills(p);
+  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas.find(p=>p.id==='home-assistant')||personas[0]; $('persona').value=p.id; $('description').textContent=p.description; $('model').textContent=p.model;refreshSkills(p);
     const h = await api('/api/health'); $('connection').textContent = h.ollama === 'online' ? '● OLLAMA ONLINE' : '○ OLLAMA OFFLINE';
     if(h.ollama === 'offline') $('notice').textContent='Start local Ollama to open the inference channel.';
     else if(!h.models.includes(p.model)) $('notice').textContent=`Install ${p.model} in local Ollama before chatting.`;

@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "sysadmin-enterprise-change",
+    "sysadmin-directory-lifecycle",
+    "sysadmin-backup-recovery",
+    "sysadmin-capacity-reliability",
+    "sysadmin-incident-runbooks"
   ]
 }

@@ -13,7 +13,7 @@ def load_skills():
     registry=json.loads(REGISTRY.read_text(encoding='utf-8'))
     if set(registry)!={'version','skills'} or registry['version']!=1 or not isinstance(registry['skills'],list):
         raise ValueError('Invalid local skill registry')
-    if len(registry['skills'])>32:
+    if len(registry['skills'])>128:
         raise ValueError('Too many local skills')
     result={}
     for entry in registry['skills']:

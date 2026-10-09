@@ -1,5 +1,22 @@
 # Larpus decision record
 
+## Five specialist skills per role (2026-10-08)
+
+Each of the twelve personas has five exclusive, locally authored specialist
+skills (60 additions). The four existing shared skills and their allowlists remain
+compatible. The HUD selects one skill per conversation; only that skill is
+appended to the server-owned prompt, avoiding loading the entire catalog into
+the 4096-token context. Changing selection clears history. See the
+[role skill catalog](ROLE_SKILLS.md) for topics and exact prompts.
+
+Skills teach subject-specific reasoning, evidence standards and terminology.
+They confer no credentials, executable tools or archive access. Mathematics stays
+continuous, system administration covers enterprise operations, cybersecurity
+stays defensive/authorised, and psychology stays educational. Registry capacity
+rises from 32 to 128 for 64 registered skills; file-size, hash, text-filter, origin,
+folder and persona-selection checks remain. The sealed agent is rebuilt and its
+source fingerprint repinned; the previous agent is retained stopped for rollback.
+
 Updated 2026-10-08. Accepted choices, their consequences and current evidence
 are recorded here. Historical scan receipts keep their original fingerprints;
 they are not verification of later changes.
@@ -34,9 +51,43 @@ and its evidence survived redeployment/restart.
 The backend restarted after owner-reported Windows shutdown/reboot. A physically
 network-disconnected reboot, another device's CA trust and authenticated chat,
 browser visual acceptance, voice and OpenShell remain unverified or unimplemented.
-Voice is a stub. Scanner findings remain warnings; compare receipt fingerprints
+Opt-in CPU voice is now deployed with VoiceStudio ASR adapter and British Piper TTS;
+wake-word, cloning and real microphone/speaker acceptance remain pending. Scanner findings remain warnings; compare receipt fingerprints
 with current source. Host administrators, kernel/driver compromise and trusted
 guard exploits are outside the claimed boundary.
 
 See [isolation](WINDOWS-HOME-ISOLATION.md), [HTTPS](HTTPS.md),
 [personas](PERSONAS.md), [DLP](OUTPUT-DLP.md) and [verification](VERIFICATION.md).
+
+## Voice addition ? 2026-10-08
+
+A separate network-disabled CPU worker leaves GPU capacity for Ollama. Listening
+is opt-in, recordings are not retained, and generated speech follows output DLP.
+Only exact station UI commands are enabled; OS actions remain outside this slice.
+See [voice integration](VOICE_INTEGRATION.md) for pins, limits and rebuild steps.
+
+## Research archive addition — 2026-10-08
+
+Six persona catalogs each allocate 10 undergraduate student dissertations/capstone
+reports, 8 master's theses and 7 doctoral theses. Journal/conference papers do
+not substitute for undergraduate work. Explicit joint bachelor/master submissions
+count once; conflicting university degree tags are checked against PDF title pages.
+Mathematics remains continuous; systems-administration selections concern enterprise
+storage, distributed services, capacity, virtualization and fault tolerance.
+
+Cryptography has eight extra primary references outside the student quota, including
+FIPS 197, SP 800-186, FIPS 203/204 and secure KEM/GCM implementation guidance.
+Historical Kyber/Dilithium candidates remain distinct from standardized ML-KEM/ML-DSA.
+Standards are pinned snapshots with publication-status/errata notes.
+
+The initial archive build had 87 student PDFs and eight primary references;
+63 full texts were blocked by repository human verification. After the owner
+completed the browser check, downloads resumed at one concurrent request and
+all 150 student PDFs were obtained. Three conflicting degree tags were corrected
+against original title pages; replacements preserve the requested 10/8/7 quotas.
+ZIPs and indexes report actual availability. No access
+challenge is bypassed, and a citation record is never reported as a downloaded PDF.
+Original documents remain private under ignored `data/research/`, separate from
+the output-DLP investigation quarantine. Only catalogs, provenance and the owner-run
+rebuild tool belong in Git. Preparation grants no internet access or document/tool
+execution to the local model. See [research archives](RESEARCH_ARCHIVES.md).

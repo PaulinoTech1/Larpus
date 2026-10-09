@@ -1,0 +1,11 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+WORKDIR /app
+COPY wheels/ /wheels/
+RUN python -m pip install --no-index --find-links=/wheels faster-whisper==1.2.1 piper-tts==1.8.0 && rm -rf /wheels
+COPY voice_worker.py /app/voice_worker.py
+COPY asr.py /studio/asr.py
+COPY VOICESTUDIO-LICENSE /studio/LICENSE
+ENV HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 PYTHONDONTWRITEBYTECODE=1 HOME=/tmp
+USER 1000:1000
+CMD ["python","-c","import time; time.sleep(2147483647)"]

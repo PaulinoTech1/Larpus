@@ -1,12 +1,19 @@
 # Current verification ? 2026-10-08
 
-45 tests passed after TLS/local-auth changes. Live probes confirmed local API
+47 tests passed after the local voice addition. A real British TTS WAV was
+transcribed by VoiceStudio ASR/Faster Whisper in the offline CPU worker. A real
+home-assistant reply passed MCP/DLP and produced seven seconds of speech.
+Voice internet/LAN denial, loopback-only network, non-root identity and missing
+Windows-drive/quarantine checks passed. Microphone/speaker browser acceptance
+remains an owner check.
+
+45 tests previously passed after TLS/local-auth changes. Live probes confirmed local API
 access without authentication (200), LAN HTTPS without a session (401), certificate
 validation and rejection of plaintext LAN HTTP. Updated login JavaScript is served;
 full browser QA remains unrun. Twelve personas were listed by isolated MCP.
 Isolation checks passed after resealing and owner-reported Windows reboot.
 
-Second-device trust/chat, physically disconnected reboot, voice and OpenShell
+Second-device trust/chat, physically disconnected reboot, voice-device acceptance and OpenShell
 remain pending. Earlier scan receipts are historical; compare source fingerprints.
 See [decisions](DECISIONS.md).
 
@@ -109,3 +116,19 @@ ACL helper and fixed WSL/Podman inspection, probe and owner-investigation comman
 The remaining LOW finding is the combined capability declaration. These are
 reviewed static findings, retained as warnings rather than suppressed. This is
 not proof against a compromised host, kernel, driver or trusted guard.
+
+## Role-specific skills (2026-10-08)
+
+All 49 unit/integration tests pass, including five exclusive specialist skills
+per persona, rejection of every cross-role specialist selection, and the bounded
+128-entry registry. All 64 skill frontmatters pass skill-creator validation;
+the runtime validates their exact hashes, text and prompt-only folder contents.
+
+The sealed image loads 12 personas and 64 skills. Live isolation probes confirm
+denied external/LAN access and DNS, absent host paths, owner-only quarantine and
+zero effective/bounding capabilities. Actual MCP descriptors match the approved
+three-tool baseline. A selected AES skill produced a 200 response through local
+Ollama and the output DLP boundary. This is a functional smoke test, not a
+subject-matter quality evaluation across all roles or proof against prompt attacks.
+
+The current offline SkillSpector receipt is [ROLE-SKILLS-SCAN-RECEIPT.json](ROLE-SKILLS-SCAN-RECEIPT.json). All 64 skills passed complete static scans with zero findings. The MCP target completed with eight findings and MEDIUM aggregate risk; these remain visible warnings, so overall health is degraded rather than falsely green. No network or LLM inference was used by the scanner.

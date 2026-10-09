@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "econ-micro-incentives",
+    "econ-macro-mechanisms",
+    "econ-causal-evaluation",
+    "econ-cost-benefit",
+    "econ-game-theory"
   ]
 }

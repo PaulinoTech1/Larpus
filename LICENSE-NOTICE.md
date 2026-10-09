@@ -11,7 +11,8 @@ Stegdetect is an MIT dependency from PaulinoTech1/Steganography, pinned in
 requirements.txt. Preserve its upstream license when redistributing cached wheels.
 MCP Python SDK 2.3.0 is MIT; its resolved dependencies retain their own licenses.
 Preserve their notices when distributing an offline wheel cache or application.
-VoiceStudio remains an external optional dependency, AGPL-3.0-only, with its own
+VoiceStudio source is an external pinned checkout, with its ASR adapter used in
+the private voice image. It is AGPL-3.0-only, with its own
 copyright and source obligations. Embedding/copying its code needs a license
 review of the combined work; preserve full upstream LICENSE and notices when
 redistributing. Personal use does not remove obligations on later distribution
@@ -19,3 +20,11 @@ or network access to modified versions. Voice and language model weights retain
 their own licenses. Do not treat the app license as permission for every model.
 
 Upstream source: https://github.com/debpalash/VoiceStudio/blob/main/LICENSE-NOTICE.md
+
+## Deployed speech worker
+
+The private voice image includes VoiceStudio ASR adapter source and its AGPL-3.0
+license, pinned to 06c6e077f0fc35149efefc3561e9be5ae835d916. Piper TTS 1.8.0 is
+GPL-3.0. Faster Whisper and model weights retain their upstream terms. These
+components are not relicensed by this repository MIT license. See
+docs/VOICE_INTEGRATION.md before distributing combined source or images.

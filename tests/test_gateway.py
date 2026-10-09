@@ -91,10 +91,10 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(self.request('GET','/../LICENSE')[0],404)
         self.assertEqual(self.request('GET','/vendor/katex/katex.min.js')[0],200)
 
-    def test_voice_stub(self):
+    def test_voice_rejects_invalid_requests(self):
         status, body = self.request('POST','/api/voice',{})
-        self.assertEqual(status,501)
-        self.assertIn('stub',json.loads(body)['error'])
+        self.assertEqual(status,400)
+        self.assertIn('Invalid voice',json.loads(body)['error'])
 
     def test_health(self):
         with patch.object(gateway,'mcp_health',side_effect=OSError()):
@@ -177,6 +177,19 @@ class GatewayTests(unittest.TestCase):
         handler.client_address=('127.0.0.1',1234)
         handler.server.tls=True
         self.assertFalse(handler.authorized())
+
+    def test_voice_synthesis_follows_output_gate(self):
+        request={'persona':'home-assistant','messages':[{'role':'user','content':'hello'}],'speak':True}
+        with patch.object(gateway,'mcp_chat',return_value={'status':422,'error':'Held'}), patch('runtime.voice.call') as speech:
+            self.assertEqual(self.request('POST','/api/chat',request)[0],422)
+            speech.assert_not_called()
+        with patch.object(gateway,'mcp_chat',return_value={'status':200,'content':'Approved reply'}), patch('runtime.voice.call',return_value={'audio':'test','mime':'audio/wav'}) as speech:
+            status,body=self.request('POST','/api/chat',request)
+            self.assertEqual(status,200)
+            speech.assert_called_once_with({'action':'synthesize','text':'Approved reply'})
+            self.assertEqual(json.loads(body)['audio'],'test')
+        with patch('runtime.voice.call',side_effect=OSError()):
+            self.assertEqual(self.request('POST','/api/voice',{'action':'transcribe','audio':'test'})[0],503)
 
 class AuthTests(unittest.TestCase):
     def setUp(self):

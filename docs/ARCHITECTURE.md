@@ -23,8 +23,10 @@ Inputs are validated/filtered; replies render as text. Chat history is browser
 memory only; held output is the intentional persistence exception. AEI is this
 project's configurable agent interface, not an external SDK.
 
-VoiceStudio STT/TTS remains planned with AGPL distribution implications. Voice
-is a stub; proposed adapter port 7861 is not listening. OpenShell is a future
+Voice uses a separate network-disabled CPU container over stdio, not port 7861.
+A pinned VoiceStudio ASR adapter and Piper British TTS are deployed; full studio,
+cloning and wake-word remain future work. See VOICE_INTEGRATION.md for AGPL/GPL
+distribution implications and model terms. OpenShell is a future
 layer with no deployed control-plane port. Explicit host development mode does
 not carry the Podman isolation claims.
 

@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "stats-study-design",
+    "stats-inference",
+    "stats-regression",
+    "stats-bayesian",
+    "stats-time-series"
   ]
 }

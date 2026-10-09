@@ -17,9 +17,9 @@ def health():
     try:
         result=ollama('/api/tags',timeout=2)
         models=[m['name'] for m in result['models'] if isinstance(m['name'],str)]
-        return {'ollama':'online','models':models,'voice':'stub','transport':'local-mcp-stdio'}
+        return {'ollama':'online','models':models,'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
     except (OSError,ValueError,KeyError,TypeError):
-        return {'ollama':'offline','models':[],'voice':'stub','transport':'local-mcp-stdio'}
+        return {'ollama':'offline','models':[],'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
 
 def chat(persona, messages, skill=None):
     try:

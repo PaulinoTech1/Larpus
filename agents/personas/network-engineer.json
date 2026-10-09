@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "network-packet-path",
+    "network-segmentation",
+    "network-routing-resilience",
+    "network-performance",
+    "network-dns-services"
   ]
 }

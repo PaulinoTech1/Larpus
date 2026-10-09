@@ -9,6 +9,11 @@
   "voice": null,
   "skills": [
     "larp-character",
-    "scenario-debrief"
+    "scenario-debrief",
+    "crypto-aes-modes",
+    "crypto-ecc-protocols",
+    "crypto-mlkem",
+    "crypto-mldsa",
+    "crypto-implementation-review"
   ]
 }

@@ -32,7 +32,7 @@ class Handler(BaseHTTPRequestHandler):
         for key,value in (extra or {}).items():
             self.send_header(key,value)
         self.send_header('X-Content-Type-Options', 'nosniff')
-        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
         self.end_headers()
 
     def trusted(self):
@@ -113,7 +113,32 @@ class Handler(BaseHTTPRequestHandler):
         if self.path not in ('/api/chat', '/api/voice'):
             return self.reply(404, {'error': 'Not found'})
         if self.path == '/api/voice':
-            return self.reply(501, {'error': 'Voice pipeline is a stub. Microphone capture is not enabled yet.'})
+            try:
+                from runtime.voice import call
+                data = self.read_json(1400000)
+                if not isinstance(data,dict) or set(data)!={'action','audio'} or data['action']!='transcribe' or not isinstance(data['audio'],str):
+                    raise ValueError('Expected a bounded audio request')
+                result=call(data)
+                phrase=result['transcript'].lower().rstrip('.!?').strip()
+                confirmation=None
+                if phrase in ('larpus mute','mute voice'):
+                    confirmation='Microphone muted. Even I know when to stop talking.'
+                elif phrase=='larpus reset chat':
+                    confirmation='Fresh conversation. A clean slate, without the chalk dust.'
+                elif phrase.startswith('larpus switch to '):
+                    selected=next((p for p in PERSONAS.values() if p['name'].lower()==phrase[17:]),None)
+                    if selected:
+                        confirmation='Switching to '+selected['name']+'. Let us get into character.'
+                if confirmation:
+                    try:
+                        result.update(call({'action':'synthesize','text':confirmation}))
+                    except OSError:
+                        result['voice_error']='Local speech unavailable.'
+                return self.reply(200,result)
+            except (ValueError,TypeError):
+                return self.reply(400,{'error':'Invalid voice request. Use mono 16 kHz PCM WAV, at most 30 seconds.'})
+            except OSError:
+                return self.reply(503,{'error':'Local voice worker unavailable. No cloud fallback.'})
         try:
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 raise ValueError('JSON required')
@@ -121,8 +146,10 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < size <= 65536:
                 raise ValueError('Request must be 1–65536 bytes')
             data = json.loads(self.rfile.read(size))
-            if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill'}:
+            if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
                 raise ValueError('Expected persona and messages')
+            if 'speak' in data and type(data['speak']) is not bool:
+                raise ValueError('Invalid speech flag')
             persona = PERSONAS.get(data['persona']) if isinstance(data['persona'], str) else None
             if persona is None:
                 raise ValueError('Unknown persona')
@@ -139,6 +166,16 @@ class Handler(BaseHTTPRequestHandler):
         try:
             result = mcp_chat(data['persona'], data['messages'],data.get('skill'))
             status = result.pop('status', 502)
+            if status == 200 and data.get('speak'):
+                # MCP only returns generated content after isolated output DLP approves it.
+                from runtime.voice import call
+                try:
+                    text = result['content']
+                    if len(text)>2000:
+                        text=text[:2000]+' The rest is displayed in the conversation.'
+                    result.update(call({'action':'synthesize','text':text}))
+                except OSError:
+                    result['voice_error']='Reply is shown; local speech is unavailable.'
             self.reply(status, result)
         except (OSError, ValueError, KeyError, TypeError):
             self.reply(502, {'error':'Local MCP unavailable or invalid response. No direct inference fallback.'})
