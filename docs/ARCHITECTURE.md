@@ -80,3 +80,5 @@ runtime; no new model tool, port or host mount is exposed. See
 [reviewed catalog](../knowledge/CATALOG.md).
 
 Complexity and failure tracking: [component value, interactions, regression gate and owner diagnostics](COMPLEXITY.md).
+
+See [second- and third-order consequences and the Windows workload shutdown](INTERACTION_CONSEQUENCES.md) for propagation chains, observed events and unresolved causes.

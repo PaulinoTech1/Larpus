@@ -77,3 +77,5 @@ These changes are checkout-only until a new frozen snapshot is staged, prepared 
 ## Checkout validation
 
 The isolated unittest suite reported 205 tests OK, with two platform/data skips. Chat streaming, context, voice, teaching, memory and diagnostic-ID Node checks passed. The complexity gate and approved broker prompt-hash check passed. These are checkout/synthetic tests, not a new static scan receipt or live deployment acceptance. The active frozen release remains stopped.
+
+See [second- and third-order consequences and the Windows workload shutdown](INTERACTION_CONSEQUENCES.md) for propagation chains, observed events and unresolved causes.
