@@ -67,3 +67,5 @@ Upstream explicitly limits itself to Unicode carriers; its semantic lexical
 experiment is unshipped and is not used here. Larpus's rules are separate local
 heuristics, not a claim that upstream gained semantic detection. OpenShell policy
 and outbound restrictions remain separate, unverified deployment gates.
+
+[Detection-rate, false-positive/negative and coverage tracking](STEGDETECT_EVALUATION.md) separates synthetic evidence from production claims.

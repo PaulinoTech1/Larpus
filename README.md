@@ -226,3 +226,5 @@ Source dates, corrections and document authors: [source provenance](docs/SOURCE_
 Complexity and failure tracking: [component value, interactions, regression gate and owner diagnostics](docs/COMPLEXITY.md).
 
 Owner troubleshooting: [verbose errors and diagnostic-ID lookup](docs/VERBOSE_ERRORS.md).
+
+[Detection-rate, false-positive/negative and coverage tracking](docs/STEGDETECT_EVALUATION.md) separates synthetic evidence from production claims.

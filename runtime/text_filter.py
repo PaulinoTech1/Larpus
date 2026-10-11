@@ -12,8 +12,9 @@ RULES = (
 )
 
 class TextHeld(ValueError):
-    def __init__(self, reason, index=None, unavailable=False):
+    def __init__(self, reason, index=None, unavailable=False, scan_complete=None):
         self.reason, self.index, self.unavailable = reason, index, unavailable
+        self.scan_complete=scan_complete
         super().__init__('Input held by local text filter')
 
 def inspect_message(text):
@@ -21,8 +22,9 @@ def inspect_message(text):
         report=inspect_text(text,policy=Policy.CONTEXTUAL,limits=LIMITS)
     except Exception as exc:
         raise TextHeld('scan_unavailable',unavailable=True) from exc
-    if report.status!='complete' or not report.scan_complete or report.action!='allow' or report.candidate_text!=text:
-        raise TextHeld('unicode_carrier_or_incomplete_scan')
+    complete=bool(report.status=='complete' and report.scan_complete)
+    if not complete or report.action!='allow' or report.candidate_text!=text:
+        raise TextHeld('unicode_carrier_or_incomplete_scan',scan_complete=complete)
     # Reject control hiding; contextual Unicode findings still recognize valid
     # emoji joining sequences. Isolated format controls remain held here.
     for char in text:
