@@ -1,6 +1,7 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /app
+COPY runtime/diagnostics.py /app/runtime/diagnostics.py
 COPY runtime/local_ollama.py runtime/notes_worker.py /app/runtime/
 COPY config/inference-broker.json /app/config/inference-broker.json
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUTF8=1 LARPUS_BROKER_ROLE=notes

@@ -1,4 +1,5 @@
 """Server-owned inference service shared only through the local MCP interface."""
+from runtime.diagnostics import report
 import json
 import re
 import threading
@@ -73,8 +74,9 @@ def chat(persona, messages, skill=None, on_chunk=None):
         else:prepared,evidence=augment(prepared,persona)
     except ContextPressure:
         return {'status':413,'code':'context_pressure','error':'Conversation needs compression before continuing. Use COMPRESS or shorten the latest message.'}
-    except Exception:
-        return {'status':503,'error':'Approved local evidence unavailable, rejected or exceeds the context budget. Shorten the question or check the library; no internet fallback is used.'}
+    except Exception as exc:
+        error_id=report('LARP-EVIDENCE-UNAVAILABLE',exc)
+        return {'status':503,'error_id':error_id,'diagnostic_code':'LARP-EVIDENCE-UNAVAILABLE','error':'Approved local evidence unavailable, rejected or exceeds the context budget. Shorten the question or check the library; no internet fallback is used.'}
     if not LOCK.acquire(blocking=False):
         return {'status':409,'error':'Inference busy. Try again shortly.'}
     try:
@@ -141,7 +143,8 @@ def chat(persona, messages, skill=None, on_chunk=None):
         status=429 if exc.status==429 else 503
         code=exc.code if exc.code in ('inference_budget','queue_full','admission_timeout','cancellation_unconfirmed','inference_deadline') else 'broker_held'
         return {'status':status,'code':code,'error':'Local inference is busy or held by the broker. Retry shortly; no direct fallback is used.'}
-    except (OSError,ValueError,KeyError,TypeError):
-        return {'status':502,'error':'Local Ollama unavailable or model missing. No cloud fallback is used.'}
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        error_id=report('LARP-INFERENCE-UNAVAILABLE',exc)
+        return {'status':502,'error_id':error_id,'diagnostic_code':'LARP-INFERENCE-UNAVAILABLE','error':'Local Ollama unavailable or model missing. No cloud fallback is used.'}
     finally:
         LOCK.release()

@@ -5,6 +5,7 @@ import sys
 from mcp import Client
 from mcp.client.stdio import StdioServerParameters
 from runtime.agents import ROOT
+from runtime.diagnostics import failure
 from runtime.isolation import mode,child_args
 
 def child_parameters():
@@ -38,7 +39,7 @@ def call(tool, arguments=None):
     try:
         return asyncio.run(asyncio.wait_for(call_async(tool,arguments),timeout=940))
     except Exception as exc:
-        raise OSError('Local MCP unavailable; no direct inference fallback') from exc
+        raise failure('LARP-MCP-UNAVAILABLE',exc,'Local MCP unavailable; no direct inference fallback') from exc
 
 def chat(persona,messages,skill=None):
     return call('chat_local',{'persona':persona,'messages':messages,'skill':skill})
@@ -47,7 +48,7 @@ def stream_chat(persona,messages,skill,on_chunk):
     try:
         return asyncio.run(asyncio.wait_for(call_async('chat_local',{'persona':persona,'messages':messages,'skill':skill},on_chunk),timeout=940))
     except Exception as exc:
-        raise OSError('Local MCP stream unavailable') from exc
+        raise failure('LARP-MCP-STREAM',exc,'Local MCP stream unavailable') from exc
 
 def health():
     return call('local_status')

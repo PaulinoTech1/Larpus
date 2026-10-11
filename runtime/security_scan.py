@@ -32,7 +32,7 @@ def fingerprint():
     paths += [ROOT/'.containerignore',ROOT/'.gitattributes',ROOT/'config/isolation.json',ROOT/'config/inference-broker.json',ROOT/'config/broker-prompts.json',ROOT/'scripts/broker-prompts.py',ROOT/'config/mcp-scan-reviewed.json']
     paths += [ROOT/'knowledge/manifest.json',ROOT/'knowledge/sources.json',ROOT/'knowledge/provenance.json',ROOT/'knowledge/authors.json',ROOT/'config/source-relationships.json',ROOT/'scripts/source-provenance.py',ROOT/'scripts/prepare-knowledge.py']
     paths += [ROOT/'scripts/test-local.py',ROOT/'requirements-knowledge.txt']+list((ROOT/'knowledge/briefs').glob('*.txt'))
-    paths += [ROOT/'scripts/releases.py']
+    paths += [ROOT/'scripts/releases.py',ROOT/'scripts/complexity.py',ROOT/'config/complexity-baseline.json',ROOT/'config/system-map.json']
     paths += [ROOT/'scripts/evaluate-companion.py']+list((ROOT/'evals').glob('*.json'))
     paths += [ROOT/'scripts/github_archive.py',ROOT/'knowledge/github-manifest.json']
     paths += [ROOT/'config/cpu-retrieval.json',ROOT/'knowledge/embeddings-manifest.json',ROOT/'scripts/prepare-retrieval.py',ROOT/'requirements-retrieval.txt']
@@ -66,7 +66,7 @@ def scan(descriptors):
         capabilities=json.loads((ROOT/'config/mcp-capabilities.json').read_text(encoding='utf-8'))
         (target/'SKILL.md').write_text('---\nname: larpus-mcp\ndescription: Local Larpus MCP server inventory and source.\npermissions: '+json.dumps(capabilities['permissions'])+'\n---\n\n# Local MCP inventory\n\n'+json.dumps(descriptors,indent=2)+'\n\n# Declared scope (documentation, not an OS grant)\n'+json.dumps(capabilities,indent=2),encoding='utf-8')
         # Only fixed source files; never include credentials, recordings or prompts.
-        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py','context.py','inference_broker.py','broker_scheduler.py','notes_worker.py','provenance.py'):
+        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py','context.py','inference_broker.py','broker_scheduler.py','notes_worker.py','provenance.py','diagnostics.py'):
             shutil.copyfile(ROOT/'runtime'/name,target/name)
         (target/'scripts').mkdir(exist_ok=True)
         shutil.copyfile(ROOT/'scripts/protect-quarantine.ps1',target/'scripts/protect-quarantine.ps1')

@@ -1,0 +1,1490 @@
+{
+  "version": 1,
+  "reason": "Initial reviewed inventory preserves visible existing debt while rejecting future decision, function length and import growth.",
+  "new_function": {
+    "decisions": 12,
+    "lines": 80
+  },
+  "module_fan_out": {
+    "runtime.__init__": 4,
+    "runtime.agents": 4,
+    "runtime.auth": 4,
+    "runtime.broker_scheduler": 4,
+    "runtime.capability_trials": 4,
+    "runtime.context": 4,
+    "runtime.diagnostics": 4,
+    "runtime.dlp": 4,
+    "runtime.gateway": 11,
+    "runtime.health": 10,
+    "runtime.inference": 8,
+    "runtime.inference_admission": 4,
+    "runtime.inference_broker": 4,
+    "runtime.isolation": 4,
+    "runtime.knowledge": 7,
+    "runtime.local_ollama": 4,
+    "runtime.mcp_client": 4,
+    "runtime.mcp_server": 4,
+    "runtime.models": 4,
+    "runtime.namespace_probe": 4,
+    "runtime.notes_worker": 4,
+    "runtime.provenance": 4,
+    "runtime.retrieval": 4,
+    "runtime.retrieval_worker": 4,
+    "runtime.security_scan": 4,
+    "runtime.skills": 4,
+    "runtime.teaching": 4,
+    "runtime.text_filter": 4,
+    "runtime.voice": 4,
+    "runtime.voice_worker": 4,
+    "scripts.benchmark-isolated": 4,
+    "scripts.broker-prompts": 5,
+    "scripts.capability-trials": 5,
+    "scripts.complexity": 4,
+    "scripts.create-local-tls": 4,
+    "scripts.evaluate-companion": 4,
+    "scripts.github_archive": 4,
+    "scripts.model-cache": 4,
+    "scripts.notes-health": 4,
+    "scripts.offline_skillspector": 4,
+    "scripts.prepare-knowledge": 4,
+    "scripts.prepare-retrieval": 4,
+    "scripts.releases": 4,
+    "scripts.research-archive": 4,
+    "scripts.research_policy": 4,
+    "scripts.run_mcp": 4,
+    "scripts.setup-voice": 4,
+    "scripts.source-provenance": 4,
+    "scripts.study-notes": 6,
+    "scripts.tailscale_bridge": 4,
+    "scripts.test-local": 4,
+    "scripts.transfer-isolation-source": 4,
+    "scripts.verify-broker": 4,
+    "scripts.verify-broker-live": 4
+  },
+  "functions": {
+    "runtime/agents.py:load_personas": {
+      "decisions": 23,
+      "lines": 80
+    },
+    "runtime/agents.py:messages_for": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:password_record": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:Auth.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:Auth.allowed": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:Auth.login": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:Auth.prune": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:Auth.session": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:Auth.logout": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/auth.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Refused.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Job.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Job.cancel": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Job.bind": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Scheduler.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Scheduler.snapshot": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Scheduler.status_budget": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Scheduler.charge": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/broker_scheduler.py:Scheduler.slot": {
+      "decisions": 19,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:digest": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:now": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:read": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:save": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:bank": {
+      "decisions": 26,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:profile": {
+      "decisions": 23,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:prepare": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:validate": {
+      "decisions": 29,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:review": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/capability_trials.py:compare": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "runtime/context.py:encoded": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:upper_bound": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:capsule": {
+      "decisions": 17,
+      "lines": 80
+    },
+    "runtime/context.py:compression_request": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:compression_data": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:compression_messages": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:compression_envelope": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:summary_result": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/context.py:validate_record": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/diagnostics.py:safe_name": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/diagnostics.py:report": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/diagnostics.py:DiagnosticError.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/diagnostics.py:failure": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/dlp.py:policy": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/dlp.py:shadow": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/dlp.py:inspect_output": {
+      "decisions": 15,
+      "lines": 80
+    },
+    "runtime/dlp.py:stream_pending": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/dlp.py:secure_directory": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/dlp.py:gate": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/dlp.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.log_message": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.reply": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.headers_out": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.trusted": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.do_GET": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.do_POST": {
+      "decisions": 74,
+      "lines": 156
+    },
+    "runtime/gateway.py:Handler.do_POST.event": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.authorized": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.read_json": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:Handler.setup": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/gateway.py:main.drain_when_requested": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/health.py:check": {
+      "decisions": 45,
+      "lines": 107
+    },
+    "runtime/health.py:check.record": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/health.py:read_latest": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/health.py:watch": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/health.py:start_monitor": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/health.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference.py:gpu_placement": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference.py:personas": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference.py:health": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference.py:context_usage": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference.py:citation_check": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference.py:chat": {
+      "decisions": 35,
+      "lines": 96
+    },
+    "runtime/inference.py:chat.release": {
+      "decisions": 15,
+      "lines": 80
+    },
+    "runtime/inference_admission.py:Admission.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_admission.py:Admission.lock": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_admission.py:Admission.interactive": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_admission.py:Admission.background": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:policy": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:unique": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:decode": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:decode.invalid": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:validate_chat": {
+      "decisions": 34,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:upstream_connection": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:prompt_manifest": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:validate_lane": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:idle_fence": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:idle_fence.abort": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.log_message": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.setup": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.reply": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.do_GET": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.do_POST": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.route": {
+      "decisions": 45,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Handler.managed_chat": {
+      "decisions": 24,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Server.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Server.process_request": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/inference_broker.py:Server.process_request_thread": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:agent_name": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:mode": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:wsl_command": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:query": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:read_oci": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:validate_container": {
+      "decisions": 59,
+      "lines": 80
+    },
+    "runtime/isolation.py:preflight": {
+      "decisions": 47,
+      "lines": 80
+    },
+    "runtime/isolation.py:child_args": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:check_behavior": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/isolation.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:author_cite": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:_verified": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:database": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:notes_database": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:_engine": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:study_notes": {
+      "decisions": 26,
+      "lines": 80
+    },
+    "runtime/knowledge.py:retrieve": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:_hybrid": {
+      "decisions": 35,
+      "lines": 80
+    },
+    "runtime/knowledge.py:_retrieve": {
+      "decisions": 103,
+      "lines": 113
+    },
+    "runtime/knowledge.py:_retrieve.superseded": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:augment": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/knowledge.py:status": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/local_ollama.py:NoRedirect.redirect_request": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/local_ollama.py:BrokerRejected.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/local_ollama.py:local_response": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "runtime/local_ollama.py:ollama": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/local_ollama.py:broker_status": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/local_ollama.py:chat_stream": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:child_parameters": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:call_async": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:call_async.progress": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:call": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:chat": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:stream_chat": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_client.py:health": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_server.py:allowed": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_server.py:list_personas": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_server.py:local_status": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_server.py:chat_local": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_server.py:chat_local.approved": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/mcp_server.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/models.py:benchmark": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/models.py:select": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/models.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/namespace_probe.py:check": {
+      "decisions": 22,
+      "lines": 80
+    },
+    "runtime/notes_worker.py:probe": {
+      "decisions": 16,
+      "lines": 80
+    },
+    "runtime/notes_worker.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:date_value": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:chronology": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:locator_order": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:section": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:read": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:evidence": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/provenance.py:validate_relations": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "runtime/provenance.py:validate_relations.visit": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:sha256_file": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:load_config": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:_stamp": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:verify_file": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:verify_model": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:load_index": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:_session": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:_tokenizer": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:_feed": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Embedder.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Embedder.encode": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Reranker.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Reranker.score": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Engine.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Engine.neighbors": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:Engine.rerank": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:RemoteEngine.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:RemoteEngine.neighbors": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:RemoteEngine.rerank": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:worker_mode": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:disabled": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:engine": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:status": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval.py:reset": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:_exact": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:receive": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:send_frame": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:validate": {
+      "decisions": 19,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:handle": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:serve": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/retrieval_worker.py:call": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/security_scan.py:timestamp": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/security_scan.py:write_json": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/security_scan.py:fingerprint": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/security_scan.py:discover_async": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/security_scan.py:discover": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/security_scan.py:scan": {
+      "decisions": 19,
+      "lines": 80
+    },
+    "runtime/skills.py:load_skills": {
+      "decisions": 26,
+      "lines": 80
+    },
+    "runtime/skills.py:selected_prompt": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/skills.py:summaries": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/teaching.py:unpack": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "runtime/text_filter.py:TextHeld.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/text_filter.py:inspect_message": {
+      "decisions": 17,
+      "lines": 80
+    },
+    "runtime/text_filter.py:filter_messages": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice.py:preflight": {
+      "decisions": 28,
+      "lines": 80
+    },
+    "runtime/voice.py:call": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:speech_models": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:SpeechOnlyModel.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:SpeechOnlyModel.transcribe": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:validate_wav": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:run": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:receive": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:receive.exact": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:send_frame": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:serve": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:client": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "runtime/voice_worker.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/benchmark-isolated.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/broker-prompts.py:manifest": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/broker-prompts.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/capability-trials.py:locked": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/capability-trials.py:note_gate": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/capability-trials.py:environment": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/capability-trials.py:execute": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "scripts/capability-trials.py:main": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "scripts/complexity.py:Decisions.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:Decisions.visit_FunctionDef": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:Decisions.visit_Lambda": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:Decisions.generic_visit": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:Functions.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:Functions.visit_ClassDef": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:Functions.visit_FunctionDef": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:analyze": {
+      "decisions": 21,
+      "lines": 80
+    },
+    "scripts/complexity.py:regressions": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:check": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:markdown": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/complexity.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/evaluate-companion.py:catalog": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/evaluate-companion.py:run": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:stamp": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:digest": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:read": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:write": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:safe_name": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:safe_file": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:environment": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:command": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:git": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:inventory": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:inventory.NoRedirect.redirect_request": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:inventory.get": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:snapshot": {
+      "decisions": 32,
+      "lines": 80
+    },
+    "scripts/github_archive.py:sync": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:eligible": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/github_archive.py:indexed_records": {
+      "decisions": 34,
+      "lines": 80
+    },
+    "scripts/github_archive.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/model-cache.py:create": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/model-cache.py:probe": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/model-cache.py:apply": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/model-cache.py:recover": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/notes-health.py:events": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/notes-health.py:report": {
+      "decisions": 20,
+      "lines": 80
+    },
+    "scripts/offline_skillspector.py:deny_network": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/offline_skillspector.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:NoRedirect.redirect_request": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:vetted_url": {
+      "decisions": 15,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:fetch": {
+      "decisions": 16,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:TextHTML.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:TextHTML.add": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:TextHTML.handle_starttag": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:TextHTML.handle_endtag": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:TextHTML.handle_data": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:extracted": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:passages": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-knowledge.py:build": {
+      "decisions": 51,
+      "lines": 94
+    },
+    "scripts/prepare-retrieval.py:fetch_url": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:wheel_specs": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:fetch": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:verify": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:install_host": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:wsl": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:sync": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:build_index": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:build_index.work": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/prepare-retrieval.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:read": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:checksum": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:write": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:release_path": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:exclusive": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:payload": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:run": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:wsl": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:podman": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:issue_signatures": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:reviewed_signatures": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:scan_gate": {
+      "decisions": 20,
+      "lines": 80
+    },
+    "scripts/releases.py:validate": {
+      "decisions": 14,
+      "lines": 80
+    },
+    "scripts/releases.py:stage": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:prepare_voice": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:prepare": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "scripts/releases.py:process": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:running": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:launch": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:stop": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:ready": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:ensure_execution": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:cutover": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:start": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:keep_names": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/releases.py:prune": {
+      "decisions": 21,
+      "lines": 80
+    },
+    "scripts/releases.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/research-archive.py:quota": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/research-archive.py:read_catalog": {
+      "decisions": 22,
+      "lines": 80
+    },
+    "scripts/research-archive.py:pdf_path": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/research-archive.py:digest": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/research-archive.py:fetch_one": {
+      "decisions": 22,
+      "lines": 80
+    },
+    "scripts/research-archive.py:verify": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/research-archive.py:write_indexes": {
+      "decisions": 19,
+      "lines": 80
+    },
+    "scripts/research-archive.py:write_source_catalog": {
+      "decisions": 15,
+      "lines": 80
+    },
+    "scripts/research-archive.py:pack": {
+      "decisions": 14,
+      "lines": 80
+    },
+    "scripts/research-archive.py:main": {
+      "decisions": 34,
+      "lines": 80
+    },
+    "scripts/research_policy.py:vetted_host": {
+      "decisions": 14,
+      "lines": 80
+    },
+    "scripts/research_policy.py:vet": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "scripts/setup-voice.py:wsl": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/source-provenance.py:load": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/source-provenance.py:build": {
+      "decisions": 16,
+      "lines": 80
+    },
+    "scripts/source-provenance.py:audit": {
+      "decisions": 14,
+      "lines": 80
+    },
+    "scripts/source-provenance.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:duplicate_notes": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:norm": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:build_db": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:windows": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:bibliographic": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:ground": {
+      "decisions": 21,
+      "lines": 80
+    },
+    "scripts/study-notes.py:ground.ok": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:ground.ctx": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:writer_lock": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:NotesWorker.__init__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:NotesWorker.start": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:NotesWorker.close": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:NotesWorker.request": {
+      "decisions": 20,
+      "lines": 80
+    },
+    "scripts/study-notes.py:generate": {
+      "decisions": 15,
+      "lines": 80
+    },
+    "scripts/study-notes.py:answers": {
+      "decisions": 28,
+      "lines": 80
+    },
+    "scripts/study-notes.py:answers.persona_for": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:Worker.__enter__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:Worker.__call__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:Worker.__exit__": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/study-notes.py:publish": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:settings": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:upstream": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:preflight": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:Bridge.log_message": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:Bridge.setup": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:Bridge.deny": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:Bridge.relay": {
+      "decisions": 33,
+      "lines": 80
+    },
+    "scripts/tailscale_bridge.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/test-local.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/verify-broker-live.py:verify": {
+      "decisions": 16,
+      "lines": 80
+    },
+    "scripts/verify-broker-live.py:verify.agent_call": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/verify-broker-live.py:verify.note_call": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/verify-broker-live.py:main": {
+      "decisions": 12,
+      "lines": 80
+    },
+    "scripts/verify-broker.py:main": {
+      "decisions": 12,
+      "lines": 80
+    }
+  }
+}

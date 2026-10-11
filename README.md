@@ -222,3 +222,5 @@ No public service, multi-user accounts, mobile app or autonomous OS actions are
 part of the deployed station.
 
 Source dates, corrections and document authors: [source provenance](docs/SOURCE_PROVENANCE.md).
+
+Complexity and failure tracking: [component value, interactions, regression gate and owner diagnostics](docs/COMPLEXITY.md).

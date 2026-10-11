@@ -5,6 +5,7 @@ import os
 import socket
 from pathlib import Path
 from runtime.local_ollama import ollama,BrokerRejected
+from runtime.diagnostics import report
 
 def probe():
     if os.getuid()!=1000 or {p.name for p in Path('/sys/class/net').iterdir()}!={'lo'}:raise ValueError('Notes identity/network drift')
@@ -37,7 +38,7 @@ def main():
             metrics={key:result.get(key) for key in ('total_duration','load_duration','prompt_eval_count','prompt_eval_duration','eval_count','eval_duration','done_reason')}
             reply={'ok':result['message']['content'],'metrics':metrics}
         except BrokerRejected as exc:reply={'error':'broker-held','code':exc.code,'http_status':exc.status}
-        except Exception as exc:reply={'error':type(exc).__name__}
+        except Exception as exc:reply={'error':type(exc).__name__,'diagnostic_code':'LARP-NOTES-WORKER','error_id':report('LARP-NOTES-WORKER',exc)}
         print(json.dumps(reply),flush=True)
 
 if __name__=='__main__':

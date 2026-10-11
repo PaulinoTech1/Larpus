@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "scope": "Owned core paths. Authored failure map, not exhaustive runtime discovery or proof all failures are tested.",
+  "components": [
+    {
+      "id": "gateway",
+      "files": [
+        "runtime/gateway.py",
+        "runtime/auth.py"
+      ],
+      "purpose": "Preserves local/LAN authentication and existing HUD protocol.",
+      "invariant": "Auth, admission and MCP failures must preserve conversation and return bounded status.",
+      "costs": "Adds request admission and gateway process; port rebind interrupts LAN sessions.",
+      "keep_condition": "Keep while LAN owner access and HTTP compatibility are required.",
+      "failure_modes": [
+        "auth/session mismatch",
+        "interactive admission timeout",
+        "MCP child unavailable",
+        "client disconnected"
+      ],
+      "verification": [
+        "tests/test_gateway.py",
+        "tests/chat-stream-ui.cjs"
+      ]
+    },
+    {
+      "id": "mcp-agent",
+      "files": [
+        "runtime/mcp_client.py",
+        "runtime/mcp_server.py"
+      ],
+      "purpose": "Restricts model-callable surface to three fixed tools.",
+      "invariant": "No direct model fallback on MCP failure.",
+      "costs": "Child/WSL startup and isolation preflight latency.",
+      "keep_condition": "Keep while restricted tool surface can be verified independently.",
+      "failure_modes": [
+        "child exit",
+        "protocol mismatch",
+        "incomplete stream"
+      ],
+      "verification": [
+        "tests/test_mcp.py",
+        "tests/test_streaming.py"
+      ]
+    },
+    {
+      "id": "broker",
+      "files": [
+        "runtime/inference_broker.py",
+        "runtime/broker_scheduler.py"
+      ],
+      "purpose": "Separates chat/notes capabilities, budgets and generation scheduling.",
+      "invariant": "Never release interrupted inference slot until serial runner availability is confirmed.",
+      "costs": "Extra IPC, one-token recovery probes, conservative quota cooldown.",
+      "keep_condition": "Keep if chat preemption and denied arbitrary templates remain necessary.",
+      "failure_modes": [
+        "upstream read stall",
+        "failed cancellation fence",
+        "budget exhausted",
+        "template denied",
+        "parallel-runner drift"
+      ],
+      "verification": [
+        "tests/test_broker_scheduling.py",
+        "scripts/verify-broker-live.py"
+      ]
+    },
+    {
+      "id": "isolation",
+      "files": [
+        "runtime/isolation.py",
+        "runtime/namespace_probe.py"
+      ],
+      "purpose": "Denies raw inference TCP, host paths and external network access.",
+      "invariant": "Image/mount/namespace drift fails closed.",
+      "costs": "OCI inspection and denial probes, platform-specific code.",
+      "keep_condition": "Keep while offline privacy and model isolation are core requirements.",
+      "failure_modes": [
+        "stopped WSL/containers",
+        "source/image mismatch",
+        "unexpected mount",
+        "network boundary drift"
+      ],
+      "verification": [
+        "tests/test_isolation.py"
+      ]
+    },
+    {
+      "id": "knowledge",
+      "files": [
+        "runtime/knowledge.py",
+        "runtime/provenance.py"
+      ],
+      "purpose": "Keeps shared evidence grounded and document authors distinct from cited authors.",
+      "invariant": "Unknown author/date stays unknown; index/provenance drift blocks grounded chat.",
+      "costs": "Index hashing, bounded source retrieval and sidecar maintenance.",
+      "keep_condition": "Keep if source accuracy and chronology improve verifiable answers.",
+      "failure_modes": [
+        "missing/corrupt index",
+        "metadata/index mismatch",
+        "bibliography false positive",
+        "undated source",
+        "unresolved contradiction"
+      ],
+      "verification": [
+        "tests/test_knowledge.py",
+        "tests/test_source_provenance.py"
+      ]
+    },
+    {
+      "id": "cpu-retrieval",
+      "files": [
+        "runtime/retrieval.py",
+        "runtime/retrieval_worker.py"
+      ],
+      "purpose": "Improves retrieval relevance using CPU semantic/rerank models.",
+      "invariant": "Failure falls back to BM25; does not load models in chat process.",
+      "costs": "Additional CPU/RAM/worker startup and rank deadlines.",
+      "keep_condition": "Retain only if retrieval evaluation beats BM25 enough to justify measured latency/RAM.",
+      "failure_modes": [
+        "worker exit",
+        "embedding pin mismatch",
+        "rerank timeout"
+      ],
+      "verification": [
+        "tests/test_retrieval_worker.py"
+      ]
+    },
+    {
+      "id": "dlp",
+      "files": [
+        "runtime/dlp.py",
+        "runtime/text_filter.py"
+      ],
+      "purpose": "Screens untrusted input and stages/holds sensitive generated output.",
+      "invariant": "No release of held output; streaming checks complete prefix.",
+      "costs": "Filtering false positives and quarantine ownership/retention work.",
+      "keep_condition": "Keep while owner setup privacy is required; measure false positives and missed leaks.",
+      "failure_modes": [
+        "filter unavailable",
+        "sensitive output",
+        "quarantine permission failure",
+        "split-secret stream"
+      ],
+      "verification": [
+        "tests/test_dlp.py",
+        "tests/test_text_filter.py",
+        "tests/test_streaming.py"
+      ]
+    },
+    {
+      "id": "voice",
+      "files": [
+        "runtime/voice.py",
+        "runtime/voice_worker.py"
+      ],
+      "purpose": "Provides local CPU speech without cloud inference.",
+      "invariant": "Text response can succeed with speech degraded; never cloud fallback.",
+      "costs": "CPU/memory contention and platform IPC; shared model pins.",
+      "keep_condition": "Retain voice features that improve measured interaction without starving chat.",
+      "failure_modes": [
+        "voice busy",
+        "stopped worker",
+        "invalid reply",
+        "microphone permission/device error"
+      ],
+      "verification": [
+        "tests/test_voice.py",
+        "tests/voice-ui.cjs"
+      ]
+    },
+    {
+      "id": "notes",
+      "files": [
+        "runtime/notes_worker.py",
+        "scripts/study-notes.py"
+      ],
+      "purpose": "Builds resumable quoted study facts without modifying model weights.",
+      "invariant": "Failed/truncated notes stay pending; interrupted attempts never save partial JSON.",
+      "costs": "GPU hours, derived storage, fidelity/audit/retry work.",
+      "keep_condition": "Retain if source-backed notes improve retrieval over original passages.",
+      "failure_modes": [
+        "EOF/worker exit",
+        "broker yield or rate limit",
+        "truncation",
+        "grounding rejected",
+        "Windows crash"
+      ],
+      "verification": [
+        "tests/test_notes_recovery.py",
+        "tests/test_notes_throughput.py",
+        "scripts/notes-health.py"
+      ]
+    },
+    {
+      "id": "release-health",
+      "files": [
+        "scripts/releases.py",
+        "runtime/health.py",
+        "runtime/security_scan.py"
+      ],
+      "purpose": "Keeps checkout edits separate from production with readiness and rollback.",
+      "invariant": "No activation of rejected candidates; retain warnings and old release.",
+      "costs": "Frozen snapshots, static scan time and retained images.",
+      "keep_condition": "Keep while station availability and reproducible release checks are required.",
+      "failure_modes": [
+        "scan incomplete/drift",
+        "readiness failure",
+        "drain timeout",
+        "rollback failure",
+        "reboot leaves services stopped"
+      ],
+      "verification": [
+        "tests/test_releases.py",
+        "tests/test_skills_health.py"
+      ]
+    },
+    {
+      "id": "context",
+      "files": [
+        "runtime/context.py",
+        "runtime/teaching.py"
+      ],
+      "purpose": "Preserves chat through skill switching, compression and handoff.",
+      "invariant": "Lossy summaries never grant permissions or replace full visible transcript.",
+      "costs": "Prompt budget, summary inference and client state complexity.",
+      "keep_condition": "Keep if long-session continuity works at acceptable bounded cost.",
+      "failure_modes": [
+        "invalid handoff",
+        "context overflow",
+        "storage failure",
+        "summary hallucination"
+      ],
+      "verification": [
+        "tests/context-ui.cjs",
+        "tests/teaching-ui.cjs"
+      ]
+    },
+    {
+      "id": "complexity-diagnostics",
+      "files": [
+        "scripts/complexity.py",
+        "runtime/diagnostics.py"
+      ],
+      "purpose": "Makes structural growth and masked failures visible to owner.",
+      "invariant": "Gate fails loudly; stderr diagnostics never contaminate model stdout protocol.",
+      "costs": "Baseline review and owner log review; bounded diagnostic overhead.",
+      "keep_condition": "Keep if it detects regressions and reduces incident diagnosis time.",
+      "failure_modes": [
+        "AST parse failure",
+        "baseline regression",
+        "diagnostic sink unavailable",
+        "unmeasured JS/PS behavior"
+      ],
+      "verification": [
+        "tests/test_complexity.py",
+        "tests/test_diagnostics.py"
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "from": "gateway",
+      "to": "mcp-agent",
+      "mechanism": "stdio via fixed WSL/Podman executor"
+    },
+    {
+      "from": "mcp-agent",
+      "to": "isolation",
+      "mechanism": "pinned OCI/source preflight"
+    },
+    {
+      "from": "mcp-agent",
+      "to": "knowledge",
+      "mechanism": "read-only approved index"
+    },
+    {
+      "from": "knowledge",
+      "to": "cpu-retrieval",
+      "mechanism": "optional IPC; BM25 fallback"
+    },
+    {
+      "from": "knowledge",
+      "to": "context",
+      "mechanism": "bounded model input"
+    },
+    {
+      "from": "mcp-agent",
+      "to": "dlp",
+      "mechanism": "input/output screening"
+    },
+    {
+      "from": "mcp-agent",
+      "to": "broker",
+      "mechanism": "private chat Unix socket"
+    },
+    {
+      "from": "notes",
+      "to": "broker",
+      "mechanism": "separate notes Unix socket"
+    },
+    {
+      "from": "gateway",
+      "to": "voice",
+      "mechanism": "fixed local CPU worker"
+    },
+    {
+      "from": "release-health",
+      "to": "gateway",
+      "mechanism": "drain/readiness/cutover"
+    },
+    {
+      "from": "release-health",
+      "to": "isolation",
+      "mechanism": "namespace/volume checks"
+    },
+    {
+      "from": "broker",
+      "to": "notes",
+      "mechanism": "preemption/yield and pending retry"
+    },
+    {
+      "from": "complexity-diagnostics",
+      "to": "release-health",
+      "mechanism": "configured regression gate"
+    }
+  ],
+  "external_boundary": {
+    "model": "Broker/model share network=none pod loopback; model pins and GPU ownership stay separate.",
+    "host": "Windows/WSL/GPU/filesystem failures can terminate all components; Python diagnostics cannot survive a kernel crash."
+  }
+}

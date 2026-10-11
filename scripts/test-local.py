@@ -12,6 +12,8 @@ import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 
 def main():
+    gate=subprocess.run([sys.executable,str(ROOT/"scripts/complexity.py"),"check"],cwd=ROOT)
+    if gate.returncode:return gate.returncode
     with tempfile.TemporaryDirectory(prefix='larpus-tests-') as temporary:
         workspace=Path(temporary)
         for directory in ('runtime','agents','skills','config','scripts','deploy','tests','web','evals'):

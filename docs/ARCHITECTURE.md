@@ -78,3 +78,5 @@ Owner-side reviewed downloads and PDF preparation are separate from the offline
 runtime; no new model tool, port or host mount is exposed. See
 [approved knowledge](APPROVED_KNOWLEDGE.md) and the
 [reviewed catalog](../knowledge/CATALOG.md).
+
+Complexity and failure tracking: [component value, interactions, regression gate and owner diagnostics](COMPLEXITY.md).

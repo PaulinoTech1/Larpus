@@ -12,6 +12,7 @@ sys.path.insert(0,str(ROOT))
 from runtime.text_filter import inspect_message
 from runtime.provenance import read as provenance_entries,chronology,section,REFERENCE_HEADING
 from runtime.inference_admission import Admission, Busy
+from runtime.diagnostics import report,DiagnosticError
 BUILD=ROOT/'knowledge/notes.build.sqlite'
 WINDOW=4000
 WORKER=r'''
@@ -186,11 +187,15 @@ class NotesWorker:
                     continue
                 if self.managed and 'error' in reply:
                     if reply.get('code')=='cancellation_unconfirmed':return {'error':'worker-unavailable'}
-                    raise OSError('Notes request interrupted')
+                    raise DiagnosticError(reply.get('diagnostic_code','LARP-NOTES-TRANSPORT'),reply.get('error_id','unavailable'),'Notes request interrupted')
                 if reply.get('error') not in ('HTTPError','TimeoutError','URLError','ConnectionError'):
                     return reply
                 reason=reply['error']
-            except (OSError,EOFError,ValueError) as exc:reason=type(exc).__name__
+            except (OSError,EOFError,ValueError) as exc:
+                reason=type(exc).__name__
+                error_id=report('LARP-NOTES-TRANSPORT',exc)
+                exit_code=self.proc.poll() if self.proc is not None else None
+                print(json.dumps({'worker_error_id':error_id,'worker_code':'LARP-NOTES-TRANSPORT','exit_code':exit_code if type(exit_code) is int else None,'attempt':attempt+1}),flush=True)
             print(json.dumps({'worker_retry':attempt+1,'reason':reason,'max_attempts':3}),flush=True)
             self.close()
             if attempt<2:time.sleep(min(2**(attempt+1),max(0,deadline-time.time())))

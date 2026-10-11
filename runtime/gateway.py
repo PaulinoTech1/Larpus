@@ -1,4 +1,5 @@
 """Local UI gateway with optional explicitly scoped LAN access."""
+from runtime.diagnostics import report
 import ipaddress
 import json
 import os
@@ -226,10 +227,11 @@ class Handler(BaseHTTPRequestHandler):
                     if result.get('status')==200:
                         event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check') if key in result}})
                     else:
-                        event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code')})
-                except (OSError,ValueError,KeyError,TypeError):
+                        event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code'),'error_id':result.get('error_id')})
+                except (OSError,ValueError,KeyError,TypeError) as exc:
+                    error_id=getattr(exc,'error_id',None) or report('LARP-MCP-STREAM',exc)
                     try:
-                        event({'type':'error','error':'Local stream interrupted. The partial reply is incomplete.'})
+                        event({'type':'error','error':'Local stream interrupted. The partial reply is incomplete.','error_id':error_id})
                     except OSError:
                         pass  # Browser disconnected; never start another HTTP response.
                 return
@@ -246,8 +248,9 @@ class Handler(BaseHTTPRequestHandler):
                 except OSError:
                     result['voice_error']='Reply is shown; local speech is unavailable.'
             self.reply(status, result)
-        except (OSError, ValueError, KeyError, TypeError):
-            self.reply(502, {'error':'Local MCP unavailable or invalid response. No direct inference fallback.'})
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            error_id=getattr(exc,'error_id',None) or report('LARP-MCP-UNAVAILABLE',exc)
+            self.reply(502, {'error':'Local MCP unavailable or invalid response. No direct inference fallback.','error_id':error_id})
         finally:
             ticket.__exit__(None,None,None)
             LOCK.release()

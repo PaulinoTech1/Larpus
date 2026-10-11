@@ -1,3 +1,4 @@
+function failureText(data){const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (data.error||'Gateway request failed')+id;}
 function showModel(tag){$('model').textContent=tag==='qwen3.5:27b-q4_K_M'?'LARP 3.5 27B Limitless LARP':tag;$('model').title=tag;}
 const $ = id => document.getElementById(id);
 let history = [], busy = false, personas = [], skills = [];
@@ -33,7 +34,7 @@ function setBusy(value) { busy = value; teaching?.busy(value); for (const id of 
 async function api(path, body) {
   const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),...(requestController?{signal:requestController.signal}:{})} : {});
   if(r.status===401){location.replace('/login');throw Error('Session expired');}
-  const data = await r.json(); if (!r.ok) throw Error(data.error || 'Gateway request failed'); return data;
+  const data = await r.json(); if (!r.ok) throw Error(failureText(data)); return data;
 }
 $('persona').addEventListener('change', () => {const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; $('model').textContent = p.model; $('skill').value='';$('skill-search').value='';refreshSkills(p);teaching?.refresh();$('notice').textContent='Persona changed. Chat retained; the next reply uses the new role.';});
 function refreshSkills(persona) {
@@ -68,7 +69,7 @@ $('chat').onsubmit = async e => {
     const outgoing=conversation?conversation.wire(history,question):[...next.slice(0,-1),{role:'user',content:question}];
     const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},...(requestController?{signal:requestController.signal}:{}),body:JSON.stringify({persona:$('persona').value,messages:outgoing,skill:$('skill').value||null})});
     if(response.status===401){location.replace('/login');throw Error('Session expired');}
-    if(!response.ok)throw Error((await response.json()).error||'Gateway request failed');
+    if(!response.ok)throw Error(failureText(await response.json()));
     pipeline('GENERATING / WAITING FOR CHECKED TEXT');
     const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
     try{
@@ -78,7 +79,7 @@ $('chat').onsubmit = async e => {
         let end;
         while((end=buffer.indexOf('\n'))>=0){
           const event=JSON.parse(buffer.slice(0,end));buffer=buffer.slice(end+1);
-          if(event.type==='error')throw Error(event.error||'Response withheld');
+          if(event.type==='error')throw Error(failureText(event));
           if(event.type==='text'){
             if(complete || typeof event.content!=='string' || (full.length+event.content.length)>65536)throw Error('Invalid reply stream');
             if(!full)$('pipeline-status').textContent=`FIRST CHECKED TEXT / ${((Date.now()-started)/1000).toFixed(1)}s`;

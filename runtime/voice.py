@@ -6,6 +6,7 @@ import threading
 import re
 import time
 from runtime.agents import ROOT
+from runtime.diagnostics import failure
 from runtime.isolation import query, read_oci, wsl_command
 
 LOCK=threading.Lock()
@@ -50,6 +51,6 @@ def call(request):
         reply.setdefault('timing',{})['gateway_ms']=round((time.monotonic()-start)*1000)
         return reply
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as exc:
-        raise OSError('Local voice unavailable; no cloud fallback.') from exc
+        raise failure('LARP-VOICE-UNAVAILABLE',exc,'Local voice unavailable; no cloud fallback.') from exc
     finally:
         LOCK.release()
