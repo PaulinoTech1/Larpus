@@ -194,9 +194,34 @@ No current changes were committed or pushed during this activation.
 
 See [source provenance](SOURCE_PROVENANCE.md) for the reason, metadata policy,
 non-destructive audit and validation. The candidate `43afda5d3e184b249420caca0f8d043e`
-is staged only. Its source queue preserves completed keys and distinguishes
+was staged only at that review. Its source queue preserves completed keys and distinguishes
 publication/revision dates from retrieval dates. Document authorship uses reviewed
 metadata rather than bibliography names; corrections require explicit scope and
-evidence. Model/nightly restart and activation remain pending crash recovery.
+evidence. At that review, model/nightly restart and activation were pending crash recovery. The later activation below includes the provenance changes; the nightly workload remains stopped.
 The Windows bugcheck is not established as a LARPUS application defect; the
 private dump and incident logs remain outside Git.
+
+## 2026-10-11 diagnostic update preparation review
+
+Candidate `9573bf3d691444dc90ed206063f98339` passed application/UI/isolation checks and all 70 static scan targets, but preparation rejected its MCP inventory transition from 10 to 11 warnings. The extra LOW finding is diagnostics `getattr(current,name,None)` with names restricted to the literal `errno`, `winerror`, `returncode` tuple and exact-int output. The reviewed transition now pins the relevant public sources and retains every warning. The rejected snapshot/receipts are untouched; a new snapshot must be independently prepared before activation. No independent audit or clean-scan claim.
+
+Post-reboot recovery also observed `cancellation_unconfirmed` while the GPU model was cold. The retained gateway failed its initial readiness check; after owner-local model warm-up and restart of only the faulted broker, HTTP chat succeeded and required health checks passed. Pod start revived retained execution containers; ordinary pruning stopped obsolete agents/brokers without stopping the model or selected voice. The nightly workload was not restarted. These are application recovery observations, not an explanation of the earlier Windows bugcheck.
+
+Activated `9d76eed753ad4ec9901c8b988e961248`; retained `fb20ec0c6bc0419dbc6a3b298116820d` for rollback. Replacement preparation passed application/HUD/isolation checks and all 70 static targets, with 69 clean skills and the exact reviewed 11-warning MCP inventory. The synthetic live broker test completed chat 3.156 seconds after preemption and resumed notes successfully. A candidate notes-worker invalid-job probe produced an exact reviewed message and correlated ID with protocol-only stdout.
+
+After activation, HTTP chat returned 200 (8.922 seconds), streaming completed without error (5.656 seconds), and CPU speech synthesis returned audio (1.953-second gateway timing). Local HTTP persona access returned 200 without a password; home-LAN HTTPS validated the existing CA and returned 401 without authentication. Required health checks all passed, including full GPU placement, voice and egress enforcement. Overall health remains degraded only for static scan warnings. Model and voice image pins are unchanged.
+
+The gateway drained/rebound its listeners; this is not zero downtime. LAN sessions need a fresh login. Prior execution services were stopped but their images/snapshots remain restartable for rollback. Private numeric receipts: `data/production-broker-live-9d76.json`, `data/production-diagnostic-smoke.json`, `data/production-activation-9d76.json`; no private source content was recorded. Physical microphone/second-device acceptance and sustained nightly workload were not tested or restarted. The earlier Windows bugcheck remains unresolved.
+
+### Process followed for this activation
+
+1. Read this update policy and checked `python scripts/releases.py status`. The selected retained release was stopped after the reboot; no interrupted-cutover journal was present.
+2. Ran `python scripts/releases.py start`. Its initial functional-readiness check failed with the model unloaded. An owner-local short warm-up used the existing model container, followed by restart of only the faulted broker. A subsequent HTTP chat and required health checks passed. No model/voice image or shared dependency was replaced. This recovery is not a fix for the Windows crash; do not reset a broker during active work without checking its state.
+3. Ran `python scripts/releases.py stage`, then `python scripts/releases.py prepare 9573bf3d691444dc90ed206063f98339`. Complete scans found a changed MCP inventory, and preparation refused it. The serving gateway stayed running.
+4. Reviewed the added warning in source and recorded the exact previous/approved inventories, rationale and public source hashes in `config/mcp-scan-reviewed.json`. No frozen file or scan receipt was edited. Stopped the rejected candidate's unused execution containers and retained its artifacts.
+5. Staged again and ran `python scripts/releases.py prepare 9d76eed753ad4ec9901c8b988e961248`. This independently repeated builds, tests, discovery, isolation and all static scans; it did not reuse the rejected preparation as approval.
+6. Ran `python scripts/verify-broker-live.py 9d76eed753ad4ec9901c8b988e961248 --output data/production-broker-live-9d76.json` with the owner writer stopped. Synthetic preemption and resumption passed. The invalid-job diagnostic probe also passed.
+7. Verified the snapshot was prepared, then ran `python scripts/releases.py activate 9d76eed753ad4ec9901c8b988e961248`. Drain, readiness and pointer replacement succeeded; ordinary pruning stopped retained inactive execution services. Rollback remains `python scripts/releases.py rollback`; restart/recovery remains `python scripts/releases.py start`.
+8. Checked active/previous IDs, required health checks, HTTP chat, NDJSON completion, synthetic CPU speech, local password bypass and CA-validated LAN authentication rejection. Kept numeric receipts in ignored owner data and recorded limitations above. No nightly training restart or second-device/physical-microphone acceptance was performed.
+
+These IDs document this completed operation; future updates must use their newly staged ID. Documentation and source-review commits do not themselves activate another snapshot. Private scan reports, logs, corpus data and credentials remain outside Git.
