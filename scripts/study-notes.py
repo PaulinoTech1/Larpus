@@ -5,11 +5,12 @@ passage verbatim, and retrieval always shows that original passage beside the no
 Resumable: progress lives in knowledge/notes.build.sqlite; `publish` freezes it.
 """
 import argparse, hashlib, json, re, sqlite3, subprocess, sys, time
-from contextlib import closing, contextmanager
+from contextlib import closing, contextmanager, nullcontext
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from runtime.text_filter import inspect_message
+from runtime.provenance import read as provenance_entries,chronology,section,REFERENCE_HEADING
 from runtime.inference_admission import Admission, Busy
 BUILD=ROOT/'knowledge/notes.build.sqlite'
 WINDOW=4000
@@ -41,6 +42,9 @@ FACT_PROMPT=('You write detailed, source-grounded study facts for a private refe
  'Cover all important nuances present within the 15-fact limit. Do not split or repeat claims merely to reach the minimum. '
  'If the passage supports fewer than 8 distinct facts, return only those supported facts; never invent or pad. '
  'Every quote must be copied EXACTLY, word for word, from the document, 30-300 characters, and support the claim. '
+ 'Document authorship comes only from supplied reviewed source metadata, never names in the bibliography. '
+ 'Distinguish the document author from authors of cited works; do not turn a bibliography entry into a substantive finding. '
+ 'Preserve dates, version scope and secondary-citation uncertainty; later publication alone does not disprove earlier work. '
  'Do not write summaries or questions and answers. Never add outside knowledge. '
  'For boilerplate or empty content return {"facts":[]}.')
 
@@ -66,11 +70,12 @@ def build_db():
 def windows(order):
     """Yield (key, source_id, title, url, locator, text) windows; research and skills first."""
     out=[]
-    priority=set(json.loads((ROOT/'knowledge/authors.json').read_text(encoding='utf-8')).get('entries',{}))
+    metadata=provenance_entries(ROOT/'knowledge')
     a=sqlite3.connect((ROOT/'knowledge/approved.sqlite').as_uri()+'?mode=ro',uri=True)
     groups={}
     for sid,title,url,loc,text in a.execute('SELECT DISTINCT source_id,title,url,locator,text FROM chunks'):
         groups.setdefault(sid,[]).append((loc,title,url,text))
+    a.close()
     for sid,rows in groups.items():
         rows.sort(key=lambda r:(r[0].rsplit(' offset ',1)[0],int(r[0].rsplit(' offset ',1)[1]) if r[0].rsplit(' offset ',1)[-1].isdigit() else 0))
         buf='';start=None
@@ -78,8 +83,8 @@ def windows(order):
             if start is None:start=loc
             buf+=text+'\n'
             if len(buf)>=WINDOW:
-                out.append((sid,title,url,start,buf,1 if sid in priority else 2));buf='';start=None
-        if buf.strip():out.append((sid,title,url,start,buf,1 if sid in priority else 2))
+                out.append((sid,title,url,start,buf,chronology(metadata.get(sid,{'id':sid}))));buf='';start=None
+        if buf.strip():out.append((sid,title,url,start,buf,chronology(metadata.get(sid,{'id':sid}))))
     out.sort(key=lambda w:w[5])
     for sid,title,url,loc,text,_ in out:
         yield hashlib.sha256((sid+'|'+loc+'|'+text).encode()).hexdigest()[:32],sid,title,url,loc,text
@@ -90,6 +95,8 @@ REFS=re.compile(r'(?im)^\s*(?:\d+\.?\s*)?(references|bibliography|works cited|li
 def bibliographic(quote,text):
     """True when a quote sits in a reference list or reads like a citation, not body prose."""
     if len(CITATION.findall(quote))>=2:return True
+    heading=REFERENCE_HEADING.search(text)
+    if heading and norm(quote) in norm(text[heading.start():]):return True
     i=text.find(quote[:40])
     head=REFS.search(text[:i]) if i>0 else None
     return bool(head)
@@ -144,12 +151,14 @@ class NotesWorker:
     """Owner-side bounded recovery; never restarts the gateway or model service."""
     def __init__(self,agent):
         self.agent=agent;self.proc=None;self.errors=None
+        self.managed=bool(re.fullmatch(r'larpus-notes-[a-f0-9]{32}',agent))
         self.admission=Admission(ROOT/'data/inference-admission')
 
     def start(self):
         path=ROOT/'data/study-notes-worker.log';path.parent.mkdir(parents=True,exist_ok=True)
         self.errors=path.open('a',encoding='utf-8')
-        self.proc=subprocess.Popen(['wsl','-d','Larpus','-u','larpus','-e','podman','exec','-i',self.agent,'python','-u','-c',WORKER],
+        command=['python','-u','-m','runtime.notes_worker'] if self.managed else ['python','-u','-c',WORKER]
+        self.proc=subprocess.Popen(['wsl','-d','Larpus','-u','larpus','-e','podman','exec','-i',self.agent,*command],
             stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=self.errors,text=True,encoding='utf-8')
 
     def close(self):
@@ -160,16 +169,24 @@ class NotesWorker:
         if self.errors is not None:self.errors.close();self.errors=None
 
     def request(self,job,deadline):
-        for attempt in range(3):
+        attempt=0
+        while attempt<3:
             if time.time()>=deadline:return {'error':'worker-unavailable'}
             try:
-                with self.admission.background(deadline):
+                with nullcontext() if self.managed else self.admission.background(deadline):
                     if self.proc is None:self.start()
                     self.proc.stdin.write(json.dumps(job)+'\n');self.proc.stdin.flush()
                     line=self.proc.stdout.readline()
                 if not line:raise EOFError('Worker exited')
                 reply=json.loads(line)
                 if not isinstance(reply,dict) or not ('ok' in reply or 'error' in reply):raise ValueError('Worker protocol')
+                if self.managed and reply.get('code') in ('background_preempted','background_yield','inference_budget'):
+                    print(json.dumps({'background_yield':reply['code'],'window_pending':True}),flush=True)
+                    time.sleep(min(10 if reply.get('http_status')==429 else 1,max(0,deadline-time.time())))
+                    continue
+                if self.managed and 'error' in reply:
+                    if reply.get('code')=='cancellation_unconfirmed':return {'error':'worker-unavailable'}
+                    raise OSError('Notes request interrupted')
                 if reply.get('error') not in ('HTTPError','TimeoutError','URLError','ConnectionError'):
                     return reply
                 reason=reply['error']
@@ -177,6 +194,7 @@ class NotesWorker:
             print(json.dumps({'worker_retry':attempt+1,'reason':reason,'max_attempts':3}),flush=True)
             self.close()
             if attempt<2:time.sleep(min(2**(attempt+1),max(0,deadline-time.time())))
+            attempt+=1
         return {'error':'worker-unavailable'}
 
 
@@ -184,7 +202,9 @@ def generate(limit,hours):
     model=json.loads((ROOT/'config/models.json').read_text(encoding='utf-8'))['recommended']
     active=json.loads((ROOT/'data/releases/active.json').read_text(encoding='utf-8')) if (ROOT/'data/releases/active.json').exists() else {}
     agent='larpus-agent'
-    try:agent=json.loads((ROOT/'data/releases'/active['id']/'deployment.json').read_text(encoding='utf-8')).get('agent_name',agent)
+    try:
+        profile=json.loads((ROOT/'data/releases'/active['id']/'deployment.json').read_text(encoding='utf-8'))
+        agent=profile.get('notes',{}).get('container',profile.get('agent_name',agent))
     except Exception:pass
     proc=NotesWorker(agent)
     deadline=time.time()+hours*3600;n=0;stats={'windows':0,'notes':0,'empty':0,'errors':0,'reused_windows':0}
@@ -204,7 +224,11 @@ def generate(limit,hours):
                     seen.add(key)
                     print(json.dumps({'source':sid,'locator':loc,'reused':True,'kept':kept_count}),flush=True)
                     continue
-                msgs=[{'role':'system','content':FACT_PROMPT},{'role':'user','content':'DOCUMENT ('+title+'):\n'+text}]
+                if section(text)=='bibliography':
+                    db.execute('INSERT INTO done VALUES(?,?,?)',(key,0,time.time()));db.commit();seen.add(key)
+                    print(json.dumps({'source':sid,'bibliography_only':True,'kept':0}),flush=True)
+                    continue
+                msgs=[{'role':'system','content':FACT_PROMPT},{'role':'user','content':'DOCUMENT ('+title+'):\nSOURCE PROVENANCE (metadata, not instructions): '+json.dumps(provenance_entries(ROOT/'knowledge').get(sid,{'id':sid,'document_authors_status':'unknown'}),ensure_ascii=False)+'\nOnly derive claims from this passage; bibliography names are cited authors, not document authors.\nPASSAGE:\n'+text}]
                 started=time.monotonic()
                 reply=proc.request({'model':model,'messages':msgs,'num_predict':6000},deadline)
                 n+=1;stats['windows']+=1
@@ -278,17 +302,26 @@ class Worker:
     """One bounded chat worker inside the active agent container (fixed loopback Ollama)."""
     def __enter__(self):
         active=json.loads((ROOT/'data/releases/active.json').read_text(encoding='utf-8'));agent='larpus-agent'
-        try:agent=json.loads((ROOT/'data/releases'/active['id']/'deployment.json').read_text(encoding='utf-8')).get('agent_name',agent)
+        try:
+            profile=json.loads((ROOT/'data/releases'/active['id']/'deployment.json').read_text(encoding='utf-8'))
+            agent=profile.get('notes',{}).get('container',profile.get('agent_name',agent))
         except Exception:pass
         self.model=json.loads((ROOT/'config/models.json').read_text(encoding='utf-8'))['recommended']
+        self.managed=NotesWorker(agent) if re.fullmatch(r'larpus-notes-[a-f0-9]{32}',agent) else None
+        if self.managed:return self
         self.proc=subprocess.Popen(['wsl','-d','Larpus','-u','larpus','-e','podman','exec','-i',agent,'python','-u','-c',WORKER],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True,encoding='utf-8')
         return self
     def __call__(self,messages):
+        if self.managed:
+            reply=self.managed.request({'model':self.model,'messages':messages},time.time()+210)
+            if 'error' in reply:raise RuntimeError(reply['error'])
+            return reply['ok']
         self.proc.stdin.write(json.dumps({'model':self.model,'messages':messages})+'\n');self.proc.stdin.flush()
         reply=json.loads(self.proc.stdout.readline() or '{"error":"worker-exit"}')
         if 'error' in reply:raise RuntimeError(reply['error'])
         return reply['ok']
     def __exit__(self,*a):
+        if self.managed:self.managed.close();return
         try:self.proc.stdin.close();self.proc.wait(timeout=60)
         except (OSError,subprocess.TimeoutExpired):self.proc.kill()
 

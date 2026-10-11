@@ -1,0 +1,26 @@
+{
+  "schema": "larpus.broker-verification/v1",
+  "kind": "synthetic-public-fixtures",
+  "commit": null,
+  "working_tree_dirty": null,
+  "python": "3.12.3",
+  "platform": "linux",
+  "unix_tests_required": true,
+  "unix_socket_verification": "tested",
+  "files_sha256": {
+    "runtime/inference_broker.py": "6c87a7a5b231fa9f665f3caf0a23c80763b08bdcb02dde2554ff44db2a5227d4",
+    "runtime/broker_scheduler.py": "3f0c38c6dafdaa2465095d91659b69ab5db0403e2c9651f24530adfe51c1130d",
+    "runtime/local_ollama.py": "8f8760539d54b371974a4f703e5d14edde5ecda09d0a6d4701e0123184807d64",
+    "tests/test_broker_scheduling.py": "7709502f92b4cfe019bc6fa28f574dfbb9696e0c827ca6c559102b0c5fc7da8e"
+  },
+  "seconds": 1.187,
+  "tests": [
+    {
+      "test": "test_broker_scheduling.py",
+      "exit": 0,
+      "output": "test_core_request_bounds_reject_extra_authority (test_broker_scheduling.ScopeTests.test_core_request_bounds_reject_extra_authority) ... ok\ntest_deadline_shuts_down_a_stalled_generation_socket (test_broker_scheduling.ScopeTests.test_deadline_shuts_down_a_stalled_generation_socket) ... ok\ntest_failed_cancellation_keeps_generation_closed (test_broker_scheduling.ScopeTests.test_failed_cancellation_keeps_generation_closed) ... ok\ntest_lane_system_and_output_scope (test_broker_scheduling.ScopeTests.test_lane_system_and_output_scope) ... ok\ntest_reserved_token_and_status_budgets (test_broker_scheduling.ScopeTests.test_reserved_token_and_status_budgets) ... ok\ntest_stalled_upstream_is_cancelled_before_interactive_and_resume (test_broker_scheduling.UnixCancellationTests.test_stalled_upstream_is_cancelled_before_interactive_and_resume) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 1.067s\n\nOK\n"
+    }
+  ],
+  "pass": true,
+  "limits": "No owner data, models or internet. Receipt hashes identify exact files, not a signed independent attestation. Synthetic tests do not prove a deployed GPU, OCI mounts, Windows reboot or physical HUD."
+}

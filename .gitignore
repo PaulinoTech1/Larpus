@@ -14,3 +14,6 @@ knowledge/*.npy
 knowledge/embeddings-manifest.json
 knowledge/embeddings-manifest.tmp
 knowledge/notes-manifest.json
+
+# Owner-local provenance includes private archived repository identities.
+knowledge/provenance.json

@@ -3,7 +3,7 @@ import json
 import re
 import threading
 from runtime.agents import load_personas, messages_for
-from runtime.local_ollama import ollama, chat_stream
+from runtime.local_ollama import ollama, chat_stream, BrokerRejected
 from runtime.text_filter import TextHeld
 from runtime.skills import summaries
 from runtime.dlp import gate, stream_pending
@@ -97,6 +97,7 @@ def chat(persona, messages, skill=None, on_chunk=None):
                     result['sources'].append({**{k:source[k] for k in ('id','title','url','locator')},
                         'snapshot':source.get('snapshot','derived study note') if derived else source['snapshot'],
                         **({'tier':NOTE_TIER} if derived else {}),
+                        **({'provenance':{k:v for k,v in source['provenance'].items() if k in ('document_authors','document_authors_status','published_on','revised_on','snapshot_on','retrieved_at','section')}} if 'provenance' in source else {}),
                         'preview':preview['content'] if preview.get('status')==200 else 'Preview withheld by local output screening.'})
             return result
         if on_chunk is not None:
@@ -136,6 +137,10 @@ def chat(persona, messages, skill=None, on_chunk=None):
         if not isinstance(content,str) or not content.strip():
             raise ValueError('Empty model response')
         return release(content,result)
+    except BrokerRejected as exc:
+        status=429 if exc.status==429 else 503
+        code=exc.code if exc.code in ('inference_budget','queue_full','admission_timeout','cancellation_unconfirmed','inference_deadline') else 'broker_held'
+        return {'status':status,'code':code,'error':'Local inference is busy or held by the broker. Retry shortly; no direct fallback is used.'}
     except (OSError,ValueError,KeyError,TypeError):
         return {'status':502,'error':'Local Ollama unavailable or model missing. No cloud fallback is used.'}
     finally:

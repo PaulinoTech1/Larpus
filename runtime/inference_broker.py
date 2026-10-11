@@ -1,5 +1,6 @@
 """Private Unix HTTP boundary for approved local inference operations."""
 import http.client
+import hashlib
 from http.server import BaseHTTPRequestHandler
 import json
 import math
@@ -8,15 +9,17 @@ from pathlib import Path
 import socketserver
 import threading
 import time
+from runtime.broker_scheduler import Scheduler,Refused,LIMITS
 
 ROOT=Path(__file__).resolve().parents[1]
 SOCKET=Path('/run/larpus-broker/inference.sock')
+NOTES_SOCKET=Path('/run/larpus-notes/inference.sock')
 MAX_BODY=524288
 MAX_RESPONSE=2_000_000
 
 def policy():
     value=json.loads((ROOT/'config/inference-broker.json').read_text(encoding='utf-8'))
-    if set(value)!={'version','enabled','model','context','max_output'} or value['version']!=1 or value['enabled'] is not True:
+    if set(value)!={'version','enabled','model','context','max_output'} or value['version']!=2 or value['enabled'] is not True:
         raise ValueError('Invalid broker policy')
     if value['model']!='qwen3.5:27b-q4_K_M' or value['context']!=131072 or value['max_output']!=6000:
         raise ValueError('Unreviewed broker policy')
@@ -65,6 +68,45 @@ def validate_chat(value,approved):
 def upstream_connection(timeout):
     return http.client.HTTPConnection('127.0.0.1',11434,timeout=timeout)
 
+def prompt_manifest():
+    value=decode((ROOT/'config/broker-prompts.json').read_bytes())
+    if set(value)!={'version','chat','notes'} or value['version']!=1:raise ValueError('Invalid prompt manifest')
+    for lane in ('chat','notes'):
+        if not isinstance(value[lane],list) or not 1<=len(value[lane])<=1000:raise ValueError('Invalid prompt hashes')
+        if any(not isinstance(h,str) or len(h)!=64 or any(c not in '0123456789abcdef' for c in h) for h in value[lane]):raise ValueError('Invalid hash')
+    return value
+
+def validate_lane(body,lane,prompts):
+    messages=body['messages']
+    if messages[0]['role']!='system' or hashlib.sha256(messages[0]['content'].encode()).hexdigest() not in prompts[lane]:
+        raise Refused(403,'system_template_denied')
+    if body['options']['num_predict']>LIMITS[lane]['output']:raise Refused(403,'lane_output_denied')
+    if lane=='notes' and (len(messages)!=2 or body.get('format')!='json' or body['stream']):raise Refused(403,'notes_scope_denied')
+    if any(m['role']!=('user' if n%2 else 'assistant') for n,m in enumerate(messages[1:],1)):
+        raise Refused(403,'message_order_denied')
+
+def idle_fence(approved):
+    """A completed one-token request fences the pinned parallel=1 runner after abort."""
+    connection=upstream_connection(2);timer=None
+    try:
+        connection.connect();sock=connection.sock
+        def abort():
+            try:sock.shutdown(2)
+            except OSError:pass
+        timer=threading.Timer(8,abort);timer.daemon=True;timer.start();sock.settimeout(8)
+        payload={'model':approved['model'],'messages':[{'role':'user','content':'Ready.'}],
+                 'stream':False,'think':False,'keep_alive':-1,
+                 'options':{'temperature':0,'num_ctx':approved['context'],'num_predict':1,'num_gpu':99}}
+        connection.request('POST','/api/chat',json.dumps(payload),{'Content-Type':'application/json'})
+        response=connection.getresponse();raw=response.read(8193)
+        if response.status!=200 or len(raw)>8192:return False
+        value=decode(raw)
+        return isinstance(value,dict) and value.get('done') is True and type(value.get('eval_count')) is int and 0<=value['eval_count']<=1
+    except (OSError,ValueError,TypeError,http.client.HTTPException):return False
+    finally:
+        if timer:timer.cancel()
+        connection.close()
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args):pass
     def setup(self):
@@ -77,6 +119,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):self.route()
     def do_POST(self):self.route()
     def route(self):
+        if self.server.approved['version']==2 and (self.command,self.path)==('GET','/broker/state'):
+            if self.headers.get('Transfer-Encoding') is not None or self.headers.get_all('Content-Length',[]) not in ([],['0']):return self.reply(400,{'error':'Invalid framing'})
+            try:self.server.scheduler.status_budget()
+            except Refused as exc:return self.reply(exc.status,{'error':'Status held','code':exc.code})
+            return self.reply(200,self.server.scheduler.snapshot())
         allowed={('GET','/api/tags'),('GET','/api/ps'),('POST','/api/chat')}
         if (self.command,self.path) not in allowed:return self.reply(403,{'error':'Operation not approved'})
         lengths=self.headers.get_all('Content-Length',[])
@@ -93,6 +140,13 @@ class Handler(BaseHTTPRequestHandler):
                 body=validate_chat(decode(raw),self.server.approved)
             elif lengths and lengths!=['0']:raise ValueError('Unexpected body')
         except (ValueError,TypeError,KeyError,UnicodeError):return self.reply(400,{'error':'Request not approved'})
+        if self.server.approved['version']==2:
+            try:
+                if body is None:self.server.scheduler.status_budget()
+                else:
+                    validate_lane(body,self.server.lane,self.server.prompts)
+                    return self.managed_chat(body)
+            except Refused as exc:return self.reply(exc.status,{'error':'Inference request held','code':exc.code})
         self.connection.settimeout(930)
         upstream=upstream_connection(900 if body else 2)
         started=False
@@ -125,12 +179,55 @@ class Handler(BaseHTTPRequestHandler):
                 except OSError:pass
         finally:upstream.close()
 
+    def managed_chat(self,body):
+        started=False;scheduler=self.server.scheduler
+        try:
+            with scheduler.slot(self.server.lane,body['options']['num_predict']) as job:
+                upstream=upstream_connection(5)
+                try:
+                    upstream.connect();job.bind(upstream.sock);upstream.sock.settimeout(LIMITS[job.lane]['seconds'])
+                    upstream.request('POST','/api/chat',json.dumps(dict(body,stream=True)),{'Content-Type':'application/json'})
+                    response=upstream.getresponse()
+                    if response.status!=200:raise OSError('Upstream unavailable')
+                    self.connection.settimeout(5)
+                    if body['stream']:
+                        self.send_response(200);self.send_header('Content-Type','application/x-ndjson');self.send_header('Connection','close');self.end_headers()
+                        started=True;self.close_connection=True
+                    total=0;content='';final=None
+                    for _ in range(8192):
+                        line=response.readline(65537);total+=len(line)
+                        if job.reason:raise Refused(409,job.reason)
+                        if not line or len(line)>65536 or total>MAX_RESPONSE:raise ValueError('Invalid stream bounds')
+                        frame=decode(line)
+                        if not isinstance(frame,dict) or frame.get('error'):raise ValueError('Invalid upstream frame')
+                        job.received=True
+                        delta=frame.get('message',{}).get('content','')
+                        if not isinstance(delta,str):raise ValueError('Invalid content')
+                        if body['stream']:
+                            self.wfile.write(json.dumps(frame,separators=(',',':')).encode()+b'\n');self.wfile.flush()
+                        else:content+=delta
+                        if frame.get('done') is True:final=frame;break
+                    if final is None:raise ValueError('Incomplete upstream response')
+                    if job.reason:raise Refused(409,job.reason)
+                    if not body['stream']:
+                        final=dict(final,message={'role':'assistant','content':content})
+                except (OSError,ValueError,TypeError,http.client.HTTPException) as exc:
+                    if job.reason:raise Refused(409 if job.reason=='background_preempted' else 503,job.reason) from exc
+                    raise
+                finally:upstream.close()
+            if not body['stream']:self.reply(200,final)
+        except Refused as exc:
+            if not started:self.reply(exc.status,{'error':'Inference request held','code':exc.code})
+        except (OSError,ValueError,TypeError,http.client.HTTPException):
+            if not started:self.reply(502,{'error':'Local inference unavailable','code':'inference_interrupted'})
+
 Server=None
 if hasattr(socketserver,'UnixStreamServer'):
     class Server(socketserver.ThreadingMixIn,socketserver.UnixStreamServer):
         daemon_threads=True
-        def __init__(self,path,approved):
+        def __init__(self,path,approved,lane,prompts,scheduler):
             self.approved=approved;self.slots=threading.BoundedSemaphore(16)
+            self.lane=lane;self.prompts=prompts;self.scheduler=scheduler
             super().__init__(str(path),Handler)
         def process_request(self,request,address):
             if not self.slots.acquire(blocking=False):request.close();return
@@ -142,9 +239,13 @@ if hasattr(socketserver,'UnixStreamServer'):
 
 if __name__=='__main__':
     if Server is None:raise SystemExit('Broker requires Unix sockets on Linux')
-    approved=policy();os.umask(0o077)
-    if SOCKET.parent.is_symlink() or SOCKET.is_symlink():raise SystemExit('Redirected broker socket')
-    SOCKET.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
-    if SOCKET.exists():SOCKET.unlink()
-    with Server(SOCKET,approved) as server:
-        os.chmod(SOCKET,0o600);server.serve_forever()
+    approved=policy();prompts=prompt_manifest();os.umask(0o077)
+    scheduler=Scheduler(lambda:idle_fence(approved))
+    servers=[]
+    for lane,path in (('chat',SOCKET),('notes',NOTES_SOCKET)):
+        if path.parent.is_symlink() or path.is_symlink():raise SystemExit('Redirected broker socket')
+        path.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
+        if path.exists():path.unlink()
+        server=Server(path,approved,lane,prompts,scheduler);os.chmod(path,0o600);servers.append(server)
+    threading.Thread(target=servers[1].serve_forever,daemon=True).start()
+    with servers[0]:servers[0].serve_forever()

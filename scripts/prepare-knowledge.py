@@ -227,6 +227,9 @@ def build(fetch_docs,reuse_research=False):
     manifest={'version':1,'prepared_at':datetime.now(timezone.utc).isoformat(),'database_sha256':hashlib.sha256((KNOWLEDGE/'approved.sqlite').read_bytes()).hexdigest(),'database_bytes':(KNOWLEDGE/'approved.sqlite').stat().st_size,'documents':len({r[0] for r in records}),'passages':len(records),'metadata_only_documents':len({r[0] for r in records if r[4]=='metadata only'}),'rejected_passages':len(rejected),'role_counts':{role:sum(r[6]==role for r in records) for role in sorted({r[6] for r in records})},'sources':[{'id':e['id'],'sha256':e['sha256'],'publication':e.get('publication'),'snapshot':e.get('snapshot',e.get('fetched_at','')[:10])} for e,_,_ in documents]+([{'id':'github-archive','sha256':github_sources[0]['sha256'],'publication':None,'snapshot':github_sources[0]['snapshot']}] if github_sources else []),'github':{'repositories':sum(e['id']!='github-catalog' for e in github_sources),'passages':len(github_records),'screening_decisions':len(github_decisions)}}
     (KNOWLEDGE/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     (KNOWLEDGE/'sources.json').write_text(json.dumps(catalog,indent=2)+'\n',encoding='utf-8')
+    import importlib.util
+    spec=importlib.util.spec_from_file_location('owner_provenance',ROOT/'scripts/source-provenance.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    _,provenance=module.build(ROOT);(KNOWLEDGE/'provenance.json').write_text(provenance,encoding='utf8')
     print(json.dumps({k:v for k,v in manifest.items() if k!='sources'}),flush=True)
     print(json.dumps({'unavailable':[{'id':e['id'],'error':e.get('error')} for e in catalog['documents'] if e.get('status')=='unavailable']}),flush=True)
 

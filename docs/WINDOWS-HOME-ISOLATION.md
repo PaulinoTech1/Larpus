@@ -138,11 +138,16 @@ named Larpus deployment; do not delete its quarantine volume automatically.
 
 ## Ports, storage and investigation
 
+Broker v2 scheduling and capability limits are documented in
+[broker hardening](BROKER_HARDENING.md).
+
 | Component | Port/mount | Access |
 |---|---|---|
 | Windows HUD gateway | HTTP loopback and HTTPS LAN, port 8080 | Local bypass; LAN password + shared limits |
 | Ollama in isolated pod | 127.0.0.1:11434, no published port | Broker/model pod loopback only; denied from agent |
 | Inference broker | larpus-broker-<release-ID> -> /run/larpus-broker; inference.sock | Broker RW, agent RO; noexec/nosuid/nodev, UID1000, directory0700/socket0600; no host port |
+| Notes capability | larpus-broker-<release-ID>-notes -> /run/larpus-notes; inference.sock | Broker RW, minimal notes worker RO; absent from chat agent; same private socket modes |
+| Notes worker | No ports; /tmp 16 MiB | Network none, read-only root, 1 CPU, 128 MiB, 32 PIDs; no corpus, quarantine or GPU mounts |
 | MCP | stdio through wsl/podman exec | No listening port |
 | Model cache | /home/larpus/models -> /models | Model only, read-only |
 | GPU libraries | /usr/lib/wsl/lib -> same path | Model only, read-only |

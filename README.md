@@ -38,6 +38,13 @@ inference port. The agent reaches only the [private inference broker](docs/INFER
 over a Unix socket; raw Ollama TCP and model administration are denied. MCP uses
 stdio; neither the broker nor voice adds a host listening port.
 
+The [version2 broker](docs/BROKER_HARDENING.md) separates chat and notes socket
+capabilities, pins approved system templates, limits request/output budgets and
+cancels background generation for chat with a confirmed runner fence. Cancellation
+failure closes inference; it is not a guarantee against prompt injection or all
+denial of service. Reproducible local synthetic/live checks distinguish what ran
+from what remains unverified; no cloud CI is enabled by default.
+
 Current health reports functional checks passing, with overall status **degraded**
 for the security-scan warning. A passing health probe is not a full security audit,
 answer-quality certification or proof of physical GPU-memory residency.
@@ -213,3 +220,5 @@ and [voice integration licensing](docs/VOICE_INTEGRATION.md).
 
 No public service, multi-user accounts, mobile app or autonomous OS actions are
 part of the deployed station.
+
+Source dates, corrections and document authors: [source provenance](docs/SOURCE_PROVENANCE.md).

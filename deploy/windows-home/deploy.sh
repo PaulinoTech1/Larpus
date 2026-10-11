@@ -37,7 +37,7 @@ podman run --detach --pull=never --name larpus-model --pod larpus-offline \
   --mount="type=bind,src=$gpu_driver,dst=$gpu_driver,ro" \
   --mount=type=bind,src=/home/larpus/models,dst=/models,ro \
   --env=HOME=/tmp --env=OLLAMA_HOST=127.0.0.1:11434 --env=OLLAMA_MODELS=/models \
-  --env=OLLAMA_NO_CLOUD=1 --env=OLLAMA_NOPRUNE=1 --env=LD_LIBRARY_PATH=/usr/lib/wsl/lib \
+  --env=OLLAMA_NO_CLOUD=1 --env=OLLAMA_NOPRUNE=1 --env=OLLAMA_NUM_PARALLEL=1 --env=LD_LIBRARY_PATH=/usr/lib/wsl/lib \
   --entrypoint=/bin/ollama "$2" serve >&2
 # Broker is the only agent-facing inference entry point; no host ports.
 broker_name="larpus-broker-$(python3 -c 'import uuid;print(uuid.uuid4().hex)')"
@@ -48,7 +48,17 @@ podman run --detach --pull=never --name "$broker_name" --pod larpus-offline \
   --read-only --read-only-tmpfs=false --user=1000:1000 --cap-drop=ALL --security-opt=no-new-privileges \
   --pids-limit=64 --memory=256m --cpus=1 --log-driver=none \
   --tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m \
-  --volume="$broker_name:/run/larpus-broker:rw,noexec,nosuid,nodev" "$broker_image" >&2
+  --volume="$broker_name:/run/larpus-broker:rw,noexec,nosuid,nodev" \
+  --volume="$broker_name-notes:/run/larpus-notes:rw,noexec,nosuid,nodev" "$broker_image" >&2
+notes_name="larpus-notes-${broker_name#larpus-broker-}"
+podman build --pull=never --network=none --build-arg "BASE_IMAGE=$1" -f deploy/windows-home/Notes.Containerfile -t localhost/larpus-notes:sealed . >&2
+notes_image=$(podman image inspect localhost/larpus-notes:sealed --format '{{.Id}}')
+notes_image=${notes_image#sha256:}
+podman run --detach --pull=never --name "$notes_name" --network=none \
+  --read-only --read-only-tmpfs=false --user=1000:1000 --cap-drop=ALL --security-opt=no-new-privileges \
+  --pids-limit=32 --memory=128m --cpus=1 --log-driver=none \
+  --tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m \
+  --volume="$broker_name-notes:/run/larpus-notes:ro,noexec,nosuid,nodev" "$notes_image" >&2
 podman run --detach --pull=never --name larpus-agent --network=none \
   --read-only --read-only-tmpfs=false --user=1000:1000 --cap-drop=ALL --security-opt=no-new-privileges \
   --pids-limit=64 --memory=12g --cpus=8 --log-driver=none \
@@ -56,5 +66,5 @@ podman run --detach --pull=never --name larpus-agent --network=none \
   --volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev \
   --volume="$broker_name:/run/larpus-broker:ro,noexec,nosuid,nodev" \
   "$agent_image" >&2
-printf '{"version":1,"distro":"Larpus","user":"larpus","agent_image":"%s","model_image":"%s","source_fingerprint":"%s","gpu_driver":"%s","broker":{"container":"%s","image":"%s","volume":"%s"}}\n' "$agent_image" "$model_image" "$3" "$gpu_driver" "$broker_name" "$broker_image" "$broker_name"
+printf '{"version":1,"distro":"Larpus","user":"larpus","agent_image":"%s","model_image":"%s","source_fingerprint":"%s","gpu_driver":"%s","broker":{"protocol":2,"container":"%s","image":"%s","volume":"%s","notes_volume":"%s-notes"},"notes":{"container":"%s","image":"%s","volume":"%s-notes"}}\n' "$agent_image" "$model_image" "$3" "$gpu_driver" "$broker_name" "$broker_image" "$broker_name" "$broker_name" "$notes_name" "$notes_image" "$broker_name"
 # A failed deployment leaves evidence for inspection; it never starts host inference.

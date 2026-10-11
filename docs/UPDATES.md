@@ -36,11 +36,27 @@ broker cutover, retained pre-broker agents are stopped; rollback can restart the
 and deliberately restores their weaker raw model boundary. See
 [inference broker](INFERENCE_BROKER.md) for exact policy and maintenance scope.
 
+Version2 also builds a minimal `larpus-notes-ID` service with only the separate
+notes socket mounted read-only. Chat and notes share one broker-owned generation
+slot. Preparation checks `python scripts/broker-prompts.py --check`; intentional
+persona/skill/system-template changes require regeneration before staging. It
+inspects the existing model's `OLLAMA_NUM_PARALLEL=1`, without replacing it.
+Run the explicit local live preemption harness with the owner writer paused,
+then activate and restart that writer. Retained execution services are stopped
+after version2 cutover and remain restartable for owner rollback. This avoids
+an old broker continuing outside the selected scheduler.
+
 The candidate must pass Python tests, voice/chat UI tests, isolation probes,
 exact approved MCP discovery and complete static scans. Skills must be clean.
 The MCP finding inventory must match the previously reviewed category/pattern/
 severity/file counts; a changed inventory blocks release for review. This is
 regression screening, not a security guarantee or suppression of warnings.
+An intentional inventory transition can be recorded in
+`config/mcp-scan-reviewed.json`: exact previous/approved counts, rationale and
+SHA256s of the reviewed public sources. Any extra/missing finding, source drift,
+incomplete scan or skill warning still rejects preparation. The warnings remain
+in the actual scan and health report; this is a reviewed transition, not a clean
+scan or blanket severity exception.
 Preparation failures leave the current gateway untouched. Fix the checkout and
 stage a new ID; failed snapshots/containers remain available for investigation.
 
@@ -81,9 +97,11 @@ and per-release gateway logs remain under `data/releases`.
   junctions use the existing owner preparation/scanner dependencies.
 - Each release has its own `deployment.json`, agent image/container pin and
   `release-state/security` and `release-state/health`. Its agent is named
-  `larpus-agent-<ID>` in the same `network=none` pod, with the same single
-  quarantine-volume mount and no new ports/devices. Prior containers/images and
-  source snapshots are retained; no automated pruning or model deletion occurs.
+  `larpus-agent-<ID>` in its own `network=none` namespace, with quarantine and
+  read-only chat socket mounts and no new ports/devices. The broker shares only
+  the existing model pod network; the minimal notes service has its own disabled
+  network and only its read-only notes socket. Prior containers/images/snapshots
+  are retained. Pruning stops idle execution services; it never deletes models.
 - The first legacy frozen release uses `larpus-agent` and the previous scan/data
   paths. Its gateway predates graceful draining; the one-time transition requires
   a quiet chat/voice period. Subsequent releases use the drain watcher.
@@ -171,3 +189,14 @@ The snapshot also adopts the prepared 404-document / 76660-passage approved libr
 whose embedding/library hash binding matches, and the optional teaching controls
 already present in the checkout. Live capability comparisons remain deferred.
 No current changes were committed or pushed during this activation.
+
+## 2026-10-11 source chronology and provenance update
+
+See [source provenance](SOURCE_PROVENANCE.md) for the reason, metadata policy,
+non-destructive audit and validation. The candidate `43afda5d3e184b249420caca0f8d043e`
+is staged only. Its source queue preserves completed keys and distinguishes
+publication/revision dates from retrieval dates. Document authorship uses reviewed
+metadata rather than bibliography names; corrections require explicit scope and
+evidence. Model/nightly restart and activation remain pending crash recovery.
+The Windows bugcheck is not established as a LARPUS application defect; the
+private dump and incident logs remain outside Git.

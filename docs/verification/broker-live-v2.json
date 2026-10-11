@@ -1,0 +1,57 @@
+{
+  "schema": "larpus.broker-live/v1",
+  "kind": "owner-local-live",
+  "release": "fb20ec0c6bc0419dbc6a3b298116820d",
+  "source_fingerprint": "1da4373c2530293ff64a75870da74a6f2b4482f129663e6f0141a0ad74d605ca",
+  "fixture_sha256": "21fd633494c5ad76c3bb2e90e949aa576c96925ece12d78762150dd7b558cc20",
+  "limits": "Owner-run observations, not independent attestation. No reboot, real rollback, filled-context throughput or physical browser test.",
+  "isolation": {
+    "raw_ollama_denied": true,
+    "denied_external_and_lan": true,
+    "denied_dns_udp": true,
+    "local_ollama": true,
+    "host_paths_absent": true,
+    "quarantine_owner_only": true,
+    "effective_and_bounding_capabilities_zero": true,
+    "notes_capability_only": true
+  },
+  "chat_after_preemption_seconds": 3.219,
+  "chat": {
+    "http": 200,
+    "value": {
+      "done": true,
+      "eval_count": 32,
+      "error": null
+    }
+  },
+  "background_code": "background_preempted",
+  "before": {
+    "active": null,
+    "received_frame": false,
+    "waiting_chat": 0,
+    "faulted": false,
+    "preemptions": 0,
+    "confirmed_recoveries": 0
+  },
+  "after": {
+    "active": null,
+    "received_frame": false,
+    "waiting_chat": 0,
+    "faulted": false,
+    "preemptions": 1,
+    "confirmed_recoveries": 1
+  },
+  "resumed_notes": {
+    "ok": true,
+    "metrics": {
+      "total_duration": 26926151280,
+      "load_duration": 90991460,
+      "prompt_eval_count": 1403,
+      "prompt_eval_duration": 187538000,
+      "eval_count": 1018,
+      "eval_duration": 26155821000,
+      "done_reason": "stop"
+    }
+  },
+  "pass": true
+}

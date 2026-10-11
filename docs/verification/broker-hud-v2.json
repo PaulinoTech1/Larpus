@@ -1,0 +1,92 @@
+{
+  "before": {
+    "active": "notes",
+    "received_frame": true,
+    "waiting_chat": 0,
+    "faulted": false,
+    "preemptions": 1,
+    "confirmed_recoveries": 1
+  },
+  "/api/chat": {
+    "http": 200,
+    "sources": 5,
+    "seconds": 10.172
+  },
+  "/api/chat/stream": {
+    "http": 200,
+    "text_frames": 2,
+    "sources": 5,
+    "seconds": 9.812
+  },
+  "after": {
+    "active": null,
+    "received_frame": false,
+    "waiting_chat": 0,
+    "faulted": false,
+    "preemptions": 3,
+    "confirmed_recoveries": 3
+  },
+  "lan_unauthenticated": 401,
+  "health_status": "degraded",
+  "health_checks": [
+    {
+      "name": "password",
+      "status": "pass"
+    },
+    {
+      "name": "local_skills",
+      "status": "pass"
+    },
+    {
+      "name": "approved_knowledge",
+      "status": "pass"
+    },
+    {
+      "name": "input_filter",
+      "status": "pass"
+    },
+    {
+      "name": "output_dlp",
+      "status": "pass"
+    },
+    {
+      "name": "mcp_surface",
+      "status": "pass"
+    },
+    {
+      "name": "models",
+      "status": "pass"
+    },
+    {
+      "name": "model_gpu",
+      "status": "pass"
+    },
+    {
+      "name": "security_scan",
+      "status": "warning"
+    },
+    {
+      "name": "gpu",
+      "status": "pass"
+    },
+    {
+      "name": "egress_enforcement",
+      "status": "pass"
+    },
+    {
+      "name": "voice",
+      "status": "pass"
+    }
+  ],
+  "release": "fb20ec0c6bc0419dbc6a3b298116820d",
+  "kind": "owner-local-live",
+  "limits": "Owner-run API observations, not independent certification or physical browser/device acceptance.",
+  "notes_resume": {
+    "windows_before": 2749,
+    "windows_after": 2750,
+    "facts_first_saved_window": 14,
+    "elapsed_with_yields_seconds": 102.5,
+    "deadline": "2026-10-12T10:00:00-04:00"
+  },
+  "model_voice_container_identities_images_start_times_unchanged": true
+}

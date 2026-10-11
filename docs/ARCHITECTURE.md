@@ -18,6 +18,8 @@ Dedicated Larpus WSL2 / rootless containers:
   trusted persona/skill/MCP runtime (own network=none namespace)
     -> private Unix socket -> minimal broker (network=none model pod)
     -> Ollama loopback :11434 (same pod as broker)
+  minimal notes worker (own network=none namespace)
+    -> separate private notes socket -> same broker generation scheduler
   generated reply -> DLP -> private quarantine -> approved output
 ```
 
@@ -25,8 +27,11 @@ Only broker and model share a network namespace; the agent cannot reach raw
 Ollama TCP. PID/IPC/filesystems are separate. No published inference port.
 The broker allows pinned text chat and filtered model status, with bounded bodies,
 streams and inference options; no model administration or arbitrary destinations.
-Its only volume is a private socket; the agent mounts that volume read-only.
-See [broker policy, mounts and limits](INFERENCE_BROKER.md).
+The agent mounts only the chat socket read-only; the minimal notes worker mounts
+only its notes socket. The broker mounts both, with no corpus/quarantine/GPU.
+It independently enforces approved system-template hashes, lane budgets and one
+generation slot. Chat interrupts notes and waits for a single-slot runner fence;
+failed confirmation closes inference. See [broker policy and limits](BROKER_HARDENING.md).
 Code/configs/models are read-only. Model gets narrow read-only GPU libraries
 and one NVIDIA package plus /dev/dxg; agent gets no GPU, Windows drives, owner
 home, passwords or container sockets. Only trusted DLP mounts writable quarantine.

@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "reviewed_on": "2026-10-11",
+  "reason": "Retain two new static warnings: notes_worker.py Docker socket literal is an absence/denial assertion, not socket access; isolation.py adds a fixed shell=False pinned-container notes probe. Exact previous and approved inventories and public source hashes bind this transition; no independent audit claimed. Existing warnings remain visible.",
+  "previous": [
+    {
+      "category": "Dangerous Code Execution",
+      "pattern": "subprocess module call",
+      "severity": "MEDIUM",
+      "file": "dlp.py",
+      "count": 1
+    },
+    {
+      "category": "Dangerous Code Execution",
+      "pattern": "subprocess module call",
+      "severity": "MEDIUM",
+      "file": "isolation.py",
+      "count": 5
+    },
+    {
+      "category": "Privilege Escalation",
+      "pattern": "Docker Socket Access",
+      "severity": "HIGH",
+      "file": "namespace_probe.py",
+      "count": 1
+    },
+    {
+      "category": "Privilege Escalation",
+      "pattern": "Excessive Permissions",
+      "severity": "LOW",
+      "file": "SKILL.md",
+      "count": 1
+    }
+  ],
+  "approved": [
+    {
+      "category": "Dangerous Code Execution",
+      "pattern": "subprocess module call",
+      "severity": "MEDIUM",
+      "file": "dlp.py",
+      "count": 1
+    },
+    {
+      "category": "Dangerous Code Execution",
+      "pattern": "subprocess module call",
+      "severity": "MEDIUM",
+      "file": "isolation.py",
+      "count": 6
+    },
+    {
+      "category": "Privilege Escalation",
+      "pattern": "Docker Socket Access",
+      "severity": "HIGH",
+      "file": "namespace_probe.py",
+      "count": 1
+    },
+    {
+      "category": "Privilege Escalation",
+      "pattern": "Docker Socket Access",
+      "severity": "HIGH",
+      "file": "notes_worker.py",
+      "count": 1
+    },
+    {
+      "category": "Privilege Escalation",
+      "pattern": "Excessive Permissions",
+      "severity": "LOW",
+      "file": "SKILL.md",
+      "count": 1
+    }
+  ],
+  "sources": {
+    "runtime/mcp_server.py": "ec4e8ec75158c7a27da892df2d8367f2cf8c3b2ac3642ff6c12cc1ddcfeb5c0e",
+    "runtime/mcp_client.py": "b6d42af39eae1629ab0a07a44d180084a20a70472e9321a794749a0f28dc1748",
+    "runtime/local_ollama.py": "8f8760539d54b371974a4f703e5d14edde5ecda09d0a6d4701e0123184807d64",
+    "runtime/inference.py": "9f07def8a7988aedc1c769d4b29a7d85b4e7b85b1e2551771d24d0b50f4ae74f",
+    "runtime/dlp.py": "1edf0e674b6ace5b9d955f9b28331dcab9dec2d437fe8428c785d7f886dd9d55",
+    "runtime/isolation.py": "461237fdfee991fbea84f80d2c3976eef76de106f7c5611e5d456949472a1de8",
+    "runtime/namespace_probe.py": "46a0b07405dabe86234c2518df837c91f62b64ea79384cf88048a688bcf88f92",
+    "runtime/knowledge.py": "b36e3cfd617f048a985e2c87c990e1edad8f9779a09e5072be6f4f2a1bd08510",
+    "runtime/context.py": "42117b9d42004b40a6040988192bc81c7cb57f47d2eb37505ec010af37dd30d5",
+    "runtime/inference_broker.py": "6c87a7a5b231fa9f665f3caf0a23c80763b08bdcb02dde2554ff44db2a5227d4",
+    "runtime/broker_scheduler.py": "3f0c38c6dafdaa2465095d91659b69ab5db0403e2c9651f24530adfe51c1130d",
+    "runtime/notes_worker.py": "ccb76c4207ebda5586d79f7c8c8aec6ba2e48daedb5ac7ce7a6d002db20bd40d",
+    "scripts/protect-quarantine.ps1": "9c43e0f8d6edd2ed058610788c468a1085fd72957a13b781a5c7cfcc31ac2e06",
+    "config/dlp.json": "85ff588ed6f9055187dd40751dc7c43a0b4777f1e8f33e90aa673d8821ca6284",
+    "config/mcp-capabilities.json": "d33f3c8656a1b2a75380a4d998427e56047340f5fef20368bc40ba5c96cf5b01",
+    "config/mcp-approved.json": "fb2d6a712a719de881feb9671f047e1f9a22e69161a323fabf040869aae3f384"
+  }
+}

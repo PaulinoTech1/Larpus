@@ -1,5 +1,11 @@
 # Private inference broker
 
+Version2 adds broker-owned cancellation/scheduling, separately mounted chat and
+notes capabilities, pinned system-template hashes, lane budgets and reproducible
+local checks. See [current policy and verification](BROKER_HARDENING.md).
+The version1 policy and 2026-10-11 receipt below are historical evidence; they do
+not establish version2 deployment or independent reproduction.
+
 ## Boundary
 
 Windows gateway -> sealed stdio MCP agent in its own

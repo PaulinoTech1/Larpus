@@ -33,6 +33,10 @@ def check():
         raise ValueError('Quarantine is not owner-only')
     broker=Path(__file__).resolve().parents[1]/'config/inference-broker.json'
     if broker.exists() and json.loads(broker.read_text()).get('enabled') is True:
+        if json.loads(broker.read_text()).get('version')==2:
+            if Path('/run/larpus-notes').exists():raise ValueError('Agent has background capability')
+            from runtime.local_ollama import broker_status
+            if broker_status()['faulted']:raise ValueError('Broker cancellation fence failed; inference closed')
         try:
             with socket.create_connection(('127.0.0.1',11434),timeout=2):pass
         except OSError:pass

@@ -94,8 +94,11 @@ $('chat').onsubmit = async e => {
               for(const source of event.sources){
                 const card=document.createElement('details'),heading=document.createElement('summary'),body=document.createElement('p');
                 const age=source.snapshot?Math.floor((Date.now()-Date.parse(source.snapshot))/86400000):NaN;
+                const provenance=source.provenance||{};
+                const authors=Array.isArray(provenance.document_authors)&&provenance.document_authors.length?provenance.document_authors.join('; '):'unknown / not inferred from citations';
+                const identity=`Document authors: ${authors}\nPublished: ${provenance.published_on||'unknown'} / Revised: ${provenance.revised_on||'unknown'}\nSection: ${provenance.section||'unknown'}\n`;
                 heading.textContent=`[${source.id}] ${source.title}`;
-                body.textContent=`Snapshot ${source.snapshot||'date unavailable'}${Number.isFinite(age)?` / ${age} days old`:''} / ${source.locator}\n${source.url}\n\n${source.preview||'Preview unavailable for this reference.'}\nA snapshot is not proof of current support or pricing.`;
+                body.textContent=`${identity}Snapshot ${source.snapshot||'date unavailable'}${Number.isFinite(age)?` / ${age} days old`:''} / ${source.locator}\n${source.url}\n\n${source.preview||'Preview unavailable for this reference.'}\nA snapshot is not proof of current support or pricing.`;
                 card.append(heading,body);refs.append(card);
               }
               if(event.citation_check){const check=document.createElement('p');check.textContent=`Citation identifiers: ${event.citation_check.status}. This checks identifiers, not whether every claim is supported.`;refs.append(check);}

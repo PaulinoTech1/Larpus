@@ -104,7 +104,11 @@ event follows. `unknown` means no build database, and read/schema errors report
 requests in a bounded log tail; it is not an ETA, retention-quality score or
 comparison against the superseded five-fact format.
 
-## Cooperative chat priority
+## Historical v1 cooperative chat priority
+
+The following describes v1. Broker v2 replaces this owner-worker admission path
+with cancellation, confirmation of runner availability and separate capabilities;
+see [broker hardening](BROKER_HARDENING.md). Retained v1 releases still use these limits.
 
 The gateway chat and compression routes and the owner generator share OS locks
 in ignored data/inference-admission. A waiting interactive request reserves

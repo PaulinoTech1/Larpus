@@ -55,7 +55,7 @@ def read_oci(item):
         raise ValueError('Oversized OCI configuration')
     return json.loads(result.stdout.decode())
 
-def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None,broker_volume=None,broker_only=False):
+def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None,broker_volume=None,broker_only=False,notes_volume=None,notes_only=False):
     host=item['HostConfig']
     if item['State']['Running'] is not True or item['Image'].removeprefix('sha256:')!=expected_image.removeprefix('sha256:'):
         raise ValueError('Container stopped or image drifted')
@@ -75,6 +75,8 @@ def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None,bro
     expected={('/models',False),('/usr/lib/wsl/lib',False)} if is_model else {('/app/data/quarantine',True)}
     if broker_volume:
         expected={('/run/larpus-broker',True)} if broker_only else expected|{('/run/larpus-broker',False)}
+    if notes_volume and broker_only:expected.add(('/run/larpus-notes',True))
+    if notes_only:expected={('/run/larpus-notes',False)}
     if is_model and gpu_driver:
         expected.add((gpu_driver,False))
     if mounts!=expected or len([m for m in item.get('Mounts',[]) if m['Type']!='tmpfs'])!=len(expected):
@@ -86,8 +88,9 @@ def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None,bro
             expected_source={'/models':'/home/larpus/models','/usr/lib/wsl/lib':'/usr/lib/wsl/lib',gpu_driver:gpu_driver}[mount['Destination']]
             if mount['Type']!='bind' or mount['Source']!=expected_source:
                 raise ValueError('Unexpected model mount source')
-        elif mount['Destination']=='/run/larpus-broker':
-            if mount['Type']!='volume' or mount.get('Name')!=broker_volume or not {'noexec','nosuid','nodev'}.issubset(set(mount.get('Options',[]))):
+        elif mount['Destination'] in ('/run/larpus-broker','/run/larpus-notes'):
+            name=broker_volume if mount['Destination']=='/run/larpus-broker' else notes_volume
+            if mount['Type']!='volume' or mount.get('Name')!=name or not {'noexec','nosuid','nodev'}.issubset(set(mount.get('Options',[]))):
                 raise ValueError('Invalid private broker volume')
         elif mount['Type']!='volume' or mount.get('Name')!='larpus-quarantine':
             raise ValueError('Agent quarantine must use the dedicated named volume')
@@ -130,19 +133,30 @@ def preflight():
         raise ValueError('Rootful Podman prohibited')
     selected_agent=agent_name(profile)
     broker=profile.get('broker')
+    notes=profile.get('notes')
     if broker:
-        if set(broker)!={'container','image','volume'} or not re.fullmatch(r'larpus-broker-[a-f0-9]{32}',broker['container']) or broker['volume']!=broker['container'] or not re.fullmatch(r'[a-f0-9]{64}',broker['image']):
+        required={'container','image','volume'}|({'protocol','notes_volume'} if broker.get('protocol')==2 else set())
+        if set(broker)!=required or not re.fullmatch(r'larpus-broker-[a-f0-9]{32}',broker['container']) or broker['volume']!=broker['container'] or not re.fullmatch(r'[a-f0-9]{64}',broker['image']):
             raise ValueError('Invalid pinned broker')
-    containers=query('inspect',selected_agent,MODEL,*([broker['container']] if broker else []))
+        if broker.get('protocol')==2:
+            if broker['notes_volume']!=broker['container']+'-notes' or not isinstance(notes,dict) or set(notes)!={'container','image','volume'} or notes['volume']!=broker['notes_volume'] or not re.fullmatch(r'larpus-notes-[a-f0-9]{32}',notes['container']) or not re.fullmatch(r'[a-f0-9]{64}',notes['image']):raise ValueError('Invalid notes capability pin')
+    broker_policy=ROOT/'config/inference-broker.json'
+    if broker_policy.exists() and json.loads(broker_policy.read_text())['version']==2 and (not broker or broker.get('protocol')!=2):raise ValueError('Scoped broker deployment required')
+    containers=query('inspect',selected_agent,MODEL,*([broker['container']] if broker else []),*([notes['container']] if notes else []))
     by_name={c['Name'].lstrip('/'):c for c in containers}
     agent,model=by_name[selected_agent],by_name[MODEL]
     validate_container(agent,profile['agent_image'],False,read_oci(agent),broker_volume=broker['volume'] if broker else None)
     validate_container(model,profile['model_image'],True,read_oci(model),gpu_driver)
     if broker:
         guard=by_name[broker['container']]
-        validate_container(guard,broker['image'],False,read_oci(guard),broker_volume=broker['volume'],broker_only=True)
+        validate_container(guard,broker['image'],False,read_oci(guard),broker_volume=broker['volume'],broker_only=True,notes_volume=broker.get('notes_volume'))
         if agent.get('Pod') or agent['HostConfig']['NetworkMode']!='none' or not model.get('Pod') or guard.get('Pod')!=model['Pod']:
             raise ValueError('Broker/agent namespace separation drift')
+        if broker.get('protocol')==2:
+            worker=by_name[notes['container']]
+            validate_container(worker,notes['image'],False,read_oci(worker),notes_volume=notes['volume'],notes_only=True)
+            if worker.get('Pod') or worker['HostConfig']['NetworkMode']!='none' or 'LARPUS_BROKER_ROLE=notes' not in worker['Config'].get('Env',[]):raise ValueError('Notes namespace/capability drift')
+            if 'OLLAMA_NUM_PARALLEL=1' not in model['Config'].get('Env',[]):raise ValueError('Cancellation fence requires pinned single-slot runner')
     elif not agent.get('Pod') or agent['Pod']!=model.get('Pod'):
         raise ValueError('Inference and guard are not in the same isolated pod')
     pod=query('pod','inspect',model['Pod'])
@@ -162,7 +176,12 @@ def child_args():
 def check_behavior():
     profile=preflight()
     result=subprocess.run(wsl_command('podman','exec',agent_name(profile),'python','-m','runtime.namespace_probe'),capture_output=True,check=True,timeout=10)
-    return json.loads(result.stdout.decode())
+    value=json.loads(result.stdout.decode())
+    if profile.get('notes'):
+        result=subprocess.run(wsl_command('podman','exec',profile['notes']['container'],'python','-m','runtime.notes_worker','--probe'),capture_output=True,check=True,timeout=10)
+        if json.loads(result.stdout.decode()).get('notes_capability_only') is not True:raise ValueError('Notes capability probe failed')
+        value['notes_capability_only']=True
+    return value
 
 def main():
     import argparse

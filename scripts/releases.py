@@ -79,7 +79,16 @@ def podman(*args,timeout=180):return wsl('/usr/bin/env','XDG_RUNTIME_DIR=/run/us
 def issue_signatures(report):
     return Counter((x['category'],x['pattern'],x['severity'],x['location']['file']) for x in report['issues'])
 
-def scan_gate(summary,report,baseline,targets=None):
+def reviewed_signatures(entries):
+    result=Counter()
+    for item in entries:
+        if set(item)!={'category','pattern','severity','file','count'} or type(item['count']) is not int or not 1<=item['count']<=100:raise ValueError('Invalid reviewed inventory')
+        key=tuple(item[k] for k in ('category','pattern','severity','file'))
+        if key in result:raise ValueError('Duplicate reviewed signature')
+        result[key]=item['count']
+    return result
+
+def scan_gate(summary,report,baseline,targets=None,reviewed=None,source_hashes=None):
     actual=[r.get('target') for r in summary['results']]
     if summary['status'] not in ('pass','warning') or len(actual)!=len(set(actual)):raise ValueError('Incomplete scan')
     if targets is None:
@@ -87,7 +96,11 @@ def scan_gate(summary,report,baseline,targets=None):
     elif set(actual)!=set(targets):raise ValueError('Incomplete scan target inventory')
     for result in summary['results']:
         if not result.get('complete') or (result['target']!='mcp' and result['status']!='pass'):raise ValueError('Skill scan failed or has findings')
-    if issue_signatures(report)!=issue_signatures(baseline):raise ValueError('MCP finding inventory changed; review before release')
+    if issue_signatures(report)!=issue_signatures(baseline):
+        if not reviewed or reviewed.get('version')!=1 or not reviewed.get('reason') or not reviewed.get('sources') or source_hashes!=reviewed['sources']:
+            raise ValueError('MCP finding inventory changed; source-pinned review required')
+        if reviewed_signatures(reviewed['previous'])!=issue_signatures(baseline) or reviewed_signatures(reviewed['approved'])!=issue_signatures(report):
+            raise ValueError('MCP finding inventory differs from reviewed transition')
 
 def validate(root):
     meta=read(root/'release.json')
@@ -104,6 +117,7 @@ def validate(root):
     return meta
 
 def stage():
+    if (ROOT/'knowledge/provenance.json').exists():run(ROOT,sys.executable,'scripts/source-provenance.py','check')
     import _winapi
     identifier=uuid.uuid4().hex;dest=release_path(identifier)
     before=payload(ROOT);dest.mkdir(parents=True)
@@ -165,6 +179,7 @@ def prepare(identifier):
     base=podman('image','inspect','docker.io/library/python:3.12-slim-bookworm','--format','{{.Id}}')
     if not re.fullmatch(r'(?:sha256:)?[a-f0-9]{64}',base):raise ValueError('Invalid cached base image')
     print('Building offline candidate; current gateway remains available.',flush=True)
+    run(dest,sys.executable,'scripts/broker-prompts.py','--check')
     podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Containerfile','-t','localhost/larpus-agent:'+identifier,linux)
     profile['agent_image']=podman('image','inspect','localhost/larpus-agent:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
     broker_policy=dest/'config/inference-broker.json'
@@ -173,14 +188,20 @@ def prepare(identifier):
         name='larpus-broker-'+identifier
         podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Broker.Containerfile','-t','localhost/larpus-broker:'+identifier,linux)
         broker_image=podman('image','inspect','localhost/larpus-broker:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
-        podman('run','--detach','--pull=never','--name',name,'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=64','--memory=256m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m','--volume='+name+':/run/larpus-broker:rw,noexec,nosuid,nodev',broker_image)
-        profile['broker']={'container':name,'image':broker_image,'volume':name}
+        notes_volume=name+'-notes'
+        podman('run','--detach','--pull=never','--name',name,'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=64','--memory=256m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m','--volume='+name+':/run/larpus-broker:rw,noexec,nosuid,nodev','--volume='+notes_volume+':/run/larpus-notes:rw,noexec,nosuid,nodev',broker_image)
+        profile['broker']={'protocol':2,'container':name,'image':broker_image,'volume':name,'notes_volume':notes_volume}
         for attempt in range(20):
             try:
-                podman('exec',name,'python','-c',"from pathlib import Path; assert Path('/run/larpus-broker/inference.sock').is_socket()");break
+                podman('exec',name,'python','-c',"from pathlib import Path; assert all(Path(p).is_socket() for p in ('/run/larpus-broker/inference.sock','/run/larpus-notes/inference.sock'))");break
             except (RuntimeError,subprocess.CalledProcessError):time.sleep(.25)
         else:raise ValueError('Broker failed readiness')
         boundary=['--network=none','--volume='+name+':/run/larpus-broker:ro,noexec,nosuid,nodev']
+        notes_name='larpus-notes-'+identifier
+        podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Notes.Containerfile','-t','localhost/larpus-notes:'+identifier,linux)
+        notes_image=podman('image','inspect','localhost/larpus-notes:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
+        podman('run','--detach','--pull=never','--name',notes_name,'--network=none','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=32','--memory=128m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m','--volume='+notes_volume+':/run/larpus-notes:ro,noexec,nosuid,nodev',notes_image)
+        profile['notes']={'container':notes_name,'image':notes_image,'volume':notes_volume}
     podman('run','--detach','--pull=never','--name',profile['agent_name'],*boundary,'--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges',*AGENT_LIMITS,'--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev',profile['agent_image'])
     write(dest/'deployment.json',profile)
     prepare_voice(dest,old,linux)
@@ -191,7 +212,13 @@ def prepare(identifier):
     print('Scanning candidate independently of the active release.',flush=True)
     run(dest,sys.executable,'-c',"import json;from runtime.security_scan import scan,discover,APPROVED;d=discover();assert d==json.loads(APPROVED.read_text())['tools'];r=scan(d);print(r['status'])",timeout=900)
     scan_dir=old/('data/security' if read(old/'release.json').get('bootstrap') else 'release-state/security')
-    scan_gate(read(dest/'release-state/security/summary.json'),read(dest/'release-state/security/mcp.json'),read(scan_dir/'mcp.json'),[e['id'] for e in read(dest/'skills/registry.json')['skills']]+['mcp'])
+    reviewed_file=dest/'config/mcp-scan-reviewed.json'
+    reviewed=read(reviewed_file) if reviewed_file.exists() else None
+    source_hashes=None
+    if reviewed:
+        if any(name not in meta['files'] for name in reviewed.get('sources',{})):raise ValueError('Review source outside frozen payload')
+        source_hashes={name:checksum(dest/name) for name in reviewed['sources']}
+    scan_gate(read(dest/'release-state/security/summary.json'),read(dest/'release-state/security/mcp.json'),read(scan_dir/'mcp.json'),[e['id'] for e in read(dest/'skills/registry.json')['skills']]+['mcp'],reviewed,source_hashes)
     if payload(dest)!=meta['files']:raise ValueError('Candidate files changed during checks')
     meta.update(status='prepared',deployment_sha256=checksum(dest/'deployment.json'),voice_sha256=checksum(dest/'voice-deployment.json'),scan_summary_sha256=checksum(dest/'release-state/security/summary.json'),scan_report_sha256=checksum(dest/'release-state/security/mcp.json'))
     write(dest/'release.json',meta)
@@ -251,8 +278,9 @@ def ensure_execution(root):
     profile=read(path)
     selected=[(profile.get('agent_name','larpus-agent'),profile['agent_image'])]
     if profile.get('broker'):selected.insert(0,(profile['broker']['container'],profile['broker']['image']))
+    if profile.get('notes'):selected.append((profile['notes']['container'],profile['notes']['image']))
     for name,image in selected:
-        if not re.fullmatch(r'larpus-(?:agent|broker)(?:-[a-f0-9]{32})?',name):raise ValueError('Invalid retained execution identity')
+        if not re.fullmatch(r'larpus-(?:agent|broker|notes)(?:-[a-f0-9]{32})?',name):raise ValueError('Invalid retained execution identity')
         item=json.loads(podman('inspect',name))[0]
         if item['Image'].removeprefix('sha256:')!=image.removeprefix('sha256:'):raise ValueError('Retained execution image drift')
         if not item['State']['Running']:podman('start',name)
@@ -303,6 +331,7 @@ def start():
     if not re.fullmatch(r'larpus-voice(?:-[a-f0-9]{32})?',voice_name):raise ValueError('Invalid voice identity')
     podman('pod','start','larpus-offline');podman('start',voice_name)
     if profile.get('broker'):podman('start',profile['broker']['container'])
+    if profile.get('notes'):podman('start',profile['notes']['container'])
     podman('start',profile.get('agent_name','larpus-agent'))
     new=launch(state['id'],state);write(STORE/'active.json',new);ready(new)
     print('Started active release '+state['id'])
@@ -316,6 +345,7 @@ def keep_names(state):
         profile=read(root/'deployment.json') if (root/'deployment.json').exists() else {}
         names.add(profile.get('agent_name','larpus-agent'))
         if profile.get('broker'):names.add(profile['broker']['container'])
+        if profile.get('notes'):names.add(profile['notes']['container'])
         voice_file=root/'voice-deployment.json' if (root/'voice-deployment.json').exists() else ROOT/'data/voice-deployment.json'
         names.add(read(voice_file).get('container','larpus-voice') if voice_file.exists() else 'larpus-voice')
     return names
@@ -330,13 +360,19 @@ def prune():
             profile=read(folder/'deployment.json')
             keep.add(profile.get('agent_name','larpus-agent-'+folder.name))
             if profile.get('broker'):keep.add(profile['broker']['container'])
+            if profile.get('notes'):keep.add(profile['notes']['container'])
     active_profile=release_path(state['id'])/'deployment.json'
     if active_profile.exists() and read(active_profile).get('broker') and state.get('previous'):
         previous_profile=release_path(state['previous'])/'deployment.json'
         if previous_profile.exists() and not read(previous_profile).get('broker'):
             keep.discard(read(previous_profile).get('agent_name','larpus-agent'))
+        elif previous_profile.exists() and read(active_profile)['broker'].get('protocol')==2:
+            previous=read(previous_profile)
+            keep.discard(previous.get('agent_name','larpus-agent'))
+            for key in ('broker','notes'):
+                if previous.get(key):keep.discard(previous[key]['container'])
     running_names=podman('ps','--format','{{.Names}}').split()
-    idle=[n for n in running_names if re.fullmatch(r'larpus-(agent|voice|broker)(-[a-z0-9-]+)?',n) and n not in keep]
+    idle=[n for n in running_names if re.fullmatch(r'larpus-(agent|voice|broker|notes)(-[a-z0-9-]+)?',n) and n not in keep]
     if idle:podman('stop','--time','5',*idle,timeout=300)
     print(json.dumps({'kept':sorted(keep),'stopped':idle}),flush=True)
     return idle

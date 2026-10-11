@@ -19,6 +19,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 HTTP = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
 
 BROKER_SOCKET='/run/larpus-broker/inference.sock'
+NOTES_SOCKET='/run/larpus-notes/inference.sock'
+
+class BrokerRejected(OSError):
+    def __init__(self,status,code):
+        super().__init__('Inference broker held request');self.status=status;self.code=code
 
 @contextmanager
 def local_response(request,timeout):
@@ -27,19 +32,26 @@ def local_response(request,timeout):
         return
     policy=Path(__file__).resolve().parents[1]/'config/inference-broker.json'
     configured=json.loads(policy.read_text(encoding='utf-8'))
-    if configured.get('version')!=1 or configured.get('enabled') is not True:
+    if configured.get('version') not in (1,2) or configured.get('enabled') is not True:
         raise ValueError('Inference broker is required')
-    info=os.lstat(BROKER_SOCKET)
+    lane=os.environ.get('LARPUS_BROKER_ROLE','chat')
+    if lane not in ('chat','notes'):raise ValueError('Unknown inference capability')
+    path=NOTES_SOCKET if lane=='notes' else BROKER_SOCKET
+    info=os.lstat(path)
     if not stat.S_ISSOCK(info.st_mode) or info.st_mode & 0o077 or info.st_uid!=1000:
         raise ValueError('Invalid private inference socket')
     connection=http.client.HTTPConnection('localhost',timeout=timeout)
     sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM);sock.settimeout(timeout)
     try:
-        sock.connect(BROKER_SOCKET);connection.sock=sock
+        sock.connect(path);connection.sock=sock
         path=request.full_url.removeprefix(OLLAMA)
         connection.request(request.get_method(),path,body=request.data,headers={'Content-Type':'application/json'})
         response=connection.getresponse()
-        if response.status!=200:raise OSError('Inference broker rejected request')
+        if response.status!=200:
+            raw=response.read(4097)
+            try:code=json.loads(raw).get('code','broker_rejected') if len(raw)<=4096 else 'broker_rejected'
+            except (ValueError,AttributeError):code='broker_rejected'
+            raise BrokerRejected(response.status,code if isinstance(code,str) else 'broker_rejected')
         yield response
     finally:connection.close();sock.close()
 
@@ -53,6 +65,16 @@ def ollama(path, payload=None, timeout=120):
         if len(raw)>2_000_000:
             raise ValueError('Model response too large')
         return json.loads(raw)
+
+def broker_status():
+    """Fixed internal readiness route; never exposed as a model-callable tool."""
+    req=urllib.request.Request(OLLAMA+'/broker/state')
+    with local_response(req,3) as response:
+        raw=response.read(8193)
+        if len(raw)>8192:raise ValueError('Oversized broker status')
+        value=json.loads(raw)
+        if not isinstance(value,dict) or type(value.get('faulted')) is not bool:raise ValueError('Invalid broker readiness')
+        return value
 
 def chat_stream(payload, timeout=120):
     """Bounded NDJSON from the same fixed, proxy-free loopback service."""
