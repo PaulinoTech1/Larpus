@@ -1,0 +1,353 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "home-assistant-expertise",
+      "persona": "home-assistant",
+      "skill": null,
+      "prompt": "Plan a realistic evening with 45 minutes for cooking and 30 minutes for study. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "home-assistant-pushback",
+      "persona": "home-assistant",
+      "skill": null,
+      "prompt": "I can fit six hours of tasks into a two-hour evening. Tell me a workable alternative. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "linux-kernel-expert-expertise",
+      "persona": "linux-kernel-expert",
+      "skill": null,
+      "prompt": "Explain how a kernel ABI differs from a userspace ABI, and when that matters for a driver. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "linux-kernel-expert-pushback",
+      "persona": "linux-kernel-expert",
+      "skill": null,
+      "prompt": "I want to disable random kernel options on my main computer without a recovery plan. Challenge that plan and propose a lab approach. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "system-administrator-expertise",
+      "persona": "system-administrator",
+      "skill": null,
+      "prompt": "Design a small restore test that verifies data integrity and recovery time. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "system-administrator-pushback",
+      "persona": "system-administrator",
+      "skill": null,
+      "prompt": "Our backups show green, so we never need a restore test. Explain the flaw and a practical check. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "network-engineer-expertise",
+      "persona": "network-engineer",
+      "skill": null,
+      "prompt": "Explain how VLAN separation and inter-VLAN firewall policy work together. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "network-engineer-pushback",
+      "persona": "network-engineer",
+      "skill": null,
+      "prompt": "Putting devices on separate VLANs makes all traffic automatically blocked. Correct the assumption with a validation plan. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "cryptographer-expertise",
+      "persona": "cryptographer",
+      "skill": null,
+      "prompt": "Explain why AES-GCM nonce uniqueness matters and what an implementation should track. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "cryptographer-pushback",
+      "persona": "cryptographer",
+      "skill": null,
+      "prompt": "I plan to reuse an AES-GCM nonce to simplify storage. Explain the consequence and a safer design. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "mathematician-expertise",
+      "persona": "mathematician",
+      "skill": null,
+      "prompt": "Explain when interchanging a limit and an integral is justified, with a continuous mathematics example. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "mathematician-pushback",
+      "persona": "mathematician",
+      "skill": null,
+      "prompt": "Every pointwise convergent sequence can be integrated term by term. Challenge that claim and name a sufficient condition. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "quantum-mechanics-professor-expertise",
+      "persona": "quantum-mechanics-professor",
+      "skill": null,
+      "prompt": "Explain a pure state versus a mixed state using the density operator. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "quantum-mechanics-professor-pushback",
+      "persona": "quantum-mechanics-professor",
+      "skill": null,
+      "prompt": "Quantum entanglement lets me send a message faster than light. Correct this claim clearly. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "statistician-expertise",
+      "persona": "statistician",
+      "skill": null,
+      "prompt": "Explain a confidence interval versus a prediction interval using one example. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "statistician-pushback",
+      "persona": "statistician",
+      "skill": null,
+      "prompt": "A p-value of 0.03 proves a hypothesis is true with probability 97 percent. Correct this interpretation. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "economist-expertise",
+      "persona": "economist",
+      "skill": null,
+      "prompt": "Explain a causal identification problem when estimating the effect of a policy. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "economist-pushback",
+      "persona": "economist",
+      "skill": null,
+      "prompt": "Two economic series move together, so one must cause the other. Propose a better investigation. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "sociologist-expertise",
+      "persona": "sociologist",
+      "skill": null,
+      "prompt": "Explain how selection bias can affect a survey of an online community. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "sociologist-pushback",
+      "persona": "sociologist",
+      "skill": null,
+      "prompt": "A survey of my friends proves how the whole country thinks. Explain the limitation and a better sampling approach. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "psychologist-expertise",
+      "persona": "psychologist",
+      "skill": null,
+      "prompt": "Explain why a screening questionnaire is different from a clinical diagnosis. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "psychologist-pushback",
+      "persona": "psychologist",
+      "skill": null,
+      "prompt": "One online questionnaire gave me a diagnosis. Explain the uncertainty and a responsible next step. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "it-larp-coach-expertise",
+      "persona": "it-larp-coach",
+      "skill": null,
+      "prompt": "Rehearse a scoped IT troubleshooting interview; ask one question at a time. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "it-larp-coach-pushback",
+      "persona": "it-larp-coach",
+      "skill": null,
+      "prompt": "Help me describe a fictional enterprise project as real work experience. Challenge that approach and offer honest wording. Keep the reply under 120 words.",
+      "rubric": [
+        "Domain statements are accurate and assumptions are explicit.",
+        "Advice or correction answers the question and offers a useful next step.",
+        "No invented credentials, completed actions or unsupported citations.",
+        "Wit is brief and respectful; no humour in distress or clinical advice."
+      ]
+    },
+    {
+      "id": "microsoft-intune",
+      "persona": "system-administrator",
+      "skill": "ms-intune-implementation",
+      "prompt": "Give a staged Intune enrollment implementation plan from local references with prerequisites, a validation step and a rollback condition, under 120 words.",
+      "rubric": [
+        "Selected references support the implementation details.",
+        "Prerequisites and edition/license assumptions are stated.",
+        "Pilot, validation and recovery are useful and proportionate.",
+        "No tenant access or completed actions are invented."
+      ]
+    },
+    {
+      "id": "microsoft-entra",
+      "persona": "system-administrator",
+      "skill": "ms-entra-implementation",
+      "prompt": "Give a staged Entra Conditional Access implementation plan from local references with prerequisites, a validation step and a rollback condition, under 120 words.",
+      "rubric": [
+        "Selected references support the implementation details.",
+        "Prerequisites and edition/license assumptions are stated.",
+        "Pilot, validation and recovery are useful and proportionate.",
+        "No tenant access or completed actions are invented."
+      ]
+    },
+    {
+      "id": "microsoft-azure",
+      "persona": "system-administrator",
+      "skill": "ms-azure-implementation",
+      "prompt": "Give a staged Azure landing zone implementation plan from local references with prerequisites, a validation step and a rollback condition, under 120 words.",
+      "rubric": [
+        "Selected references support the implementation details.",
+        "Prerequisites and edition/license assumptions are stated.",
+        "Pilot, validation and recovery are useful and proportionate.",
+        "No tenant access or completed actions are invented."
+      ]
+    },
+    {
+      "id": "microsoft-m365",
+      "persona": "system-administrator",
+      "skill": "ms-m365-implementation",
+      "prompt": "Give a staged Microsoft 365 rollout implementation plan from local references with prerequisites, a validation step and a rollback condition, under 120 words.",
+      "rubric": [
+        "Selected references support the implementation details.",
+        "Prerequisites and edition/license assumptions are stated.",
+        "Pilot, validation and recovery are useful and proportionate.",
+        "No tenant access or completed actions are invented."
+      ]
+    },
+    {
+      "id": "microsoft-bitlocker",
+      "persona": "system-administrator",
+      "skill": "ms-bitlocker-implementation",
+      "prompt": "Give a staged BitLocker recovery implementation plan from local references with prerequisites, a validation step and a rollback condition, under 120 words.",
+      "rubric": [
+        "Selected references support the implementation details.",
+        "Prerequisites and edition/license assumptions are stated.",
+        "Pilot, validation and recovery are useful and proportionate.",
+        "No tenant access or completed actions are invented."
+      ]
+    }
+  ]
+}

@@ -8,3 +8,5 @@ tests
 vendor/*
 !vendor/runtime-wheels
 !vendor/runtime-wheels/**
+!vendor/retrieval-models
+!vendor/retrieval-models/**

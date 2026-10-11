@@ -115,4 +115,31 @@ class ReleaseTests(unittest.TestCase):
                 model.assert_not_called()
             finally:server.shutdown();server.server_close();thread.join()
 
+    def test_restart_uses_active_release_voice_container(self):
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=False),patch.object(release,'podman') as podman,patch.object(release,'launch',return_value={'id':'a'*32,'pid':2}),patch.object(release,'ready'):
+            identifier='a'*32;root=Path(directory)/identifier;name='larpus-voice-'+identifier
+            release.write(Path(directory)/'active.json',{'id':identifier,'pid':1})
+            release.write(root/'deployment.json',{'agent_name':'larpus-agent-'+identifier})
+            release.write(root/'voice-deployment.json',{'container':name})
+            release.start()
+            self.assertIn((('start',name),{}),[(c.args,c.kwargs) for c in podman.call_args_list])
+            self.assertNotIn((('start','larpus-voice'),{}),[(c.args,c.kwargs) for c in podman.call_args_list])
+
 if __name__=='__main__':unittest.main()
+
+
+class PruneTests(unittest.TestCase):
+    def test_prune_stops_only_idle_release_containers(self):
+        import importlib.util as u
+        from pathlib import Path as P
+        from unittest.mock import patch as p
+        s=u.spec_from_file_location('rel_prune',P(__file__).resolve().parents[1]/'scripts/releases.py');m=u.module_from_spec(s);s.loader.exec_module(m)
+        running='4c73-infra\nlarpus-model\nlarpus-agent-'+'a'*32+'\nlarpus-agent-'+'b'*32+'\nlarpus-agent-'+'c'*32+'\nlarpus-voice-'+'d'*32+'\nlarpus-voice\nlarpus-agent-before-x'
+        calls=[]
+        def podman(*args,**kw):
+            calls.append(args);return running if args[0]=='ps' else ''
+        with p.object(m,'read',return_value={'id':'a'*32,'previous':'b'*32}),p.object(m,'keep_names',return_value={'larpus-model','larpus-agent-'+'a'*32,'larpus-agent-'+'b'*32,'larpus-voice-'+'d'*32}),p.object(m,'podman',side_effect=podman),p.object(m,'release_path',return_value=P(__file__)),p.object(m,'STORE',P(__file__).parent/'__no_releases__'):
+            stopped=m.prune()
+        self.assertEqual(sorted(stopped),sorted(['larpus-agent-'+'c'*32,'larpus-voice','larpus-agent-before-x']))
+        self.assertNotIn('rm',[c[0] for c in calls])
+        self.assertNotIn('4c73-infra',stopped);self.assertNotIn('larpus-model',stopped)

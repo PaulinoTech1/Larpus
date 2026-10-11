@@ -19,3 +19,20 @@
 .context-usage progress::-moz-progress-bar{background:#69e5e7}
 .context-usage strong{display:block;font: .7rem/1.5 monospace;color:#a7e1e6;overflow-wrap:anywhere}
 .context-usage p{font-size:.7rem;line-height:1.5;color:#8ca6b0;margin:.5rem 0 0}
+
+/* Communication-first HUD: retain the torus identity, give reading more room. */
+@media(min-width:1101px){main{grid-template-columns:220px minmax(260px,.85fr) minmax(420px,1.4fr);gap:24px}.reactor{height:290px}.conversation{min-height:720px}#messages{min-height:420px}}
+.chat-actions,.memory-actions{display:flex;gap:8px;flex-wrap:wrap}
+.chat-actions button,.memory-actions button,.local-memory button{min-height:44px;padding:8px 12px;background:var(--panel);border:1px solid var(--line);color:var(--cyan);font:inherit;font-size:10px}
+button:disabled{opacity:.45;cursor:default}
+#pipeline-status{font-size:10px;letter-spacing:1px;color:var(--cyan);min-height:24px;margin-top:10px}
+#skill-search{width:100%;min-height:44px;background:var(--panel);color:var(--white);border:1px solid var(--line);padding:10px;font:inherit;font-size:12px}
+.local-memory{border:1px solid var(--line);padding:12px;margin-bottom:8px;font-size:11px;color:var(--muted)}
+.local-memory summary,.reply-sources summary{cursor:pointer;color:var(--cyan);min-height:44px;display:list-item;align-content:center;line-height:1.5}
+.local-memory p{line-height:1.6;overflow-wrap:anywhere}.local-memory label{margin-top:14px}.local-memory textarea{min-height:60px;border:1px solid var(--line);font-size:12px}
+.check-label{display:flex;align-items:center;gap:8px;line-height:1.5;letter-spacing:0}.check-label input{width:18px;height:18px;flex-shrink:0;accent-color:var(--cyan)}
+.reply-sources details{border-bottom:1px solid var(--line);white-space:normal}.reply-sources p{white-space:pre-wrap;line-height:1.7;overflow-wrap:anywhere}
+#voice-latency{font-size:10px;line-height:1.6}
+@media(max-width:600px){.core{order:1}.conversation{order:2}aside{order:3}.reactor{height:190px}#messages{min-height:300px}.chat-heading{align-items:flex-start}.context-usage{margin-bottom:0}}
+
+.teaching-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.teaching-settings select{margin-top:8px}.teaching-controls .memory-actions{margin:10px 0}#teaching-journal{max-height:260px;overflow:auto}#teaching-journal p{white-space:pre-wrap;border-bottom:1px solid var(--line);padding-bottom:12px}.teaching-controls button{margin-top:6px}.teaching-controls p{overflow-wrap:anywhere}@media(max-width:600px){.teaching-settings{grid-template-columns:1fr}}

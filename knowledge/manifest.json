@@ -1,21 +1,22 @@
 {
   "version": 1,
-  "prepared_at": "2026-10-09T11:44:08.382733+00:00",
-  "database_sha256": "9e8ed06ed760732348d8f9ef3da3b1f853f105d1bc61801bd7b122cf6b8b0cd6",
-  "database_bytes": 81743872,
-  "documents": 263,
-  "passages": 44500,
-  "metadata_only_documents": 11,
-  "rejected_passages": 1681,
+  "prepared_at": "2026-10-10T14:04:17.270773+00:00",
+  "database_sha256": "404b29400d731b88345956a476af971c959e1846ad2e660d6d05704768f16360",
+  "database_bytes": 135307264,
+  "documents": 404,
+  "passages": 76660,
+  "metadata_only_documents": 16,
+  "rejected_passages": 8392,
   "role_counts": {
-    "cryptographer": 6878,
+    "cryptographer": 7642,
     "home-assistant": 112,
-    "it-larp-coach": 13720,
-    "linux-kernel-expert": 892,
-    "mathematician": 3898,
-    "quantum-mechanics-professor": 5807,
-    "statistician": 6245,
-    "system-administrator": 6948
+    "it-larp-coach": 13847,
+    "linux-kernel-expert": 11504,
+    "mathematician": 21634,
+    "psychologist": 1811,
+    "quantum-mechanics-professor": 6038,
+    "statistician": 6707,
+    "system-administrator": 7365
   },
   "sources": [
     {
@@ -1457,6 +1458,858 @@
       "sha256": "7f39498c28738e1fa9c10f4e78015e4f06ea5a5c04fbfb9c013ca64f68a84ad8",
       "publication": "2000",
       "snapshot": "2026-10-08"
+    },
+    {
+      "id": "pjm-blackwell-1956-vector-minimax",
+      "sha256": "ddef6983fd49b76925c99a3047a39fe284556e46225e211e55c79b11138cacf0",
+      "publication": "1956",
+      "snapshot": ""
+    },
+    {
+      "id": "caltech-fong-2024-behavioral-game-theory",
+      "sha256": "0f6e5e41d56a7749640a500fefd22eb3c82fa8b8fa68dcb324e486be2f4331a8",
+      "publication": "2024",
+      "snapshot": ""
+    },
+    {
+      "id": "caltech-lin-2024-behavioral-solution-concepts",
+      "sha256": "3c9329c36d09bd3ef249a7dafcbfeabddf17ec931dc3e0fd40ce4bfe42f172c0",
+      "publication": "2024",
+      "snapshot": ""
+    },
+    {
+      "id": "strang-calculus",
+      "sha256": "e9bc46d0663bf59134e45eee296ad244985b397b3957e4d66d90b62e0f089803",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "guichard-calculus",
+      "sha256": "76518ab2bf7986a6d1613db6675d3ce480abc45cac459dbbc19be28bb1955dbb",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "keisler-elementary-calculus",
+      "sha256": "0940d991832f3786865e806749051240862de24b41f1c15f38deb99ac226977f",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "loomis-sternberg-advanced-calculus",
+      "sha256": "00fba27efa15a1ef378975db0d2ccfbe2564c62c18003f1c493f543f4182a70d",
+      "publication": "1990",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "mit-18s096-matrix-calculus",
+      "sha256": "ffbda7777764b785c993770d34712fb56876c58388a6cc970cc2310f034b6e2c",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "mit-18100a-real-analysis",
+      "sha256": "622a8891d7c9e3103e9922e34d9e34a5c73a2a9c1f5c40d795346e4e94cc157b",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "mit-18100b-real-analysis",
+      "sha256": "7fcb3b8c44ed05b38f81456278d7c4bc1de466baf187dc155ff9c8a25ba896c7",
+      "publication": "2025",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "sternberg-real-variable",
+      "sha256": "b9fbb8249c069b643f4ee05951b1b38b03ac56ad8cadcc3f269c1481e1979bab",
+      "publication": "2005",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "hunter-measure-theory",
+      "sha256": "d620b11690dbdca4cbf6fd84c695ab2ab22b69bc52990ad4dda879988750e0d2",
+      "publication": "2011",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "driver-analysis-tools",
+      "sha256": "821e8f2400d495c01fda012302c6ec77c64b1d689feecaee8f674f6528889a1a",
+      "publication": "2003",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "melrose-functional-analysis",
+      "sha256": "a5e657e60e40088663506625bca805629c8afc299db301c2d3228d7c67d9cbb3",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "teschl-schroedinger-operators",
+      "sha256": "8dc8de0b58aa0a3fedfe594a345f9b5875322e5526ea581cb640a98d55b82818",
+      "publication": "2014",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "miller-1803-ode-notes",
+      "sha256": "840f559d4cdd4f79fc2d16eb3f84365be83ed8b8a838706ebc3faa6cf399d5bd",
+      "publication": "2010",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "teschl-ode-dynamical-systems",
+      "sha256": "362433156525216abf596c17ce843204510e96d57afa4284a37c7aa5a9ffc36e",
+      "publication": "2012",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "hunter-pde-notes",
+      "sha256": "0dbade1806f7a1ea79cc444a0eecfe19e157b286c964f1f48f2d744c460c12dd",
+      "publication": "2014",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "dunkel-1804-complex-analysis",
+      "sha256": "65fd620e8bd1e8179bcc3da0b48e6630795def5f6e6eaec057336f657784d16b",
+      "publication": "2019",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "princeton-mat330-complex-analysis",
+      "sha256": "900ff925c131eed6d98fdc8825f0d745b1029a2cbbc38ad21ec115d16192ec13",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "boyd-convex-optimization",
+      "sha256": "40d976c83c18cce1900eff8c41bd5ad408c102b813af39d05ff85678ccf8d76e",
+      "publication": "2004",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "nemirovski-modern-convex-optimization",
+      "sha256": "01a8f30cd2995974a9184aa5ae216265331cabf5815109d06d3f3c0849d80101",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "han-2024-spde-random-operators",
+      "sha256": "3cc173ed5ad955bd1f544cb758dfad79decb79de9a36151f320138949269fb3a",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "turner-2025-unparameterised-path-space",
+      "sha256": "dd112b506d143044cfb77564f477a22da571b87cfc044a8d466b347bc0b5523b",
+      "publication": "2025",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "sujanani-2024-first-order-methods",
+      "sha256": "b7bc3a8d65f2b02beb6971702d0736e570914f39b00e07d3fc84be5207db7643",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cherney-denton-thomas-waldron-linear-algebra",
+      "sha256": "57ac400ef38b93253e5ef110090609af47787bf6070c14463441bbb8cb15a196",
+      "publication": "2013",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "treil-linear-algebra-done-wrong",
+      "sha256": "d4659dd7b1c1f9d6a8f78cda7a636354d191eb8a8cbd40f12042d59e83c4074f",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "boyd-vandenberghe-vmls",
+      "sha256": "254738c8763f6c6fc29c0a837884bc58deca7c3e762e5ec79068208ac7214362",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "lankham-nachtergaele-schilling-linear-algebra",
+      "sha256": "57e1de687d705cdbc962f8798e484bb1f149f4a2a191430d0eb747d156dd4f39",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "margalit-rabinoff-interactive-linear-algebra",
+      "sha256": "680af496db34b9685011de86f66def4cf475812aed22df15e74677b5abf5eea1",
+      "publication": "2019",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "strang-zoomnotes-linear-algebra",
+      "sha256": "fc5a449b797478be15171ade92cd11ea15559c42eeeb9a252bcdab325ec7b344",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "hatcher-algebraic-topology",
+      "sha256": "bebb3032bf9021b956da3bd070eb6c67dc662cf849be9cdf6679f677560e5618",
+      "publication": "2002",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "hatcher-vector-bundles-k-theory",
+      "sha256": "04282b30dfa6305183827d399deddd0bd98240c2e6d2d0c416b06e2d4e1fa097",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "hatcher-point-set-topology-notes",
+      "sha256": "fc4a00cd7d150058f65274f33f7d2e2c9b80e0c8aca746f88428d0b813d3a89a",
+      "publication": "2005",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "hatcher-3-manifolds",
+      "sha256": "c8add1a8633f36cb50de313f8f340a3f2b63b5548077d6e30f9c51a073398ff6",
+      "publication": "2007",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "miller-18905-algebraic-topology",
+      "sha256": "5c6899e1299412471513e4dbf8423937f85e8227650c19238cd7a5e3f9f610ea",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "may-concise-algebraic-topology",
+      "sha256": "6724f02748ed1f2f589a72b524d2e3f08758abbe8216f16e5e6ffd22ebdc8927",
+      "publication": "1999",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cavalieri-math490-topology",
+      "sha256": "7390dfe7c86cc17942602e0cfbac993df0241d96716755df28714165ee676710",
+      "publication": "2010",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "shi-2023-unstable-periodic-homotopy",
+      "sha256": "74a7e377b8a1c86e0970cc920ddcbf8414081ca2c452040977716d4b03af326a",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "appenzeller-2024-affine-buildings",
+      "sha256": "10cdf3d22c62ca1592a5b24ad435a30a4e82a44618828406a3f51221e6377cc4",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "nist-sp-800-125",
+      "sha256": "da8bd5054eb1d6a1942cf756901e5ebfece26458580af143971bc54f45d5114d",
+      "publication": "2011",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "nist-sp-800-125a-r1",
+      "sha256": "a0bdcc709f60177b66dbacb4b3828df45425e9b4678b652719818423ab94ace8",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "nist-sp-800-125b",
+      "sha256": "2fdda2147b7819c01fc351f1b070e61a0eb4868534f95575051b21b6e241d4a4",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "nist-sp-800-123",
+      "sha256": "182ae5d23011108fba08c3a56c5029b8a26a428480ae38ac61877f6f3365db41",
+      "publication": "2008",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "nist-sp-800-190",
+      "sha256": "0ebad52c4a3aba971b3a707b056e57238d1c4ad8f212dffd461ff9f5fed1bdb6",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-arch-spec",
+      "sha256": "fb2a15352cd529d2ba49a083fe31cf987724ea5ffd18032adaa0fed369a83601",
+      "publication": "2010",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-security",
+      "sha256": "ac167df1e7d53291f676cb08846930ea12313bccead441e9a17b50a68b445410",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-security-bulletins",
+      "sha256": "298cbb5135ffa1d2e28b0fbadf4eabebc4ff37f01109a153ba43a93979167b74",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-security-design-goals",
+      "sha256": "3897c973b6247e7dc02a46cca5eb64157d5133baefdb57ea04c8481968b3fd5f",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-security-features",
+      "sha256": "31207e959fa2cc92071ff4500bd0877f727abca900fa07f48c4d034481e43b31",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "arch-wiki-security",
+      "sha256": "16c17a2d609e421a7180f858dfc8fa94bfc366b4fd2ff70810dc9dbc4f7598ba",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kali-docs-policy",
+      "sha256": "fb84313b720836695a84407ec873945fbe6a5fa6444a2cf761aa79d7eb38c3ec",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "mint-verify-iso",
+      "sha256": "042cc65518fd067102906789779b53a07beef500fb9ba2b96ccc4782fcd3c454",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-kvm-api",
+      "sha256": "6eef27f904f91595997dfcc73646b4202ebd5a128787829d5b57066267ba369b",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qemu-security",
+      "sha256": "29ef43bc48eeebfa6c16cc6a6777aca3653df7057a46ae2ac965f2db5a87adf4",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qemu-security-process",
+      "sha256": "ae58bf55139ed11cd5c1baa8acabf6ba68dee4649b4e383e0d656b33aff35b1d",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-kconfig-language",
+      "sha256": "4e8292571b170bcb8f641c404d4404b255f834fcb882867be787f97c3b88ed7e",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kspp-recommended-settings",
+      "sha256": "fb27a33f6e466aeadf1017d95b4c6ec69246a46a51a32a345264641d7a51dc8c",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-self-protection",
+      "sha256": "32ce96917ea5129f2e163cbf11b05443e93db64e6558b3ecb4133d25dbd08fe2",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-x86-iommu",
+      "sha256": "944483225cb0781be3cef9e11a88939a4b68ed9e5fe475203afabdf3cf8579cb",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-vfio",
+      "sha256": "d5c361eef4f06a8ba0a69f5ee32b11dbfc20b58f839b140a871112fa9e622717",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "xen-security-policy",
+      "sha256": "99ea33802260bc76bd2ccdc26d4a4f8be886967a4e80a0e9ecd1298a76c0f3dd",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "xen-xsa-148",
+      "sha256": "353edd3874c2c903bfea3c3b2938cf1a2fb8f5a06e5eafd9f9f3f9b08c6c125f",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "xen-xsa-182",
+      "sha256": "a1f4bb562aa64acb7bf225306670193df273dceabbf34b69eef76043d28792fe",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-cve-2015-3456-venom",
+      "sha256": "924c1613ddca4f07c62e07dd0a69da23fa0a12c9990bae6bacb1fa52b5867c7e",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-cve-2016-5195-dirty-cow",
+      "sha256": "70c6c00fc91b480036f832fae94b554cd219b9dbe98643de9b7f70d52a2a34a0",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-cve-2022-0847-dirty-pipe",
+      "sha256": "683028298bc49735b233bf798b952f53c309b7f02304e1d0d507f0bacf72c07c",
+      "publication": "2022",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-cve-2024-6387-regresshion",
+      "sha256": "d7902cb5a1733a6237ca3130309e57ae9648c9b4b554000d4b4b30b03f8a48ad",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cisa-xz-utils-alert",
+      "sha256": "38cb3e51005a7b100a62833a5ce150ff8af4372046ac4aaff2e87d0060452c45",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thunderclap-ndss2019",
+      "sha256": "9201864ecd19a9c33b8ba2c258fbd4f7decd53c3b0bd16c818d735ff9b5187cf",
+      "publication": "2019",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cisa-aa21-321a-iran",
+      "sha256": "88e52fa5b364ec57e12d50b52b8c729229150ab437755cc98ef6ea9894483a55",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cisa-aa23-335a-irgc",
+      "sha256": "34122ae1e21ade5233a168b9cd6c944d9778b3ca977dfe5d5d9e45a48475c203",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cisa-aa24-241a-iran",
+      "sha256": "dc111445ad353378124c9289dea839aaafb5134cdfcbd07cb69d2bc22be1c28f",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "cisa-aa24-038a-volt-typhoon",
+      "sha256": "8cbbf599623478c90847b9254d88ca83a6886b522dc58a870983143244799412",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-litty-toronto",
+      "sha256": "4e43ecce642ad3c8cbf8cb73308638ded9ab990e764c279e1e3d00358b4ea9fc",
+      "publication": "2010",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-unimi-hw-virt",
+      "sha256": "aab5b432329ae6965391c91704b4aac425b246b936f6e7bab4dda5eea4b8129d",
+      "publication": "2014",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-cam-pcie-tr934",
+      "sha256": "83259d65c0387974883fd506276700f791e47e613f2d7a88880ed8eedfa42b00",
+      "publication": "2019",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-kemerlis-columbia",
+      "sha256": "3c6d4915c38923bd2e70628c9a6de90ea5f45078631b495e793d8594d195aa3c",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-mehrab-vt",
+      "sha256": "77fbc2224c984b32ec0938b7547876df0536de88d784b06859534aa506ecd5d5",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "intel-vtd-spec",
+      "sha256": "a136448f2a14d49aa524106f58a139a5add90f78eef8a6abaabcc917ebc753b6",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "amd-iommu-spec",
+      "sha256": "f7c375a15db5ed63de760356867211063d164a2ed59f2d38613daec95894ce22",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "csi-linux-updating",
+      "sha256": "764884e3479c0729eb3624bdd44f315ea328d3b070bd102a0bec7e5a7264d3ed",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-001",
+      "sha256": "5650acb01ee3c10da18287d5c93f53aeef9952e396e4897be40cf97deea4a4df",
+      "publication": "2011",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-022",
+      "sha256": "9e4ee9ee2d401991f5e3426fb593564479b7a2e7c5bfe6ec98f9e46301b083bb",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-024",
+      "sha256": "5c48a33a054d1c951fba90f46000181cb578ec7bfed857a7930288ba7cc28918",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-058",
+      "sha256": "fb1728ea014ca36e16bf7d205eecbc65a6d5f073be7783f8452518967b6d1971",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-079",
+      "sha256": "74911514b90abe77739e27bb49f6804f01b31ac6b11f5435eb4639f42a223036",
+      "publication": "2022",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-095",
+      "sha256": "58ba5a10751bec2639e00e239e757b01f026012744d834026860dca5abee9d6e",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-qsb-100",
+      "sha256": "03ac4ef278bafeb8ebd9a819fe816dfa20ead3c7a444be93897926c659ab2c32",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-device-handling-security",
+      "sha256": "b774fe4a8c6b59f6da35f7c85e8d6780ce9244ddd7d0b8a48b9e6510a553f9b1",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-architecture",
+      "sha256": "3facd8700cf1eca905812f4872786db1ff1cc6069a1232d79ec5ca922ea6c297",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "qubes-gui-security",
+      "sha256": "1abbd37112d28eff5cb837c84fc801a26243448f7fadfc8bbaa22fc29ef52c99",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-apparmor",
+      "sha256": "c9f3c1482c1c2b1fab9392dc309923cf232aa93e230ceac261ce0ec93a14e433",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kernel-lsm-index",
+      "sha256": "6e32434bade2b2e82882a127c691b8b9ccdb17b43f1f529f1a5b30c1c967f102",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-apparmor",
+      "sha256": "a6f69e61385c42fa7e0fa7b4ec0b88baf7e71b036ff3f6e1c7359ae3a1b41385",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-usg",
+      "sha256": "f746b0308797c200b81215f70ff4df51e086307ed91f64ca512448b9fbcd443a",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-kernel-docs",
+      "sha256": "1e36655f4e91ec7b60246e66534f6b38f2aa215e3b1a3f5d8febab43d0947ebe",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ubuntu-security-team-faq",
+      "sha256": "c1211c73244719fb417b701dd4d8410484c99e3278f1ae0dcdbd0d9f4230276d",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "arch-security-tracker",
+      "sha256": "e3236d2cafc74642d61fcb9a4093a9e0f00f8ade5a918e0e78bc015e394f7812",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "arch-security-team-wiki",
+      "sha256": "6e2dac53ac73ec12a03db7be06ee51050c73f150d311a76a357596f145bea8cc",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "arch-wiki-kernel-parameters",
+      "sha256": "f6c86da5f261db6ab420ceed065be38e9011cba8b964160230c6526197dc7ab5",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "arch-wiki-apparmor",
+      "sha256": "1435876ccc96fcc6adc3761cf85436fae20d755d5a15fa521e05c93f6bab66c8",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kali-recompiling-kernel",
+      "sha256": "cddc921f50e4ea90e1b82017a8349b47034748db951f602c23a64d7dba54299f",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "kali-root-policy",
+      "sha256": "e57ee5bf829d11bd5d8881bfbdae0635ab131e2350a9ff3bc121f7671338caa3",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "mint-2016-iso-hack",
+      "sha256": "17033e5a5af1ebf4425c1303d709b5a640b3e324a7252b4ae42828871315c7e8",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-kuleuven-vanbulck",
+      "sha256": "50df3c20c14566fd4fc2fab97c09542e9864463adf8dd2eb44d8548fd8dc092c",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-luebeck-wilke",
+      "sha256": "4921091ce4d1ad47cae8c64b9f267c9764a98bdf452092b6ff62acb5b5ca8e0e",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-umd-petroni",
+      "sha256": "e05ddf50727fa81a2b57ae819d5f9374ea7f262f3c43eefcecaeb3e61ea3d5cc",
+      "publication": "2008",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "thesis-tugraz-lipp",
+      "sha256": "22372dc58262d7e4f6b981b4b296c4205e4b9211a54a81415ab40599ad57d3be",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-cry-01",
+      "sha256": "374e5e910fc730e54a7a2751c49cda869fd27ba98d570e16025a146539ecf355",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-cry-02",
+      "sha256": "4a54c44ca0bb0983b8cc27c3719ac28ba875bf6d684af333bde5e10d1654223f",
+      "publication": "2019",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-cry-03",
+      "sha256": "79db0979a4d0fbc583caef02e2b0e4ddf13130ba2a9d0346c819069e83ac491f",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-cry-04",
+      "sha256": "1b15093fe9786af66fe780a39bcd0060a692627b99e8322c98f1ddcd3ee4ddf8",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-cry-05",
+      "sha256": "5ee8d6c42459c898905faae448f9e3af1f0c632f6f2032c3034f9356414c8e10",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-cry-06",
+      "sha256": "a1d4403200f67b402b3d7dbefb4120431c9c8e4ba383341bc17c9c194bc77f58",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-qmp-01",
+      "sha256": "bad12f375b2a8259435d078983afde603aeabc63986ba05c46d6c3eaa18f2a24",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-qmp-03",
+      "sha256": "68e152f9405b9a1e6a7f19c41ca63c2a54fca983142b6c7872fd0a3546f49fb0",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-qmp-04",
+      "sha256": "4ad580927467882cb74f33d75eeae76c2d3f696be865f3b59b932e443c1ffcd9",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-mat-01",
+      "sha256": "9e616a2accf8bb2c7c175fac5cdb7712b953aa30d8bf7b9a929bbc7abd857d37",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-psy-03",
+      "sha256": "79086ded9e482dd68cd5e67f28dfc7d969f33c07f1a546c73c77977f0eb4ae6a",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-psy-04",
+      "sha256": "0cfb1ff28114a5d6c4b5bf6ce713f87fafa89a3b33834f8a4523c8c6de0e7c97",
+      "publication": "2023",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-sys-01",
+      "sha256": "d209a1515030966d75fd212e650337e660f3f607476e1d14d1121f4c27b9667e",
+      "publication": "2026",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-ker-01",
+      "sha256": "b28bc318d61effc304acbba19af9f7d183eb4e0a438096770303176fa5f7e510",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "pd-ker-02",
+      "sha256": "3a039359faa62a858b33d27435fe0276d91ee92783267a74aa8388216b9cb0ca",
+      "publication": "2024",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sta-01",
+      "sha256": "329f8eabf266e45a7edcf7db06bf8ada53d95d05d6f75e249fe8d24e02fa4d2a",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sta-02",
+      "sha256": "22e6cd25bc2d3fc731b8c45d7c060ad66fb45e557a0abcf3b58fa50d1e430080",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sta-03",
+      "sha256": "2eb1650de13cf3bacf5b1783ad1766f7a0a2adcb2f034545aff96015369dcf82",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sta-04",
+      "sha256": "2ab2ca5a90f9ed567fa13f8de6d50188c0cd2cdf6dd7711f5e839d22aba3e34c",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sta-05",
+      "sha256": "59903b2ec52d648d304b2b2564150a94f5dcee87de2539e5b2c1f5ffe371aa39",
+      "publication": "2016",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-ker-01",
+      "sha256": "64a8102e68de73eb6523fa8968b2fee266506b58d3bf10981c24d5185a069d31",
+      "publication": "2025",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sys-01",
+      "sha256": "7ad0d546f04c93c1945552237142de645453fd9fe73abf69ce14db440d583368",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-sys-02",
+      "sha256": "18e480797a9f222d1d182651f406cc72642800f4254a9b5d43d3a6fe4aff585d",
+      "publication": "2022",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-psy-01",
+      "sha256": "aecb5dffb4bcc2d53440709424340af41bfb3936f3d39b308e3dfc186278065e",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-psy-02",
+      "sha256": "2a25f17b591f6b39d1196be4c252f363c9f1c2ae880bb92f6b2a6c44bed15ec7",
+      "publication": "2022",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec-lrp-01",
+      "sha256": "b687ef1539607cd3b6bdcd77727cace81116844f95eb7d122e072e507e65ef5a",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-psy-01",
+      "sha256": "9f835d8c48994d14bf8fcaeb8f047095d566dc16975abf7f36ed2ae8ba9d6a19",
+      "publication": "2020",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-psy-02",
+      "sha256": "d680237a0a80d1ea865d087522d9884ce49950f9bfb2b884c847726a89e37e70",
+      "publication": "2021",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-psy-03",
+      "sha256": "f23d77273fe98fe16af16efdd9d6f86f75ca8e47beb3d5044f73e795cb7db42b",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-mat-01",
+      "sha256": "2f42d864f1338d73e3a35be84bb264258b370d53284806f1903d5c43d5586adb",
+      "publication": "2019",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-mat-02",
+      "sha256": "adc950836b8b2ba30b486797628d6e84c7b0e60a2806bf8e99fadcffeb78721d",
+      "publication": "2015",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-mat-03",
+      "sha256": "9522276ce43f629eee93b37017b91dec1bddd881d1a6721e517bd19c3d9afec7",
+      "publication": "2018",
+      "snapshot": "2026-10-10"
+    },
+    {
+      "id": "ec4-mat-04",
+      "sha256": "bbeeeb5bbbbce046865555c4d09ea14017b8170c63c659aa1f4488de7cddd1a7",
+      "publication": "2017",
+      "snapshot": "2026-10-10"
     },
     {
       "id": "github-archive",

@@ -1,0 +1,10 @@
+﻿const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const window={};vm.runInNewContext(fs.readFileSync('web/memory.js','utf8'),{window,Date,JSON,Set,Error});
+let raw=null;const storage={getItem:()=>raw,setItem:(k,v)=>{raw=v;},removeItem:()=>{raw=null;}};
+let store=new window.LarpusStore(storage);const session={id:'test',title:'Test',messages:[{role:'user',content:'Question'},{role:'assistant',content:'Answer'}]};
+store.save(session);assert.equal(raw,null);store.enable(true);store.save(session);store=new window.LarpusStore(storage);assert.equal(store.data.sessions[0].messages[1].content,'Answer');
+store.remember('<script>owner data</script>');assert.equal(store.data.notes[0].origin,'owner-entered');assert.match(store.context('hello'),/not instructions/);assert.throws(()=>store.context('x'.repeat(8000)));store.forget(0);assert.equal(store.data.notes.length,0);
+assert.throws(()=>store.save({...session,id:'bad',messages:[{role:'assistant',content:'bad'}]}));store.remove('test');assert.equal(store.data.sessions.length,0);
+raw='broken';store=new window.LarpusStore(storage);assert.ok(store.error);assert.throws(()=>store.enable(true));assert.equal(raw,'broken');store.clear();assert.equal(raw,null);store.enable(true);
+const quota=new window.LarpusStore({getItem:()=>null,setItem:()=>{throw Error('quota');}});assert.throws(()=>quota.enable(true));assert.equal(quota.data.enabled,false);
+console.log('Browser-local memory contracts passed.');

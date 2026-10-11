@@ -6,8 +6,8 @@ function setup(events){
  const speech=[];let finish;
  const gate=new Promise(resolve=>finish=resolve),frames=events.map(e=>Buffer.from(JSON.stringify(e)+'\n'));
  let index=0,cancelled=false;
- const sandbox={document:{getElementById:element,createElement:()=>element(Symbol()),createTextNode:text=>({textContent:text}),querySelector:()=>element('header'),querySelectorAll:()=>[]},window:{larpusVoice:{beginReply(){},enqueueSpeech:t=>speech.push(t),finishReply:t=>speech.push(['done',t]),stopPlayback:()=>speech.push('stop')}},matchMedia:()=>({matches:false}),requestAnimationFrame(){},setInterval(){},TextDecoder,Uint8Array,Option:function(text,value){this.text=text;this.value=value;},location:{replace(){}},devicePixelRatio:1,fetch:async path=>{
-  if(path==='/api/chat/stream')return {ok:true,status:200,body:{getReader(){return {async read(){if(index===1)await gate;return index<frames.length?{value:frames[index++],done:false}:{done:true};},async cancel(){cancelled=true;},releaseLock(){}};}}};
+ const sandbox={document:{getElementById:element,createElement:()=>element(Symbol()),createTextNode:text=>({textContent:text}),querySelector:()=>element('header'),querySelectorAll:()=>[]},window:{larpusVoice:{beginReply(){},enqueueSpeech:t=>speech.push(t),finishReply:t=>speech.push(['done',t]),stopPlayback:()=>speech.push('stop')}},matchMedia:()=>({matches:false}),requestAnimationFrame(){},setInterval(){},TextDecoder,Uint8Array,Option:function(text,value){this.text=text;this.value=value;},location:{replace(){}},devicePixelRatio:1,AbortController:typeof AbortController==='function'?AbortController:undefined,fetch:async (path,options)=>{
+  if(path==='/api/chat/stream')return {ok:true,status:200,body:{getReader(){return {async read(){if(index===1)await gate;if(options?.signal?.aborted){const error=Error('Stopped');error.name='AbortError';throw error;}return index<frames.length?{value:frames[index++],done:false}:{done:true};},async cancel(){cancelled=true;},releaseLock(){}};}}};
   return {ok:true,json:async()=>path==='/api/personas'?{personas:[{id:'home-assistant',name:'Home',model:'local',skills:[]}]}:path==='/api/health'?{ollama:'online',models:['local']}:{status:'pass',checks:[]}};
  }};
  vm.createContext(sandbox);vm.runInContext(fs.readFileSync('web/app.js','utf8'),sandbox);
@@ -34,5 +34,9 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const truncated=setup([{type:'text',content:'Partial sentence. '}]);await tick();truncated.element('prompt').value='Hello';
  const stopped=truncated.element('chat').onsubmit({preventDefault(){}});await tick();truncated.finish();await stopped;
  assert.equal(vm.runInContext('history.length',truncated.sandbox),0);assert.match(truncated.element('notice').textContent,/ended early/);
+ const interrupted=setup([{type:'text',content:'A sentence. '},{type:'done'}]);await tick();interrupted.element('prompt').value='Hello';
+ const aborting=interrupted.element('chat').onsubmit({preventDefault(){}});await tick();interrupted.sandbox.window.larpusCancelGeneration();interrupted.finish();await aborting;
+ assert.equal(interrupted.speech.filter(x=>x==='stop').length,1,'abort cleanup must not clear the next microphone capture');
+ assert.equal(vm.runInContext('history.length',interrupted.sandbox),0);assert.match(interrupted.element('notice').textContent,/Stopped/);
  console.log('Chat UI: incremental text/speech, successful history, held/truncated streams passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

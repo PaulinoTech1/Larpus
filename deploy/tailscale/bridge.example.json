@@ -1,0 +1,5 @@
+{
+  "hostname": "YOUR-PC.YOUR-TAILNET.ts.net",
+  "owner_login": "YOUR-TAILSCALE-LOGIN",
+  "port": 8088
+}

@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "id": "linear-algebra-foundations-v1",
+  "persona": "mathematician",
+  "skill": null,
+  "review_status": "authored-and-arithmetic-checked; owner review required before live execution",
+  "source": {
+    "id": "margalit-rabinoff-interactive-linear-algebra",
+    "title": "Interactive Linear Algebra",
+    "authors": [
+      "Dan Margalit",
+      "Joseph Rabinoff"
+    ],
+    "url": "https://textbooks.math.gatech.edu/ila/",
+    "sections": [
+      "2.5",
+      "2.9",
+      "3.3",
+      "3.4",
+      "5.1",
+      "5.4"
+    ]
+  },
+  "scale": {
+    "0": "Incorrect or missing",
+    "1": "Partly meets the case criterion; record the gap",
+    "2": "Meets the case criterion; record supporting evidence"
+  },
+  "cases": [
+    {
+      "id": "independence",
+      "split": "practice",
+      "prompt": "Decide whether (1,2) and (2,4) are linearly independent in R^2. State the span dimension and exhibit a dependence relation. Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "PDF page 84, section 2.5.1"
+      },
+      "rubric": {
+        "correctness": "Dependent: 2*v1-v2=0; span dimension 1.",
+        "reasoning": "Use a nontrivial zero combination or scalar-multiple argument.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "rank-nullity",
+      "split": "practice",
+      "prompt": "For A=[[1,0,1],[0,1,1]], find rank, nullity and a basis of the null space. Is x -> Ax injective or onto R^2? Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "PDF pages 126-128, section 2.9"
+      },
+      "rubric": {
+        "correctness": "Rank 2, nullity 1; basis {(-1,-1,1)}; onto R^2, not injective.",
+        "reasoning": "Identify two pivots, solve Ax=0 with one free variable and apply rank plus nullity equals 3.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "multiplication",
+      "split": "practice",
+      "prompt": "Let A=[[1,1],[0,1]], B=[[1,0],[1,1]]. Compute AB and BA. Does this prove that every pair of matrices fails to commute? Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "Sections 3.4 and 3.3"
+      },
+      "rubric": {
+        "correctness": "AB=[[2,1],[1,1]], BA=[[1,1],[1,2]]. No: some pairs commute, such as identity with any compatible square matrix.",
+        "reasoning": "Show row-column products; distinguish a counterexample to universal commutativity from universal noncommutativity.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "zero-eigenvalue",
+      "split": "practice",
+      "prompt": "For A=diag(0,3), is (1,0) an eigenvector? Is the zero vector an eigenvector? Explain the distinction. Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "PDF pages 256-258, section 5.1"
+      },
+      "rubric": {
+        "correctness": "(1,0) is an eigenvector with eigenvalue 0; zero vector is not an eigenvector.",
+        "reasoning": "Check Av=0*v for nonzero v; eigenvalues may be zero but eigenvectors must be nonzero.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "dependence-transfer",
+      "split": "held-out",
+      "prompt": "For v1=(1,0,1), v2=(0,1,1), v3=(1,1,2), determine independence and span dimension. Explain why the number of listed vectors alone does not determine dimension. Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "PDF page 84, section 2.5.1"
+      },
+      "rubric": {
+        "correctness": "Dependent: v1+v2-v3=0; v1,v2 independent, span dimension 2.",
+        "reasoning": "Provide relation and verify first two are independent; dimension counts a basis, not listed vectors.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "nullity-transfer",
+      "split": "held-out",
+      "prompt": "For A=[[1,2,0,1],[0,0,1,3]], find rank, nullity and a null-space basis. Verify your basis vectors. Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "PDF pages 126-128, section 2.9"
+      },
+      "rubric": {
+        "correctness": "Rank 2, nullity 2; basis {(-2,1,0,0),(-1,0,-3,1)} or any equivalent basis.",
+        "reasoning": "Solve x1=-2*x2-x4, x3=-3*x4; multiply A by both basis vectors and justify their independence.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "affine-trap",
+      "split": "held-out",
+      "prompt": "A learner says T(x,y)=(x+1,y) is linear because its graph is straight. Evaluate the claim and give a decisive test. Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "Section 3.3, linear transformations"
+      },
+      "rubric": {
+        "correctness": "Not linear: T(0,0)=(1,0), not zero.",
+        "reasoning": "A linear map preserves zero; distinguish affine from linear and avoid relying solely on graph appearance.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    },
+    {
+      "id": "diagonalisation",
+      "split": "held-out",
+      "prompt": "For A=[[2,1],[0,2]], does having the real eigenvalue 2 twice guarantee diagonalisation over R? Find the eigenspace and justify the answer. Explain concisely for an undergraduate, then ask one new follow-up problem without answering it.",
+      "reference": {
+        "source_id": "margalit-rabinoff-interactive-linear-algebra",
+        "locator": "Sections 5.1 and 5.4"
+      },
+      "rubric": {
+        "correctness": "No. Eigenspace for 2 is span{(1,0)}, dimension 1, so A is not diagonalisable.",
+        "reasoning": "Solve (A-2I)v=0; distinguish algebraic multiplicity 2 from geometric multiplicity 1 and need for two independent eigenvectors.",
+        "teaching": "Use clear, accurate steps appropriate to the selected style; ask a relevant new follow-up without supplying its answer. Do not score style preference as mathematical correctness.",
+        "grounding": "Use relevant approved mathematical evidence when available; no invented source identifiers or unsupported authority. Source relevance and claim support require manual inspection."
+      }
+    }
+  ]
+}

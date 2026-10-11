@@ -9,6 +9,9 @@ podman pull docker.io/ollama/ollama:latest
 mkdir -p vendor/runtime-wheels /home/larpus/models
 python3 -m venv vendor/build-env
 vendor/build-env/bin/python -m pip wheel -r requirements.txt --wheel-dir vendor/runtime-wheels
+# Pinned CPU retrieval runtime: exact wheels, hash-checked, no transitive dependencies.
+vendor/build-env/bin/python -m pip download --no-deps --only-binary=:all: --require-hashes -r requirements-retrieval.txt --dest vendor/runtime-wheels
+# Pinned models arrive from the owner Windows step: scripts/prepare-retrieval.py fetch, then sync.
 (cd vendor/runtime-wheels && sha256sum *.whl > SHA256SUMS)
 podman run --detach --name larpus-prepare --cap-drop=ALL --security-opt=no-new-privileges \
   --read-only --read-only-tmpfs=false --tmpfs=/tmp:rw,nosuid,nodev,noexec,size=1g \

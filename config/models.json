@@ -27,7 +27,7 @@
       "quantization": "Q4_K_M"
     }
   ],
-  "num_ctx": 4096,
-  "num_predict": 256,
+  "num_ctx": 131072,
+  "num_predict": 1024,
   "benchmark_status": "SEE_LOCAL_RECEIPT"
 }

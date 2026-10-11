@@ -171,11 +171,14 @@ def build(fetch_docs,reuse_research=False):
     research=json.loads((ROOT/'research/catalog.json').read_text(encoding='utf-8'))
     for source in research['entries']:
         if source.get('full_text_status')!='downloaded':continue
-        path=ROOT/'data/research'/source['role']/source['level']/(source['id']+'.pdf')
+        from scripts.research_policy import vet
+        vet(source)  # Unreviewed publishers or unpinned files never reach the index.
+        fmt=source.get('format','pdf')
+        path=ROOT/'data/research'/source['role']/source['level']/(source['id']+'.'+fmt)
         raw=path.read_bytes()
         if hashlib.sha256(raw).hexdigest()!=source['sha256']:raise ValueError('Research PDF checksum mismatch: '+source['id'])
         entry={'id':source['id'],'title':source['title'],'url':source['source_url'],'roles':[source['role']],'snapshot':source.get('fetched_at','')[:10],'publication':source['year'],'sha256':source['sha256'],'topics':source.get('topics',[])}
-        documents.append((entry,raw,'application/pdf'))
+        documents.append((entry,raw,{'html':'text/html','txt':'text/plain'}.get(fmt,'application/pdf')))
     for entry,raw,mime in documents:
         count=0
         try:

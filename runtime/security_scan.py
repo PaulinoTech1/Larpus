@@ -33,7 +33,9 @@ def fingerprint():
     paths += [ROOT/'knowledge/manifest.json',ROOT/'knowledge/sources.json',ROOT/'scripts/prepare-knowledge.py']
     paths += [ROOT/'scripts/test-local.py',ROOT/'requirements-knowledge.txt']+list((ROOT/'knowledge/briefs').glob('*.txt'))
     paths += [ROOT/'scripts/releases.py']
+    paths += [ROOT/'scripts/evaluate-companion.py']+list((ROOT/'evals').glob('*.json'))
     paths += [ROOT/'scripts/github_archive.py',ROOT/'knowledge/github-manifest.json']
+    paths += [ROOT/'config/cpu-retrieval.json',ROOT/'knowledge/embeddings-manifest.json',ROOT/'scripts/prepare-retrieval.py',ROOT/'requirements-retrieval.txt']
     digest=hashlib.sha256()
     for path in sorted({p for p in paths if p.is_file()}):
         if '__pycache__' in path.parts:
@@ -64,7 +66,7 @@ def scan(descriptors):
         capabilities=json.loads((ROOT/'config/mcp-capabilities.json').read_text(encoding='utf-8'))
         (target/'SKILL.md').write_text('---\nname: larpus-mcp\ndescription: Local Larpus MCP server inventory and source.\npermissions: '+json.dumps(capabilities['permissions'])+'\n---\n\n# Local MCP inventory\n\n'+json.dumps(descriptors,indent=2)+'\n\n# Declared scope (documentation, not an OS grant)\n'+json.dumps(capabilities,indent=2),encoding='utf-8')
         # Only fixed source files; never include credentials, recordings or prompts.
-        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py'):
+        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py','context.py'):
             shutil.copyfile(ROOT/'runtime'/name,target/name)
         (target/'scripts').mkdir(exist_ok=True)
         shutil.copyfile(ROOT/'scripts/protect-quarantine.ps1',target/'scripts/protect-quarantine.ps1')

@@ -8,6 +8,7 @@ from runtime.text_filter import TextHeld
 from runtime.skills import summaries
 from runtime.dlp import gate, stream_pending
 from runtime.knowledge import augment
+from runtime.context import CAPACITY,OUTPUT_LIMIT,INPUT_BOUND,COMPRESS_PREFIX,SUMMARY_SYSTEM,ContextPressure,upper_bound,compression_data,compression_envelope,summary_result,encoded,validate_record
 
 PERSONAS=load_personas()
 LOCK=threading.Lock()
@@ -38,25 +39,40 @@ def context_usage(frame, omitted=0):
     # Ollama reports actual tokenization after generation. Return counts only;
     # instruction and evidence text never belong in these diagnostics.
     prompt=frame.get('prompt_eval_count');output=frame.get('eval_count')
-    if type(prompt) is not int or type(output) is not int or not 0<=prompt<=4096 or not 0<=output<=4096:
+    if type(prompt) is not int or type(output) is not int or not 0<=prompt<=CAPACITY or not 0<=output<=CAPACITY:
         return None
-    return {'capacity':4096,'prompt_tokens':prompt,'output_tokens':output,
-            'output_limit':1024,'omitted_messages':omitted,'measurement':'ollama-final'}
+    return {'capacity':CAPACITY,'prompt_tokens':prompt,'output_tokens':output,
+            'output_limit':OUTPUT_LIMIT,'omitted_messages':omitted,'measurement':'ollama-final'}
+
+def citation_check(content,evidence):
+    selected={s['id'] for s in evidence}
+    identifiers=set(re.findall(r'\[([a-z][a-z0-9-]{2,80})\]',content))
+    unknown=sorted(identifiers-selected)
+    return {'status':'unknown-identifiers' if unknown else 'identified' if identifiers else 'no-citations',
+            'cited':sorted(identifiers & selected),'unknown':unknown,'selected':len(selected)}
 
 def chat(persona, messages, skill=None, on_chunk=None):
     try:
-        if len(json.dumps({'persona':persona,'messages':messages}).encode())>65536:
+        if len(json.dumps({'persona':persona,'messages':messages}).encode())>524288:
             raise ValueError('Input too large')
         selected=PERSONAS.get(persona) if isinstance(persona,str) else None
         if selected is None:
             raise ValueError('Unknown persona')
         prepared=messages_for(selected,messages,skill)
+        validate_record(messages)
+        compression=compression_envelope(messages)
     except TextHeld as exc:
         return {'status':503 if exc.unavailable else 422,'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.','reason':exc.reason,'message_index':exc.index}
     except (ValueError,TypeError):
         return {'status':400,'error':'Invalid persona or conversation'}
     try:
-        prepared,evidence=augment(prepared,persona)
+        if compression is not None:
+            prepared[0]['content']=SUMMARY_SYSTEM
+            evidence=[]
+            if upper_bound(prepared)>INPUT_BOUND:raise ContextPressure('Compression batch exceeds context')
+        else:prepared,evidence=augment(prepared,persona)
+    except ContextPressure:
+        return {'status':413,'code':'context_pressure','error':'Conversation needs compression before continuing. Use COMPRESS or shorten the latest message.'}
     except Exception:
         return {'status':503,'error':'Approved local evidence unavailable, rejected or exceeds the context budget. Shorten the question or check the library; no internet fallback is used.'}
     if not LOCK.acquire(blocking=False):
@@ -65,13 +81,24 @@ def chat(persona, messages, skill=None, on_chunk=None):
         def release(text, frame):
             result=gate(text,prepared[0]['content'])
             if result.get('status')==200:
+                if compression is not None:
+                    try:record=summary_result(result['content'],compression)
+                    except (ValueError,TypeError,KeyError,TextHeld):return {'status':422,'error':'Summary failed validation. Original conversation retained; retry compression.'}
+                    result=gate(encoded(record),prepared[0]['content'])
+                    if result.get('status')!=200:return result
+                    result['handoff']=record
                 usage=context_usage(frame,max(0,len(messages)+1-len(prepared)))
                 if usage is not None:result['context']=usage
-                result['sources']=[{k:s[k] for k in ('id','title','url','snapshot','locator')} for s in evidence]
+                result['citation_check']=citation_check(text,evidence)
+                result['sources']=[]
+                for source in evidence:
+                    preview=gate(source['text'],prepared[0]['content'])
+                    result['sources'].append({**{k:source[k] for k in ('id','title','url','snapshot','locator')},
+                        'preview':preview['content'] if preview.get('status')==200 else 'Preview withheld by local output screening.'})
             return result
         if on_chunk is not None:
             content='';released=0;placed=False;final_frame={}
-            for frame in chat_stream({'model':selected['model'],'messages':prepared,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':4096,'num_predict':1024,'num_gpu':99}}):
+            for frame in chat_stream({'model':selected['model'],'messages':prepared,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':CAPACITY,'num_predict':OUTPUT_LIMIT,'num_gpu':99}},timeout=900):
                 delta=frame.get('message',{}).get('content','')
                 if not isinstance(delta,str):
                     raise ValueError('Invalid model content')
@@ -99,7 +126,7 @@ def chat(persona, messages, skill=None, on_chunk=None):
             if gpu_placement(selected['model'])!='GPU':
                 return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
             return release(content,final_frame)
-        result=ollama('/api/chat',{'model':selected['model'],'messages':prepared,'stream':False,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':4096,'num_predict':1024,'num_gpu':99}})
+        result=ollama('/api/chat',{'model':selected['model'],'messages':prepared,'stream':False,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':CAPACITY,'num_predict':OUTPUT_LIMIT,'num_gpu':99}},timeout=900)
         if gpu_placement(selected['model'])!='GPU':
             return {'status':503,'error':'Full GPU model placement unavailable. Free GPU memory and retry; CPU fallback replies are disabled.'}
         content=result['message']['content']

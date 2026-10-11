@@ -25,7 +25,10 @@ older replies and text beyond the initial 2000-character spoken preview. Long
 replays are synthesised in bounded chunks and may have pauses between chunks.
 
 VOICE toggles capture only; disabling Speak replies stops playback. Capture stays
-suspended during playback, including paused playback, to prevent feedback. Listening
+suspended during playback by default, including paused playback, to reduce feedback.
+Optional hands-free interruption uses sustained microphone energy to stop playback
+and generation, then capture a new utterance. Headphones are recommended: this
+is not acoustic echo cancellation and can misfire on speaker audio. Listening
 is opt-in on each page load. No recordings or generated speech are saved to disk.
 
 Exact station commands in optional auto-send mode: "Larpus reset chat", "Larpus
@@ -162,3 +165,19 @@ checks. Both worker images were rebuilt offline; previous containers remain stop
 for rollback, with credentials, models and quarantine preserved.
 
 The matching [offline scan receipt](VOICE-CONTROLS-SCAN-RECEIPT.json) records 64 clean skill scans and eight retained MCP findings (MEDIUM aggregate risk). Overall health remains degraded for those warnings; static scanning is not a full audit of voice quality or browser behaviour.
+
+## Persistent CPU worker candidate
+
+The release workflow builds a separate voice container from the already cached,
+pinned voice image with no network access or dependency changes. Piper and Whisper
+load lazily once and remain in that worker. The client uses bounded length-prefixed
+JSON over a mode-0600 Unix socket entirely inside the network-disabled container;
+there is no additional host port or writable host mount. Voice remains CPU-only.
+The per-release voice-deployment.json is pinned by the release receipt; legacy
+releases retain the original worker and profile for rollback.
+
+HUD timing reports request and worker duration, model-cache status, and first
+browser playback event. These do not measure physical speaker latency or
+recognition accuracy. Paused playback retains its position; STOP cancels queued
+audio and browser generation requests. In-flight CPU synthesis may finish before
+the worker accepts another request.

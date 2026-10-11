@@ -1,0 +1,9 @@
+{
+  "grants": [
+    {
+      "src": ["PIXEL-TAILSCALE-IP/32"],
+      "dst": ["PC-TAILSCALE-IP/32"],
+      "ip": ["tcp:443"]
+    }
+  ]
+}

@@ -5,8 +5,26 @@ import io
 import json
 import sys
 import wave
+import socket
+import struct
+import time
 
 MAX_AUDIO = 960044  # 30 seconds, mono PCM16 at 16 kHz plus WAV header
+SOCKET='/tmp/larpus-speech.sock'
+MODELS={}
+
+def speech_models(kind):
+    if kind not in MODELS:
+        if kind=='tts':
+            from piper import PiperVoice
+            MODELS[kind]=PiperVoice.load('/models/en_GB-alan-medium.onnx')
+        else:
+            from faster_whisper import WhisperModel
+            spec=importlib.util.spec_from_file_location('voicestudio_asr','/studio/asr.py')
+            studio=importlib.util.module_from_spec(spec);spec.loader.exec_module(studio)
+            studio._model=SpeechOnlyModel(WhisperModel('/models/whisper-small.en',device='cpu',compute_type='int8',cpu_threads=8,local_files_only=True))
+            MODELS[kind]=studio
+    return MODELS[kind]
 
 class SpeechOnlyModel:
     """Keep the pinned VoiceStudio adapter, with local decoding policy underneath."""
@@ -43,11 +61,7 @@ def run(request):
         # separation; neither this nor confidence thresholds guarantees accuracy.
         if float(np.sqrt(np.mean(samples*samples))) < 0.003:
             return {'transcript':'', 'no_speech':True}
-        from faster_whisper import WhisperModel
-        spec = importlib.util.spec_from_file_location('voicestudio_asr', '/studio/asr.py')
-        studio = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(studio)
-        studio._model = SpeechOnlyModel(WhisperModel('/models/whisper-small.en', device='cpu', compute_type='int8', cpu_threads=8, local_files_only=True))
+        studio = speech_models('stt')
         result = studio._transcribe(samples, False, {'beam_size':3}, {'language':'en','temperature':0.0})
         text = result['text'].strip()
         if not text:
@@ -59,16 +73,71 @@ def run(request):
         text = request['text']
         if not isinstance(text,str) or not text.strip() or len(text)>2200:
             raise ValueError('Invalid speech text')
-        from piper import PiperVoice, SynthesisConfig
-        voice = PiperVoice.load('/models/en_GB-alan-medium.onnx')
+        from piper import SynthesisConfig
+        voice = speech_models('tts')
         output = io.BytesIO()
+        # Natural pace plus a short breath between sentences; 0.85 sounded rushed and clipped.
+        config=SynthesisConfig(length_scale=1.0,noise_scale=0.6,noise_w_scale=0.8)
         with wave.open(output,'wb') as wav:
-            voice.synthesize_wav(text,wav,SynthesisConfig(length_scale=0.85))
+            for index,chunk in enumerate(voice.synthesize(text,config)):
+                if index==0:
+                    wav.setframerate(chunk.sample_rate);wav.setsampwidth(chunk.sample_width);wav.setnchannels(chunk.sample_channels)
+                else:
+                    wav.writeframes(bytes(int(chunk.sample_rate*0.22)*chunk.sample_width*chunk.sample_channels))
+                wav.writeframes(chunk.audio_int16_bytes)
         return {'audio':base64.b64encode(output.getvalue()).decode(), 'mime':'audio/wav'}
     raise ValueError('Unsupported voice operation')
 
+def receive(stream,limit):
+    def exact(count):
+        parts=[]
+        while count:
+            block=stream.recv(count)
+            if not block:raise ValueError('Truncated speech frame')
+            parts.append(block);count-=len(block)
+        return b''.join(parts)
+    size=struct.unpack('!I',exact(4))[0]
+    if not 0<size<=limit:raise ValueError('Speech frame exceeds limit')
+    return json.loads(exact(size))
+
+def send_frame(stream,value,limit):
+    raw=json.dumps(value).encode()
+    if len(raw)>limit:raise ValueError('Speech result exceeds limit')
+    stream.sendall(struct.pack('!I',len(raw))+raw)
+
+def serve():
+    # Unix IPC inside one network-disabled container; no TCP listener or host mount.
+    import os
+    with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as server:
+        server.bind(SOCKET);os.chmod(SOCKET,0o600);server.listen(2)
+        while True:
+            connection,_=server.accept()
+            with connection:
+                connection.settimeout(120)
+                try:
+                    request=receive(connection,1400000);start=time.monotonic()
+                    if request=={'action':'status'}:
+                        result={'ready':True,'cached_models':sorted(MODELS)}
+                    else:
+                        cached=request.get('action')=='synthesize' and 'tts' in MODELS or request.get('action')=='transcribe' and 'stt' in MODELS
+                        result=run(request);result['timing']={'worker_ms':round((time.monotonic()-start)*1000),'model_cached':bool(cached)}
+                    send_frame(connection,result,16000000)
+                except Exception:
+                    try:send_frame(connection,{'error':'Local speech processing failed.'},16000000)
+                    except OSError:pass
+
+def client():
+    raw=sys.stdin.buffer.read(1400001)
+    if len(raw)>1400000:raise ValueError('Speech request exceeds limit')
+    with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as connection:
+        connection.settimeout(120);connection.connect(SOCKET)
+        send_frame(connection,json.loads(raw),1400000)
+        print(json.dumps(receive(connection,16000000)))
+
 def main():
     try:
+        if sys.argv[1:]==['--serve']:return serve()
+        if sys.argv[1:]==['--client']:return client()
         raw = sys.stdin.buffer.read(1400001)
         if len(raw)>1400000:
             raise ValueError('Voice request too large')

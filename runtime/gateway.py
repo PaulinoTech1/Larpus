@@ -115,10 +115,28 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200,{'ok':True},{'Set-Cookie':'larpus_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' + ('; Secure' if getattr(self.server, 'tls', False) else '')})
         if not self.server.auth.allowed(('api',self.client_address[0]),30,60):
             return self.reply(429,{'error':'Too many requests. Try again shortly.'},{'Retry-After':'60'})
-        if self.path not in ('/api/chat', '/api/chat/stream', '/api/voice'):
+        if self.path not in ('/api/chat', '/api/chat/stream', '/api/voice', '/api/context/compress'):
             return self.reply(404, {'error': 'Not found'})
         if DRAIN.exists():
             return self.reply(503,{'error':'Finishing an update. Please retry shortly.'},{'Retry-After':'5'})
+        if self.path == '/api/context/compress':
+            from runtime.context import compression_messages
+            try:
+                data=self.read_json(262144)
+                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or data['persona'] not in PERSONAS:raise ValueError('Invalid compression request')
+                messages=compression_messages(data['prior'],data['fragments'])
+            except TextHeld:
+                return self.reply(422,{'error':'Compression input held by local filtering. Original chat retained.'})
+            except (ValueError,TypeError,KeyError):
+                return self.reply(400,{'error':'Invalid or oversized compression batch.'})
+            if not LOCK.acquire(blocking=False):return self.reply(409,{'error':'Inference busy. Try again shortly.'})
+            try:
+                result=mcp_chat(data['persona'],messages)
+                status=result.pop('status',502)
+                return self.reply(status,result)
+            except (OSError,ValueError,KeyError,TypeError):
+                return self.reply(502,{'error':'Local compression unavailable. Original chat retained.'})
+            finally:LOCK.release()
         if self.path == '/api/voice':
             try:
                 from runtime.voice import call
@@ -164,8 +182,8 @@ class Handler(BaseHTTPRequestHandler):
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 raise ValueError('JSON required')
             size = int(self.headers.get('Content-Length', '0'))
-            if not 0 < size <= 65536:
-                raise ValueError('Request must be 1-65536 bytes')
+            if not 0 < size <= 524288:
+                raise ValueError('Request must be 1-524288 bytes')
             data = json.loads(self.rfile.read(size))
             if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
                 raise ValueError('Expected persona and messages')
@@ -192,9 +210,9 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}))
                     if result.get('status')==200:
-                        event({'type':'done','sources':result.get('sources',[]),**({'context':result['context']} if 'context' in result else {})})
+                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check') if key in result}})
                     else:
-                        event({'type':'error','error':result.get('error','Response withheld.')})
+                        event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code')})
                 except (OSError,ValueError,KeyError,TypeError):
                     try:
                         event({'type':'error','error':'Local stream interrupted. The partial reply is incomplete.'})

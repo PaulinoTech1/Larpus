@@ -1,5 +1,146 @@
 # Larpus decision record
 
+## Name, author credits and clean speech (2026-10-09)
+
+Every persona prompt now states "Your name is LARPUS; if asked your name, say
+LARPUS" (the opening line was also capitalised from "larpus").
+
+Research evidence items carry a `cite` field (for example "Blackwell, 1956")
+from `knowledge/authors.json`, generated from the reviewed `research/catalog.json`
+and shipped in the sealed image with the index. The evidence prompt asks the model
+to credit authors in writing as (Author, Year) [source-id] and never invent names.
+
+Speech is cleaned in the HUD (`speakable()` in `web/voice.js`) before synthesis:
+markdown headings, bold/italic markers, list bullets, backticks, code blocks,
+URLs, link syntax, bracketed source IDs and (Author, Year) credits are removed, so
+LARPUS never reads symbols or citations aloud while the transcript keeps them.
+`tests/speech-text.cjs` covers this.
+## Butler-parody personality and natural speech pacing (2026-10-09)
+
+The shared LARPUS character line in all twelve personas now describes an original
+parody of a polished British AI butler: unflappable, quick and drily sarcastic,
+addressing the owner as "boss", with a deadpan remark most of the time rather than
+an occasional aside, and no servile filler. Retained rules: useful answer first,
+challenge flawed assumptions with a practical alternative, pushback never targets
+the person, no wit for distress, health, safety or serious incidents, and evidence
+outranks performance. It explicitly must not claim to be JARVIS, Iron Man or any
+trademarked figure.
+
+Piper speech moves from `length_scale=0.85` (rushed, clipped) to natural pace
+`1.0`, `noise_scale=0.6`, `noise_w_scale=0.8`, and inserts 0.22 s of silence
+between sentence chunks from `PiperVoice.synthesize` (piper-tts 1.8.0). The voice
+remains `en_GB-alan-medium` on CPU; a more natural CPU voice (for example Kokoro
+British male voices) is a separate planned change needing offline model prep.
+## Psychologist game theory sources (2026-10-09)
+
+The research archive gains a seventh role, `psychologist`, with its own curated
+quota (`ROLE_QUOTA` in `scripts/research-archive.py`: 2 doctoral theses plus
+uncounted primary references); the original six roles keep 10/8/7. Added and
+hash-pinned in `research/catalog.json`, indexed into the approved library:
+
+- David Blackwell, "An analog of the minimax theorem for vector payoffs",
+  Pacific Journal of Mathematics 6(1), 1956 (reference; 27 passages).
+- Meng-Jhang Fong, "Essays in Behavioral Economics and Game Theory", Caltech
+  Ph.D., 2024, DOI 10.7907/5xh7-yw15 (359 passages).
+- Po-Hsuan Lin, "Essays in Behavioral Game Theory Solution Concepts", Caltech
+  Ph.D., 2024, DOI 10.7907/kbwg-w708 (680 passages; repository lists
+  "Degree: Other", PDF title page states Doctor of Philosophy).
+
+Verified real but not downloaded because the hosts served human-verification
+pages to automated requests: Blackwell "Comparison of Experiments" (Second
+Berkeley Symposium, 1951, Project Euclid open access), Blackwell "Infinite Games
+and Analytic Sets" (PNAS 1967, PMC223869), and Kleiman-Weiner "Computational
+foundations of human social intelligence" (MIT Ph.D., 2018). They can be added
+with `research-archive.py --import-dir` after a manual browser download.
+Blackwell & Girshick, Theory of Games and Statistical Decisions (1954), has no
+official open copy and is not archived. Rights notes are recorded per entry;
+public access is not permission to redistribute.
+## Failed activation readiness and failed rollback (2026-10-09)
+
+### What happened
+
+Activating release `d139aa4e80eb` (HUD context meter fix: replace the hardcoded
+262,144 placeholder with 131,072) prepared cleanly, then `activate` failed with
+`New gateway functional readiness failed`. The cutover path then tried to relaunch
+the previous release `82e6ad9e3450` and hit the same readiness error, leaving
+`data/releases/active.json` with `"pending": true` while the Windows gateway
+process for `82e6ad9e3450` was still answering HTTP. Production chat stayed up on
+the old release; the new agent container was running but not selected.
+
+### Root causes (two independent bugs)
+
+1. **Unloaded model trips a hard readiness gate.**
+   `scripts/releases.py` `ready()` requires every named check in
+   `/api/station-health` to be `"pass"`, including `model_gpu`. That endpoint
+   serves `runtime.health.read_latest()`, a file written by a 60-second monitor
+   and treated as stale after 180 seconds � it is not a live probe. After the
+   earlier WSL memory restart, Ollama had no resident model (`model_processors`
+   reported `"unloaded"`), so the cached report kept `model_gpu: warning`. Live
+   `/api/health` later showed GPU after a chat load, but readiness still failed
+   until the monitor rewrote the file. Voice stayed CPU-only
+   (`faster-whisper` `device='cpu'`, Piper on CPU, no GPU device on the voice
+   container) and was unrelated.
+
+2. **`prune` stopped the prepared candidate.**
+   After the failed cutover, `activate` still called the new `prune()` helper.
+   Prune kept only the active and previous release agents/voice and the model.
+   The prepared `larpus-agent-d139aa4e80eb` was not yet active, so prune stopped it.
+   The next activate then failed with `Container stopped or image drifted`
+   before another readiness wait.
+
+### Thought process used to recover
+
+- Treat a readiness failure as "which check failed?", not as "the release is
+  bad". Diff live `/api/health` (immediate Ollama placement) against
+  `/api/station-health` (cached monitor). `model_gpu: warning` with an unloaded
+  model explained both the failed candidate and the failed restore.
+- Reload the model at the configured context (`num_ctx` 131072, `num_gpu` 99,
+  `keep_alive` -1) through the sealed agent's allowed chat route, then confirm
+  `context_length` and `size == size_vram` from `/api/ps`.
+- Fix prune before retrying: keep any release folder newer than the active
+  release that already has a `deployment.json`, so prepared candidates survive
+  until activation or discard. Never `rm` containers; stop only.
+- Restart the stopped candidate container, clear the pending state by a clean
+  `activate`, then confirm `status` shows the new id running, previous retained,
+  and prune keeping only the two agents, the shared voice worker and the model.
+
+### Resolution and follow-ups
+
+- Release `d139aa4e80eb` is active; HUD meter default and accepted capacities include
+  131072 (still accepts 4096/16384/262144 for older measurements).
+- `prune` keeps prepared candidates; documented in UPDATES.md.
+- Operational rule: after WSL/`wsl --shutdown`/model-cache swaps, wait for
+  `model_gpu: pass` on station-health (or send one chat to load the model and
+  wait one monitor cycle) before `activate`. Voice remains CPU-only by design so
+  the 24 GB card can stay filled by the text model.
+
+## q8_0 KV cache at 131K context (2026-10-09)
+
+The live model already ran `OLLAMA_KV_CACHE_TYPE=q4_0` with flash attention
+(set by `scripts/model-cache.py`), which earlier notes missed. To reduce
+long-context quality loss the cache moves to `q8_0` and the context to 131072
+tokens (`config/models.json` `num_ctx`, `runtime/context.py` `CAPACITY`).
+Side-container fit probes on 2026-10-09 (production paused, same image and mounts):
+q8_0 at 150000 was 22,313,508,535 bytes, fully GPU-resident, but the card reached
+24,001 of 24,564 MiB (about 560 MB free); q8_0 at 131072 was 21,556,960,951 bytes,
+fully GPU-resident, 23,547 MiB used (about 1 GB free). 131072 was chosen for
+headroom so desktop GPU use cannot push layers to CPU and trip the residency check.
+For comparison q4_0 at 150000 was 19,855,646,391 bytes. `model-cache.py` now
+probes the configured `num_ctx` instead of a hardcoded 262144. Applied with
+`python scripts/model-cache.py apply --cache q8_0`.
+## 150K-token context window (2026-10-09)
+
+The conversation context rises from 4096 to 150000 tokens (`config/models.json`
+`num_ctx` and `runtime/context.py` `CAPACITY`); the output cap stays 1024 and
+`INPUT_BOUND` follows as capacity minus output minus 1024. The model's advertised
+262144 was tried first but backed down to keep headroom on the 24 GB RTX 3090 Ti.
+Probe on 2026-10-09: Ollama loaded qwen3.5:27b-q4_K_M at context 150000 in 20.5 s,
+19,855,646,391 bytes total and GPU-resident (100% GPU), about 22.5 GB VRAM in use.
+No KV cache quantization is set yet; that is the next planned change and needs its
+own fit probe. `runtime/models.py` benchmarks still probe at 4096/256. Earlier
+references to a 4096 context below are historical. Deployed via
+`scripts/releases.py` stage/prepare/activate, not a pod teardown.
+
 ## Five specialist skills per role (2026-10-08)
 
 Each of the twelve personas has five exclusive, locally authored specialist
@@ -107,7 +248,7 @@ credential. No new ports, mounts, tools, external downloads or accounts were add
 
 ## Qwen3.5 27B Q4 GPU, CPU voice (2026-10-09)
 
-All personas target qwen3.5:27b-q4_K_M at 4096 context. Conversational requests
+All personas target qwen3.5:27b-q4_K_M at 131072 context. Conversational requests
 disable thinking, request GPU layers and retain the loaded model. The runtime
 checks actual Ollama GPU residency before releasing a generated response; CPU or
 partial-offload answers fail rather than silently becoming slow. Health and the
@@ -208,7 +349,7 @@ Preserve existing role-exclusive skills. No live tenant integration or cloud
 runtime access is introduced. Treat Windows Home edition constraints explicitly.
 
 Switching skills and personas retains browser-memory conversation; RESET remains
-explicit. Show latest Ollama-measured input/output token use against 4096 tokens,
+explicit. Show latest Ollama-measured input/output token use against 131072 tokens,
 including gateway omission count, rather than estimating from visible text.
 Release scanning checks the exact frozen registry target inventory instead of
 assuming a fixed skill count. All targets must complete and new MCP findings block.
@@ -216,3 +357,190 @@ assuming a fixed skill count. All targets must complete and new MCP findings blo
 Give every role the same original eccentric British LARPUS character: concise
 wit, evidence-led pushback and practical alternatives, with no insults, invented
 objections or loss of specialist boundaries. See [implementation contract](MICROSOFT_IMPLEMENTATION.md).
+
+## CPU semantic search and reranking (2026-10-09)
+
+The owner approved one online preparation fetch: BAAI/bge-small-en-v1.5 ONNX
+(revision 5c38ec7c405ec4b44b94cc5a9bb96e735b38267a) and BAAI/bge-reranker-base
+ONNX (revision 2cfc18c9415c912f9d8155881c133215df768a70), plus onnxruntime 1.23.2,
+tokenizers 0.23.3 and numpy 2.2.6 wheels installed with `--no-deps`. Every file
+size and SHA-256 is pinned in `config/cpu-retrieval.json`; wheel hashes are also
+in `requirements-retrieval.txt`. `scripts/prepare-retrieval.py` fetches, verifies,
+syncs to the WSL build cache and builds the index; the agent image gets them only
+from that offline cache (models in their own reused layer).
+
+Retrieval stays BM25-first: up to 10 BM25 candidates plus 6 embedding neighbours
+are scored by the cross-encoder within a 0.9 s budget, with BM25-rank and reviewed
+brief priors; semantic-only passages need a non-negative relevance score. Version,
+platform and topic-anchored questions and repository scopes never gain semantic
+rows. Existing filters, per-source caps, budgets and continuations apply after
+ranking. Study notes are reranked within 0.4 s. Any missing package, model or index,
+hash mismatch or runtime error falls back to the previous BM25 order. The index
+(`knowledge/embeddings.npy`, float16, 43,549 unique passages) is bound to the
+approved database hash and embedder revision; rebuild it after every library rebuild.
+
+ONNX Runtime uses only the CPU provider (asserted), 8 intra-op threads, no GPU,
+no Ollama and no network. Agent container limits rise from 1 GB/2 CPUs to
+12 GB/8 CPUs. Hybrid ranking added about 1 s per question on a busy host.
+
+## Persistent CPU retrieval worker (2026-10-09)
+
+Each chat starts a fresh MCP child, so loading the retrieval models per process
+added 3.5-4.6 s per chat. The agent image now runs `runtime.retrieval_worker`
+as its main process: it hash-verifies the models and embedding index once at
+start, keeps them loaded (8 CPU threads, about 1.7 GB RSS) and answers on an
+owner-only (0600, same-UID peer) Unix socket in the agent's private /tmp.
+
+Unlike voice, it stays inside the agent container: the caller is the MCP child in
+that container, so a separate container would need a shared mount or network path
+and would add a new boundary. No TCP listener, mount, device or egress is added;
+the pod remains network-disabled and within the 12 GB/8 CPU agent limits.
+Requests are strict, size-bounded JSON (question, at most 32 passages, budget at
+most 5 s); the database is still read and filtered in the chat process. In the
+image (`LARPUS_RETRIEVAL_WORKER=remote`) a chat never loads models itself: a
+missing, failed or slow worker means BM25 order. The worker stays alive without
+listening if verification fails. Host tools still load models in-process.
+## Mathematics library expansion and training_use rights tag (2026-10-10)
+
+The mathematician archive gains 37 owner-approved documents: 5 doctoral theses
+(Cambridge, Imperial, Georgia Tech, Utrecht, ETH Zurich) and 32 textbooks/course
+notes in calculus, real/complex analysis, measure theory, ODE/PDE, functional
+analysis, linear algebra, convex optimization and topology. `ROLE_QUOTA` in
+`scripts/research-archive.py` sets mathematician to 10/8/12 (phd 7 -> 12); the
+textbooks/notes are uncounted `references` (degree field states they are not
+student quota entries), following the existing NIST/Blackwell convention.
+22 hosts were added to `RESEARCH_HOSTS`, each commented with its institution. DOI
+and handle resolver URLs (doi.org, hdl.handle.net) were replaced by the ETH Research
+Collection and Georgia Tech repository record URLs, so no resolver is allowlisted.
+
+Rights review: 10 items carry no explicit licence (faculty course notes or
+books publicly posted on university domains): hunter-measure-theory, driver-analysis-tools, hunter-pde-notes, dunkel-1804-complex-analysis, princeton-mat330-complex-analysis, nemirovski-modern-convex-optimization, hatcher-point-set-topology-notes, hatcher-3-manifolds, may-concise-algebraic-topology, cavalieri-math490-topology. The owner approved
+them on 2026-10-10 for private offline use only. Each new entry has a
+`training_use` field: `private-only` for those 10, `allowed` for the rest
+(explicit open licence or author permission statement). `research_policy.vet()`
+rejects any other value. Missing `training_use` (all pre-existing entries) means
+not cleared; any shareable fine-tuning export must include only `allowed` entries.
+Note that two theses state "copyright the author / all rights reserved" with an
+open-access deposit; they were tagged `allowed` per the owner instruction and
+should be re-checked before any public dataset release.
+
+The approved index was rebuilt offline (`prepare-knowledge.py --reuse-research`)
+and the CPU embedding index rebuilt afterwards. Study notes pick up the new
+windows automatically on the next nightly run (content-hashed keys).
+## Linux kernel / virtualization security sources and HTML archive format (2026-10-10)
+
+The research archive gains an eighth role, `linux-kernel-expert` (LABELS/FOCUS in
+`scripts/research-archive.py`, `ROLE_QUOTA` phd 5), with 39 owner-approved items:
+5 doctoral theses, NIST SP 800-123/125/125A/125B/190, CISA advisories, the
+Thunderclap NDSS 2019 paper, Qubes architecture/security docs, kernel.org KVM,
+VFIO, IOMMU, Kconfig and self-protection docs, KSPP settings, QEMU and Xen security
+policies/XSAs, Ubuntu CVE pages and Arch/Kali/Mint security pages. 21 hosts were added
+to `RESEARCH_HOSTS` with institution comments (including academiccommons.columbia.edu,
+the Columbia degree-evidence record).
+
+The pipeline was extended minimally for official HTML documentation: optional
+`format` (`pdf` default, or `html`), file extension follows the format, the PDF
+magic check applies only to `.pdf`, and `prepare-knowledge.py` parses `.html`
+with the existing `text/html` extractor. Pinning, vetting and passage filtering
+are unchanged.
+
+Rothwell, "Exploitation from malicious PCI Express peripherals" (Cambridge
+UCAM-CL-TR-934) is level `phd`. Correction (same day): the PhD is confirmed by the
+University of Cambridge record and `degrees` now states that.
+
+Rights: 19 items are `training_use: private-only` (no explicit open licence,
+site terms or author copyright), the rest `allowed` (public domain, GPL, CC BY-SA,
+GFDL). All 39 were owner-approved for private offline use.
+## Second linux-kernel-expert batch, path-prefix allowlist and TXT format (2026-10-10)
+
+30 more owner-approved items: Intel VT-d and AMD IOMMU specifications, 7 Qubes
+Security Bulletins (QSB text), Qubes/kernel/Ubuntu/Arch/Kali AppArmor, LSM,
+kernel-parameter and security-team documentation, the Arch security tracker, CSI
+Linux update guide, Linux Mint's 2016 ISO compromise statement and 4 doctoral
+theses (KU Leuven, Luebeck, Maryland, TU Graz). `ROLE_QUOTA` linux-kernel-expert is
+now phd 9. 22 of the 30 are `training_use: private-only`.
+
+`raw.githubusercontent.com` is NOT an allowlisted host. `RESEARCH_PATH_PREFIXES` in
+`scripts/research_policy.py` accepts only URLs starting exactly with
+`https://raw.githubusercontent.com/QubesOS/qubes-secpack/` (case-sensitive, no
+query/fragment, no `..`, `%` or backslash); anything else on that host is refused.
+`tests/test_research_path_prefix.py` covers accept and reject cases.
+
+`blog.linuxmint.com` is an owner-approved exception (2026-10-10): it is the project's
+official incident statement for the 2016 ISO compromise. Other new hosts, each
+commented with its institution: cdrdv2-public.intel.com, www.intel.com (Intel spec
+landing page), docs.amd.com, csilinux.com, security.archlinux.org,
+lirias.kuleuven.be, www.its.uni-luebeck.de, diglib.tugraz.at, www.cs.umd.edu and
+drum.lib.umd.edu (Maryland degree record).
+
+`format: txt` is accepted alongside pdf/html: stored byte-exact as `<id>.txt`,
+SHA-256 pinned, and indexed as UTF-8 plain text through the existing extractor.
+## Peer-reviewed postdoctoral papers (2026-10-10)
+
+15 owner-approved peer-reviewed papers with a postdoctoral author (evidence quoted in
+`degree_evidence`) were added as uncounted `references` with `career_stage: postdoc`,
+`venue`, `peer_reviewed` and `doi` fields: 6 cryptographer (IACR ToSC/TCHES), 3
+quantum-mechanics-professor (Quantum), 1 mathematician (Forum of Mathematics Sigma),
+2 psychologist (Judgment and Decision Making; Journal of Economic Psychology via KU
+Leuven Lirias), 1 system-administrator and 2 linux-kernel-expert (USENIX Security).
+New hosts: tosc.iacr.org, tches.iacr.org, quantum-journal.org, www.cambridge.org,
+www.usenix.org. DOI landing URLs were replaced by the publisher article pages, so
+doi.org stays off the list; the postdoc-host evidence pages on hexhive.epfl.ch and
+www.mpi-inf.mpg.de are kept as text in `degree_evidence`/`host_institution_evidence`
+rather than allowlisted (the paper PDF is the vetted evidence URL).
+4 of the 15 are `training_use: private-only`.
+## Early-career peer-reviewed papers (2026-10-10)
+
+11 owner-approved peer-reviewed papers whose first author is early-career
+(`career_stage: early-career`, `phd_year`, `years_since_phd`), as uncounted
+`references`: 5 statistician (Project Euclid: EJS, Annals of Statistics, Statistical
+Science), 1 linux-kernel-expert (NDSS 2025), 2 system-administrator (USENIX Security
+2017; TU Delft repository), 2 psychologist and 1 it-larp-coach (USENIX Security 2020,
+SOUPS 2022). Three were written in the author's final PhD year (Votipka x2, Kaur 2022);
+the owner approved them explicitly. New hosts: projecteuclid.org and
+repository.tudelft.nl (www.usenix.org and www.ndss-symposium.org were already listed).
+PhD evidence (faculty pages, Math Genealogy, university records) is quoted as text in
+`degree_evidence`; those personal/faculty hosts are not allowlisted, and the vetted
+evidence URL is the publisher PDF. 8 of the 11 are `training_use: private-only`.
+## Early-career papers, second set (2026-10-10)
+
+7 more owner-approved early-career peer-reviewed papers (uncounted `references`):
+3 psychologist (Judgment and Decision Making via Cambridge; Computers & Security via the
+University of Bath repository) and 4 mathematician (Electronic Journal of Linear
+Algebra; one via the CWI repository). New hosts: journals.uwyo.edu, ir.cwi.nl,
+purehost.bath.ac.uk. DOI landing URLs replaced by the publisher/repository URL.
+ec4-mat-01 and ec4-mat-03 use PDF font encodings that standard text extraction cannot
+decode; whatever text extracts is indexed (possibly little or metadata-only) and a
+math-aware extraction upgrade is being evaluated separately. 4 of the 7 are
+`training_use: private-only`.
+
+
+## Owner-controlled teaching adaptation (2026-10-10)
+
+The owner requested the first build of versioned teaching profiles and an
+experiment journal. Use browser-local storage matching companion memory, scoped
+to exact persona + skill. Owner-selected enum settings guide pedagogy at user
+level; journal prose is never an instruction channel. The model can suggest
+experiments in chat but cannot persist, approve or promote its own changes.
+Three completed replies bound each trial; then the accepted style resumes pending
+owner review. Acceptance and restoration append versions with explicit reasons.
+This supports deliberate teaching-style evolution; it is not model-weight
+training, mastery certification, or automatic learning-outcome measurement.
+No new dependencies, downloads, source allowlist changes, permissions, model/voice
+changes or production activation are included. Existing uncommitted changes stay.
+See TEACHING.md for limits, storage/export behavior and validation scope.
+
+
+## Deferred capability comparisons (2026-10-10)
+
+The owner requested capability trials but explicitly deferred live trials until
+nightly notes for the current sources are finished. Added an owner-only
+standard-library comparison CLI, an authored eight-case linear-algebra bank
+(four practice/four held-out), profile selection from browser exports, resumable
+private response artifacts, manual 0-2 rubric scoring and paired summaries.
+Offline prepare leaves state deferred and performs no inference. Future live runs
+require explicit notes-finished/bank-reviewed attestations, daytime Eastern, idle
+note task/processes, and a hash-verified prepared release through sealed MCP.
+This is cooperative scheduling, not an exclusive GPU lock or automatic proof of
+corpus completion. No scheduled run, activation, notes interruption, download,
+automatic grading or profile promotion. See CAPABILITY_TRIALS.md.

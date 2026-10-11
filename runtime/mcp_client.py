@@ -19,7 +19,7 @@ def child_parameters():
 async def call_async(tool, arguments=None, on_chunk=None):
     if tool not in ('chat_local','list_personas','local_status'):
         raise ValueError('MCP tool is not allowed')
-    async with Client(child_parameters(),read_timeout_seconds=130) as client:
+    async with Client(child_parameters(),read_timeout_seconds=930) as client:
         chunks=[]
         async def progress(_progress,_total,message):
             if not isinstance(message,str) or len(message.encode())>65536 or sum(len(s.encode()) for s in chunks)+len(message.encode())>65536:
@@ -35,7 +35,7 @@ async def call_async(tool, arguments=None, on_chunk=None):
 
 def call(tool, arguments=None):
     try:
-        return asyncio.run(asyncio.wait_for(call_async(tool,arguments),timeout=140))
+        return asyncio.run(asyncio.wait_for(call_async(tool,arguments),timeout=940))
     except Exception as exc:
         raise OSError('Local MCP unavailable; no direct inference fallback') from exc
 
@@ -44,7 +44,7 @@ def chat(persona,messages,skill=None):
 
 def stream_chat(persona,messages,skill,on_chunk):
     try:
-        return asyncio.run(asyncio.wait_for(call_async('chat_local',{'persona':persona,'messages':messages,'skill':skill},on_chunk),timeout=140))
+        return asyncio.run(asyncio.wait_for(call_async('chat_local',{'persona':persona,'messages':messages,'skill':skill},on_chunk),timeout=940))
     except Exception as exc:
         raise OSError('Local MCP stream unavailable') from exc
 

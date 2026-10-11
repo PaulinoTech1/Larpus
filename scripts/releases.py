@@ -17,8 +17,12 @@ import uuid
 
 ROOT=Path(__file__).resolve().parents[1]
 STORE=ROOT/'data/releases'
-DIRECTORIES=('runtime','agents','skills','config','scripts','deploy','tests','web','knowledge')
-FILES=('.containerignore','.gitattributes','LICENSE','LICENSE-NOTICE.md','requirements.txt','requirements-knowledge.txt','package.json','package-lock.json')
+DIRECTORIES=('runtime','agents','skills','config','scripts','deploy','tests','web','knowledge','evals')
+FILES=('.containerignore','.gitattributes','LICENSE','LICENSE-NOTICE.md','requirements.txt','requirements-knowledge.txt','requirements-retrieval.txt','package.json','package-lock.json')
+# Resumable owner build temporaries never enter a frozen release.
+BUILD_TEMP=('approved.build.sqlite','notes.build.sqlite','notes.build.sqlite-journal','embeddings.build.npy','embeddings-rowids.build.npy','embeddings-manifest.tmp')
+# Agent container limits: room for CPU embedding/reranking (owner-approved 2026-10-09).
+AGENT_LIMITS=('--pids-limit=64','--memory=12g','--cpus=8')
 HTTP=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 def read(path):return json.loads(path.read_text(encoding='utf-8-sig'))
@@ -48,7 +52,7 @@ def exclusive():
 
 def payload(root):
     paths=[root/name for name in FILES if (root/name).is_file()]
-    for name in DIRECTORIES:paths.extend(p for p in (root/name).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name!='approved.build.sqlite')
+    for name in DIRECTORIES:paths.extend(p for p in (root/name).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name not in BUILD_TEMP)
     result={}
     for path in sorted(paths):
         if path.is_symlink():raise ValueError('Symlink in release payload')
@@ -96,13 +100,14 @@ def validate(root):
         if summary.get('fingerprint')!=fingerprint or meta.get('status')!='prepared':raise ValueError('Candidate not prepared')
         for name,pin in (('deployment.json','deployment_sha256'),('release-state/security/summary.json','scan_summary_sha256'),('release-state/security/mcp.json','scan_report_sha256')):
             if checksum(root/name)!=meta.get(pin):raise ValueError('Candidate deployment or scan receipt changed')
+        if meta.get('voice_sha256') and checksum(root/'voice-deployment.json')!=meta['voice_sha256']:raise ValueError('Candidate voice receipt changed')
     return meta
 
 def stage():
     import _winapi
     identifier=uuid.uuid4().hex;dest=release_path(identifier)
     before=payload(ROOT);dest.mkdir(parents=True)
-    for name in DIRECTORIES:shutil.copytree(ROOT/name,dest/name,ignore=shutil.ignore_patterns('__pycache__','approved.build.sqlite'))
+    for name in DIRECTORIES:shutil.copytree(ROOT/name,dest/name,ignore=shutil.ignore_patterns('__pycache__',*BUILD_TEMP))
     for name in FILES:
         if (ROOT/name).is_file():shutil.copyfile(ROOT/name,dest/name)
     _winapi.CreateJunction(str((ROOT/'data').resolve()),str(dest/'data'))
@@ -113,40 +118,68 @@ def stage():
     print('Staged '+identifier+'; active release untouched.',flush=True)
     return identifier
 
+def prepare_voice(dest,old,linux):
+    prior=read(old/('voice-deployment.json' if (old/'voice-deployment.json').exists() else 'data/voice-deployment.json'))
+    digest=checksum(dest/'runtime/voice_worker.py')
+    profile=dict(prior)
+    if prior['worker_sha256']!=digest or prior.get('protocol')!='unix-persistent':
+        base=prior['image']
+        if not re.fullmatch(r'(?:sha256:)?[a-f0-9]{64}',base):raise ValueError('Invalid cached voice base')
+        name='larpus-voice-'+dest.name
+        print('Building separate persistent CPU voice; active voice preserved.',flush=True)
+        podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/voice/Persistent.Containerfile','-t','localhost/larpus-voice:'+dest.name,linux)
+        image=podman('image','inspect','localhost/larpus-voice:'+dest.name,'--format','{{.Id}}')
+        podman('run','--detach','--pull=never','--name',name,'--network=none','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=128','--memory=4g','--cpus=8','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--mount=type=bind,src=/home/larpus/voice-models,dst=/models,ro',image)
+        profile.update(image=image,container=name,protocol='unix-persistent',worker_sha256=digest)
+    write(dest/'voice-deployment.json',profile)
+    # The source/image/mount preflight remains mandatory before every request.
+    for attempt in range(10):
+        try:
+            run(dest,sys.executable,'-c',"from runtime.voice import call;assert call({'action':'status'})['ready']")
+            break
+        except (OSError,RuntimeError,subprocess.SubprocessError):
+            if attempt==9:raise
+            time.sleep(0.5)
+
 def prepare(identifier):
     dest=release_path(identifier);meta=read(dest/'release.json')
     if payload(dest)!=meta['files']:raise ValueError('Candidate changed after staging')
     active=read(STORE/'active.json');old=release_path(active['id'])
     profile=read(old/'deployment.json');profile['agent_name']='larpus-agent-'+identifier
     profile['source_fingerprint']=meta['source_fingerprint']
-    # Fixed cache, no download or duplicate GPU model/voice worker.
+    # Fixed offline cache; GPU model stays shared, voice candidate stays separate.
     linux='/home/larpus/releases/'+identifier
     wsl('/bin/mkdir','-p',linux)
     archive=STORE/(identifier+'.tar')
     with tarfile.open(archive,'w') as tar:
         for name in (*DIRECTORIES,*FILES):
-            if (dest/name).exists():tar.add(dest/name,arcname=name,filter=lambda info:None if '__pycache__' in info.name else info)
+            if (dest/name).exists():tar.add(dest/name,arcname=name,filter=lambda info:None if '__pycache__' in info.name or info.name.rsplit('/',1)[-1] in BUILD_TEMP else info)
     with archive.open('rb') as source:wsl('/bin/tar','-xf','-','-C',linux,input_file=source)
     # Runtime wheels already live in the dedicated Linux preparation cache.
     wsl('/bin/mkdir','-p',linux+'/vendor')
     wsl('/bin/cp','-a','/home/larpus/build/vendor/runtime-wheels',linux+'/vendor/runtime-wheels')
     wsl('/usr/bin/env','--chdir='+linux+'/vendor/runtime-wheels','/usr/bin/sha256sum','--strict','--check','SHA256SUMS')
+    # Pinned CPU retrieval models (scripts/prepare-retrieval.py sync); hard links, immutable.
+    wsl('/bin/cp','-al','/home/larpus/build/vendor/retrieval-models',linux+'/vendor/retrieval-models')
+    wsl('/usr/bin/env','--chdir='+linux+'/vendor/retrieval-models','/usr/bin/sha256sum','--strict','--check','--quiet','SHA256SUMS')
     base=podman('image','inspect','docker.io/library/python:3.12-slim-bookworm','--format','{{.Id}}')
     if not re.fullmatch(r'(?:sha256:)?[a-f0-9]{64}',base):raise ValueError('Invalid cached base image')
     print('Building offline candidate; current gateway remains available.',flush=True)
     podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Containerfile','-t','localhost/larpus-agent:'+identifier,linux)
     profile['agent_image']=podman('image','inspect','localhost/larpus-agent:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
-    podman('run','--detach','--pull=never','--name',profile['agent_name'],'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=64','--memory=1g','--cpus=2','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev',profile['agent_image'])
+    podman('run','--detach','--pull=never','--name',profile['agent_name'],'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges',*AGENT_LIMITS,'--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev',profile['agent_image'])
     write(dest/'deployment.json',profile)
+    prepare_voice(dest,old,linux)
     print(run(dest,sys.executable,'scripts/test-local.py'),flush=True)
-    for test in ('tests/voice-ui.cjs','tests/chat-stream-ui.cjs','tests/context-ui.cjs'):print(run(dest,'node.exe',test),flush=True)
+    print(run(dest,sys.executable,'scripts/evaluate-companion.py'),flush=True)
+    for test in ('tests/voice-ui.cjs','tests/chat-stream-ui.cjs','tests/context-ui.cjs','tests/memory-ui.cjs','tests/teaching-ui.cjs'):print(run(dest,'node.exe',test),flush=True)
     print(run(dest,sys.executable,'-m','runtime.isolation','check'),flush=True)
     print('Scanning candidate independently of the active release.',flush=True)
     run(dest,sys.executable,'-c',"import json;from runtime.security_scan import scan,discover,APPROVED;d=discover();assert d==json.loads(APPROVED.read_text())['tools'];r=scan(d);print(r['status'])",timeout=900)
     scan_dir=old/('data/security' if read(old/'release.json').get('bootstrap') else 'release-state/security')
     scan_gate(read(dest/'release-state/security/summary.json'),read(dest/'release-state/security/mcp.json'),read(scan_dir/'mcp.json'),[e['id'] for e in read(dest/'skills/registry.json')['skills']]+['mcp'])
     if payload(dest)!=meta['files']:raise ValueError('Candidate files changed during checks')
-    meta.update(status='prepared',deployment_sha256=checksum(dest/'deployment.json'),scan_summary_sha256=checksum(dest/'release-state/security/summary.json'),scan_report_sha256=checksum(dest/'release-state/security/mcp.json'))
+    meta.update(status='prepared',deployment_sha256=checksum(dest/'deployment.json'),voice_sha256=checksum(dest/'voice-deployment.json'),scan_summary_sha256=checksum(dest/'release-state/security/summary.json'),scan_report_sha256=checksum(dest/'release-state/security/mcp.json'))
     write(dest/'release.json',meta)
     print('Prepared '+identifier+'; activate only when ready for a brief cutover.',flush=True)
 
@@ -238,22 +271,52 @@ def start():
     state=read(STORE/'active.json')
     if running(state):print('Active gateway already running: '+state['id']);return
     profile=read(release_path(state['id'])/'deployment.json')
-    podman('pod','start','larpus-offline');podman('start','larpus-voice')
+    voice=read(release_path(state['id'])/('voice-deployment.json' if (release_path(state['id'])/'voice-deployment.json').exists() else 'data/voice-deployment.json'))
+    voice_name=voice.get('container','larpus-voice')
+    if not re.fullmatch(r'larpus-voice(?:-[a-f0-9]{32})?',voice_name):raise ValueError('Invalid voice identity')
+    podman('pod','start','larpus-offline');podman('start',voice_name)
     podman('start',profile.get('agent_name','larpus-agent'))
     new=launch(state['id'],state);write(STORE/'active.json',new);ready(new)
     print('Started active release '+state['id'])
 
+def keep_names(state):
+    """Containers the active and previous releases need; everything else is idle."""
+    names={'larpus-model'}
+    for identifier in (state.get('id'),state.get('previous')):
+        if not identifier:continue
+        root=release_path(identifier)
+        profile=read(root/'deployment.json') if (root/'deployment.json').exists() else {}
+        names.add(profile.get('agent_name','larpus-agent'))
+        voice_file=root/'voice-deployment.json' if (root/'voice-deployment.json').exists() else ROOT/'data/voice-deployment.json'
+        names.add(read(voice_file).get('container','larpus-voice') if voice_file.exists() else 'larpus-voice')
+    return names
+
+def prune():
+    """Stop (never remove) idle Larpus agent/voice containers to free RAM and CPU."""
+    state=read(STORE/'active.json');keep=keep_names(state)
+    # Prepared candidates newer than the active release are awaiting activation; keep them.
+    active_time=release_path(state['id']).stat().st_mtime
+    for folder in (STORE.iterdir() if STORE.is_dir() else []):
+        if re.fullmatch(r'[a-f0-9]{32}',folder.name) and (folder/'deployment.json').exists() and folder.stat().st_mtime>active_time:
+            keep.add(read(folder/'deployment.json').get('agent_name','larpus-agent-'+folder.name))
+    running_names=podman('ps','--format','{{.Names}}').split()
+    idle=[n for n in running_names if re.fullmatch(r'larpus-(agent|voice)(-[a-z0-9-]+)?',n) and n not in keep]
+    if idle:podman('stop','--time','5',*idle,timeout=300)
+    print(json.dumps({'kept':sorted(keep),'stopped':idle}),flush=True)
+    return idle
+
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('operation',choices=('stage','prepare','activate','rollback','start','status'));parser.add_argument('id',nargs='?');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('operation',choices=('stage','prepare','activate','rollback','start','status','prune'));parser.add_argument('id',nargs='?');args=parser.parse_args()
     if os.name!='nt':raise SystemExit('Owner Windows release manager required')
     if args.operation=='status':
         state=read(STORE/'active.json');print(json.dumps({'id':state['id'],'running':running(state),'previous':state.get('previous'),'pending':(STORE/'pending.json').exists()},indent=2));return
     with exclusive():
         if args.operation=='stage':stage()
         elif args.operation=='prepare':prepare(args.id)
-        elif args.operation=='activate':cutover(args.id)
+        elif args.operation=='activate':cutover(args.id);prune()
         elif args.operation=='rollback':cutover(read(STORE/'active.json')['previous'])
-        elif args.operation=='start':start()
+        elif args.operation=='start':start();prune()
+        elif args.operation=='prune':prune()
         else:
             state=read(STORE/'active.json');print(json.dumps({'id':state['id'],'running':running(state),'previous':state.get('previous'),'pending':(STORE/'pending.json').exists()},indent=2))
 

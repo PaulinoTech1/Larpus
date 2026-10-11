@@ -7,7 +7,7 @@ class MetaMuseTests(unittest.TestCase):
     def text(self,question):
         evidence=retrieve('home-assistant',question)
         self.assertTrue(evidence)
-        return ' '.join(item['text'] for item in evidence)
+        return ' '.join(item.get('text',item.get('original_passage','')) for item in evidence)
 
     def test_referral_answer_has_conditional_credit_and_verification_gap(self):
         text=self.text('Meta Muse referral invite billion token credit recommendations')
@@ -24,7 +24,7 @@ class MetaMuseTests(unittest.TestCase):
 
     def test_comparison_supplies_both_agent_products(self):
         evidence=retrieve('home-assistant','Compare Grok Bot and Meta Muse agents for everyday tasks and scheduled routines')
-        text=' '.join(item['text'] for item in evidence)
+        text=' '.join(item.get('text',item.get('original_passage','')) for item in evidence)
         self.assertIn('Grok Bot',text)
         self.assertIn('Muse',text)
         self.assertIn('both agents',text)

@@ -21,6 +21,7 @@ for name in larpus-agent larpus-model; do
 done
 if podman pod exists larpus-offline; then echo 'Existing Larpus pod preserved' >&2; exit 1; fi
 (cd vendor/runtime-wheels && sha256sum --strict --check SHA256SUMS) >&2
+(cd vendor/retrieval-models && sha256sum --strict --check --quiet SHA256SUMS) >&2
 podman build --pull=never --network=none --build-arg "BASE_IMAGE=$1" -f deploy/windows-home/Containerfile -t localhost/larpus-agent:sealed . >&2
 agent_image=$(podman image inspect localhost/larpus-agent:sealed --format '{{.Id}}')
 model_image=$(podman image inspect "$2" --format '{{.Id}}')
@@ -40,7 +41,7 @@ podman run --detach --pull=never --name larpus-model --pod larpus-offline \
   --entrypoint=/bin/ollama "$2" serve >&2
 podman run --detach --pull=never --name larpus-agent --pod larpus-offline \
   --read-only --read-only-tmpfs=false --user=1000:1000 --cap-drop=ALL --security-opt=no-new-privileges \
-  --pids-limit=64 --memory=1g --cpus=2 --log-driver=none \
+  --pids-limit=64 --memory=12g --cpus=8 --log-driver=none \
   --tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m \
   --volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev \
   "$agent_image" >&2

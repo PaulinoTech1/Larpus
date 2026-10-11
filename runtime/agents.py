@@ -36,7 +36,7 @@ def load_personas():
     return personas
 
 def messages_for(persona, history, skill=None):
-    if not isinstance(history, list) or not 1 <= len(history) <= 40:
+    if not isinstance(history, list) or not 1 <= len(history) <= 402:
         raise ValueError('Send 1–40 conversation messages')
     clean = []
     for i, msg in enumerate(history):

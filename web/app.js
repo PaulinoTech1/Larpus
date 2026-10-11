@@ -1,5 +1,13 @@
+function showModel(tag){$('model').textContent=tag==='qwen3.5:27b-q4_K_M'?'LARP 3.5 27B Limitless LARP':tag;$('model').title=tag;}
 const $ = id => document.getElementById(id);
 let history = [], busy = false, personas = [], skills = [];
+let conversation=window.LarpusConversation?new window.LarpusConversation():null,lastUsage=null;
+let teaching=null;
+let requestController=null,localMemory=null,chatId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
+function pipeline(value){$('pipeline-status').textContent=value;state(value);}
+function saveChat(){if(!localMemory)return;try{localMemory.save({id:chatId,title:(history[0]?.content||'Conversation').slice(0,80),persona:$('persona').value,skill:$('skill').value,messages:history,...(conversation?{record:conversation.record,through:conversation.through}:{}),updated:new Date().toISOString()});memoryMenu();}catch(e){$('memory-status').textContent=e.message;}}
+function stopGeneration(){requestController?.abort();window.larpusVoice?.stopPlayback();}
+window.larpusCancelGeneration=stopGeneration;window.larpusPipeline=pipeline;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 function state(value) { $('core-state').textContent = `● ${value}`; }
 function message(role, content) {
@@ -11,28 +19,34 @@ function message(role, content) {
   return {text,label,replay};
 }
 function contextUsage(usage) {
+  lastUsage=usage;
   const meter=$('context-meter'),label=$('context-label');
-  if(!usage){meter.value=0;label.textContent='No measurement yet / 4,096 tokens';return;}
+  if(!usage){meter.value=0;label.textContent='No measurement yet / 131,072 tokens';return;}
   const {capacity,prompt_tokens:prompt,output_tokens:output,omitted_messages:omitted}=usage;
-  if(capacity!==4096 || !Number.isInteger(prompt) || !Number.isInteger(output) || prompt<0 || prompt>capacity || output<0 || output>capacity)return;
+  if(![4096,16384,131072,262144].includes(capacity) || !Number.isInteger(prompt) || !Number.isInteger(output) || prompt<0 || prompt>capacity || output<0 || output>capacity)return;
   const total=prompt+output;meter.max=capacity;meter.value=Math.min(total,capacity);
   label.textContent=`Latest request: ${total.toLocaleString()} / ${capacity.toLocaleString()} tokens (${Math.round(total/capacity*100)}%)`;
   $('context-detail').textContent=`${prompt.toLocaleString()} input + ${output.toLocaleString()} output. Up to 1,024 output tokens requested. ${Number.isInteger(omitted)&&omitted>0?`${omitted} older messages omitted from model input. `:''}Full chat stays visible; older turns may leave model context.`;
 }
-function reset() { window.larpusVoice?.stopPlayback(); history = []; contextUsage(null); $('context-detail').textContent='Measured after a reply; includes instructions and selected references.'; $('messages').replaceChildren(); $('notice').textContent = 'New session. Conversation stays in browser memory only.'; }
-function setBusy(value) { busy = value; for (const id of ['send','persona','skill','clear']) $(id).disabled = value; state(value ? 'THINKING' : 'STANDBY'); }
+function reset() { window.larpusVoice?.stopPlayback(); saveChat(); chatId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9); history = [];conversation=window.LarpusConversation?new window.LarpusConversation():null;compressionDisplay(); contextUsage(null); $('context-detail').textContent='Measured after a reply; includes instructions and selected references.'; $('messages').replaceChildren(); $('notice').textContent = 'New chat. Previously saved conversations remain in LOCAL CHATS.'; }
+function setBusy(value) { busy = value; teaching?.busy(value); for (const id of ['send','persona','skill','clear']) $(id).disabled = value; $('stop-generation').disabled=!value;for(const id of ['load-chat','delete-chat','delete-memory','save-chats','compress-chat','export-handoff','import-handoff'])$(id).disabled=value;pipeline(value?'RETRIEVING / PREPARING MODEL':window.larpusVoice?.playing?'SPEAKING':'STANDBY'); }
 async function api(path, body) {
-  const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : {});
+  const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),...(requestController?{signal:requestController.signal}:{})} : {});
   if(r.status===401){location.replace('/login');throw Error('Session expired');}
   const data = await r.json(); if (!r.ok) throw Error(data.error || 'Gateway request failed'); return data;
 }
-$('persona').addEventListener('change', () => {const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; $('model').textContent = p.model; refreshSkills(p);$('notice').textContent='Persona changed. Chat retained; the next reply uses the new role.';});
+$('persona').addEventListener('change', () => {const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; $('model').textContent = p.model; $('skill').value='';$('skill-search').value='';refreshSkills(p);teaching?.refresh();$('notice').textContent='Persona changed. Chat retained; the next reply uses the new role.';});
 function refreshSkills(persona) {
-  const options=[new Option('Persona only',''),...skills.filter(s=>(persona.skills||[]).includes(s.id)).map(s=>new Option(s.name,s.id))];
-  $('skill').replaceChildren(...options);$('skill').disabled=false;
+  if(!persona)return;
+  const selected=$('skill').value,query=$('skill-search').value.toLowerCase().trim();
+  const allowed=skills.filter(s=>(persona.skills||[]).includes(s.id));
+  const options=[new Option('Persona only',''),...allowed.filter(s=>s.id===selected || (s.name+' '+s.description).toLowerCase().includes(query)).map(s=>new Option(s.name,s.id))];
+  $('skill').replaceChildren(...options);if(allowed.some(s=>s.id===selected))$('skill').value=selected;$('skill').disabled=false;
 }
-$('skill').onchange=()=>{$('notice').textContent='Skill changed. Chat retained; the next reply uses the selected skill.';};
+$('skill').onchange=()=>{teaching?.refresh();$('notice').textContent='Skill changed. Chat retained; the next reply uses the selected skill.';};
 $('clear').onclick = reset;
+$('stop-generation').onclick=stopGeneration;
+$('skill-search').oninput=()=>refreshSkills(personas.find(p=>p.id===$('persona').value));
 const logout=document.createElement('button');logout.textContent='LOCK STATION';logout.id='logout';logout.type='button';
 document.querySelector('header').append(logout);
 logout.onclick=async()=>{try{await api('/api/logout',{});location.replace('/login');}catch(e){$('notice').textContent=e.message;}};
@@ -40,15 +54,22 @@ document.querySelectorAll('.suggestion').forEach(b => b.onclick = () => {$('prom
 $('prompt').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {e.preventDefault(); $('chat').requestSubmit();} });
 $('chat').onsubmit = async e => {
   e.preventDefault(); const content = $('prompt').value.trim(); if (busy || !content || !personas.length) return;
-  if (history.length >= 38) { $('notice').textContent = 'Session limit reached. Reset to begin a new conversation.'; return; }
+  if (history.length >= (conversation?400:38)) { $('notice').textContent = 'Transcript limit reached. Export a handoff, then start a new conversation from it.'; return; }
   $('messages').querySelector('.empty')?.remove(); message('user', content); $('prompt').value = ''; $('notice').textContent = ''; setBusy(true);
   const next = [...history,{role:'user',content}];
   let reply,full='',complete=false;
+  requestController=typeof AbortController==='function'?new AbortController():null;const started=Date.now();
   window.larpusVoice?.beginReply();
   try {
-    const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({persona:$('persona').value,messages:next,skill:$('skill').value||null})});
+    const ownerQuestion=localMemory?localMemory.context(content):content;
+    const adaptation=teaching?teaching.request(ownerQuestion):{question:ownerQuestion,token:null};
+    const question=adaptation.question;
+    if(conversation?.needs(history,question,lastUsage))await compressConversation();
+    const outgoing=conversation?conversation.wire(history,question):[...next.slice(0,-1),{role:'user',content:question}];
+    const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},...(requestController?{signal:requestController.signal}:{}),body:JSON.stringify({persona:$('persona').value,messages:outgoing,skill:$('skill').value||null})});
     if(response.status===401){location.replace('/login');throw Error('Session expired');}
     if(!response.ok)throw Error((await response.json()).error||'Gateway request failed');
+    pipeline('GENERATING / WAITING FOR CHECKED TEXT');
     const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
     try{
       while(true){
@@ -60,7 +81,8 @@ $('chat').onsubmit = async e => {
           if(event.type==='error')throw Error(event.error||'Response withheld');
           if(event.type==='text'){
             if(complete || typeof event.content!=='string' || (full.length+event.content.length)>65536)throw Error('Invalid reply stream');
-            full+=event.content;
+            if(!full)$('pipeline-status').textContent=`FIRST CHECKED TEXT / ${((Date.now()-started)/1000).toFixed(1)}s`;
+            state('GENERATING');full+=event.content;
             if(!reply){reply=message('assistant','');reply.replay.disabled=true;}
             reply.text.textContent=full;$('messages').scrollTop=$('messages').scrollHeight;
             window.larpusVoice?.enqueueSpeech(event.content);
@@ -68,8 +90,15 @@ $('chat').onsubmit = async e => {
             complete=true;
             if(event.context)contextUsage(event.context);
             if(reply && Array.isArray(event.sources) && event.sources.length){
-              const refs=document.createElement('div');refs.className='reply-sources';
-              refs.textContent='LOCAL REFERENCES\n'+event.sources.map(s=>`[${s.id}] ${s.title}\nSnapshot ${s.snapshot} / ${s.locator}\n${s.url}`).join('\n\n');
+              const refs=document.createElement('div');refs.className='reply-sources';refs.textContent='LOCAL REFERENCES';
+              for(const source of event.sources){
+                const card=document.createElement('details'),heading=document.createElement('summary'),body=document.createElement('p');
+                const age=source.snapshot?Math.floor((Date.now()-Date.parse(source.snapshot))/86400000):NaN;
+                heading.textContent=`[${source.id}] ${source.title}`;
+                body.textContent=`Snapshot ${source.snapshot||'date unavailable'}${Number.isFinite(age)?` / ${age} days old`:''} / ${source.locator}\n${source.url}\n\n${source.preview||'Preview unavailable for this reference.'}\nA snapshot is not proof of current support or pricing.`;
+                card.append(heading,body);refs.append(card);
+              }
+              if(event.citation_check){const check=document.createElement('p');check.textContent=`Citation identifiers: ${event.citation_check.status}. This checks identifiers, not whether every claim is supported.`;refs.append(check);}
               $('messages').children[$('messages').children.length-1].append(refs);
             }
           }
@@ -79,15 +108,85 @@ $('chat').onsubmit = async e => {
       }
     }finally{await reader.cancel();reader.releaseLock();}
     if(!complete || !full.trim() || buffer.trim())throw Error('Reply stream ended early');
-    history=[...next,{role:'assistant',content:full}];reply.replay.disabled=false;
+    history=[...next,{role:'assistant',content:full}];reply.replay.disabled=false;saveChat();teaching?.completed(adaptation.token);
     window.larpusVoice?.finishReply(full);
   }
-  catch (err) {window.larpusVoice?.stopPlayback();if(reply)reply.label.textContent='LARPUS / INCOMPLETE — NOT SAVED';$('notice').textContent=err.message;$('prompt').value=content;}
-  finally {setBusy(false); $('prompt').focus();}
+  catch (err) {if(err.name!=='AbortError')window.larpusVoice?.stopPlayback();if(reply)reply.label.textContent='LARPUS / INCOMPLETE — NOT SAVED';$('notice').textContent=err.name==='AbortError'?'Stopped. Incomplete reply excluded from chat memory.':err.message;$('prompt').value=content;}
+  finally {requestController=null;setBusy(false); $('prompt').focus();}
 };
 
+
+function compressionDisplay(){
+  if(!conversation)return;
+  $('context-record').textContent=conversation.record?JSON.stringify(conversation.record,null,2):'No summary.';
+  $('compression-status').textContent=`${conversation.through/2} completed turns represented by a machine-generated record; ${Math.max(0,history.length-conversation.through)/2} recent turns remain verbatim. Full transcript stays visible.`;
+}
+async function compressConversation(keep=8){
+  if(!conversation||!history.length)return false;
+  const changed=await conversation.compress(history,async(batch,index,total)=>{
+    pipeline(`COMPRESSING / ${index} OF ${total}`);
+    return api('/api/context/compress',{persona:$('persona').value,...batch});
+  },keep);
+  if(changed){lastUsage=null;compressionDisplay();saveChat();}
+  return changed;
+}
+function bindHandoff(){
+  if(!conversation)return;
+  const task=fn=>async()=>{if(busy)return;setBusy(true);requestController=typeof AbortController==='function'?new AbortController():null;window.larpusVoice?.stopPlayback();try{await fn();}catch(e){$('notice').textContent=e.name==='AbortError'?'Compression stopped. Previous conversation record retained.':e.message;}finally{requestController=null;setBusy(false);}};
+  $('compress-chat').onclick=task(()=>compressConversation(0));
+  $('export-handoff').onclick=task(async()=>{
+    await compressConversation(8);if(!conversation.record&&history.length)await compressConversation(0);
+    const data=conversation.handoff(history,$('persona').value,$('skill').value),url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),link=document.createElement('a');
+    link.href=url;link.download='larpus-handoff.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('notice').textContent='Handoff exported. Review its machine-generated record and uncertainties before reusing it.';
+  });
+  $('import-handoff').onclick=()=>{if(!busy)$('handoff-file').click();};
+  $('handoff-file').onchange=async()=>{
+    if(busy)return;const file=$('handoff-file').files?.[0];if(!file)return;
+    try{
+      if(file.size>70000)throw Error('Handoff file exceeds limit');
+      const data=window.LarpusConversation.handoff(JSON.parse(await file.text())),persona=personas.find(p=>p.id===data.persona);
+      if(!persona||data.skill&&!(persona.skills||[]).includes(data.skill))throw Error('Handoff role or skill is not installed');
+      if(!window.confirm('Start a new chat from this handoff? Export the current chat first if you need to retain it.'))return;
+      reset();history=data.recent.map(m=>({...m}));conversation=new window.LarpusConversation(data.record,0);
+      $('persona').value=persona.id;$('description').textContent=persona.description;showModel(persona.model);$('skill-search').value='';refreshSkills(persona);$('skill').value=data.skill;teaching?.refresh();
+      for(const m of history)message(m.role,m.content);compressionDisplay();saveChat();
+      $('notice').textContent='Handoff staged as untrusted conversation data. The server filters it on the next request; permissions remain unchanged.';
+    }catch(e){$('notice').textContent='Handoff not loaded: '+e.message;}
+    finally{$('handoff-file').value='';}
+  };
+  compressionDisplay();
+}
+
+function memoryMenu(){
+  if(!localMemory)return;
+  const chosen=$('saved-chat').value;$('saved-chat').replaceChildren(new Option('Choose a saved conversation',''),...localMemory.data.sessions.map(s=>new Option(s.title,s.id)));$('saved-chat').value=chosen;
+  $('save-chats').checked=localMemory.data.enabled;
+  $('remembered-notes').replaceChildren(...localMemory.data.notes.map((n,i)=>{const row=document.createElement('div'),text=document.createElement('p'),remove=document.createElement('button');text.textContent=`${n.text} / owner entered ${n.created.slice(0,10)}`;remove.textContent='FORGET';remove.type='button';remove.onclick=()=>{try{localMemory.forget(i);memoryMenu();}catch(e){$('memory-status').textContent=e.message;}};row.append(text,remove);return row;}));
+  $('memory-status').textContent=localMemory.error||`Chat saving ${localMemory.data.enabled?'on':'off'} / ${localMemory.data.sessions.length} saved / ${localMemory.data.notes.length} remembered notes. Browser storage is not encrypted by LARPUS.`;
+}
+function bindMemory(){
+  if(!window.LarpusStore)return;
+  try{localMemory=new window.LarpusStore(localStorage);}catch(e){$('memory-status').textContent='Browser storage unavailable. Chat still works.';return;}
+  const action=fn=>()=>{try{fn();memoryMenu();}catch(e){$('memory-status').textContent=e.message;}};
+  $('save-chats').onchange=action(()=>{localMemory.enable($('save-chats').checked);saveChat();});
+  $('add-note').onclick=action(()=>{localMemory.remember($('remember-note').value);$('remember-note').value='';});
+  $('delete-chat').onclick=action(()=>{if(window.confirm('Delete this saved conversation from this browser?'))localMemory.remove($('saved-chat').value);});
+  $('delete-memory').onclick=action(()=>{if(window.confirm('Delete all saved chats and remembered notes from this browser?'))localMemory.clear();});
+  $('load-chat').onclick=action(()=>{
+    if(busy)return;const saved=localMemory.data.sessions.find(s=>s.id===$('saved-chat').value);if(!saved)return;
+    saveChat();window.larpusVoice?.stopPlayback();history=saved.messages.map(m=>({...m}));chatId=saved.id;$('messages').replaceChildren();for(const m of history)message(m.role,m.content);
+    const persona=personas.find(p=>p.id===saved.persona);if(persona){$('persona').value=persona.id;$('description').textContent=persona.description;showModel(persona.model);$('skill-search').value='';refreshSkills(persona);$('skill').value=(persona.skills||[]).includes(saved.skill)?saved.skill:'';}
+    teaching?.refresh();
+    conversation=window.LarpusConversation?new window.LarpusConversation(saved.record||null,saved.through||0):null;compressionDisplay();contextUsage(null);$('notice').textContent='Saved chat loaded. Model context is rebuilt on the next turn; older turns may be omitted.';
+  });
+  $('export-memory').onclick=action(()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(localMemory.data,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='larpus-local-memory.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+  memoryMenu();
+}
+
 async function boot() {
-  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas.find(p=>p.id==='home-assistant')||personas[0]; $('persona').value=p.id; $('description').textContent=p.description; $('model').textContent=p.model;refreshSkills(p);
+  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas.find(p=>p.id==='home-assistant')||personas[0]; $('persona').value=p.id; $('description').textContent=p.description; showModel(p.model);refreshSkills(p);bindMemory();bindHandoff();
+    if(window.bindLarpusTeaching)teaching=window.bindLarpusTeaching({scope:()=>window.LarpusTeaching.scope($('persona').value,$('skill').value),isBusy:()=>busy,prompt:$('prompt')});
     const h = await api('/api/health'); $('connection').textContent = h.ollama === 'online' ? `OLLAMA ONLINE / ${h.model_processors?.[p.model] || 'PLACEMENT UNKNOWN'}` : 'OLLAMA OFFLINE';
     if(h.ollama === 'offline') $('notice').textContent='Start local Ollama to open the inference channel.';
     else if(!h.models.includes(p.model)) $('notice').textContent=`Install ${p.model} in local Ollama before chatting.`;

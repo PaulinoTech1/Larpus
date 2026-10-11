@@ -6,3 +6,11 @@ vendor/
 .env
 knowledge/*.sqlite
 knowledge/github-manifest.json
+
+# Local corpus and derived build artifacts (never publish downloaded source text).
+knowledge/*.sqlite-*
+knowledge/*.sqlite-journal
+knowledge/*.npy
+knowledge/embeddings-manifest.json
+knowledge/embeddings-manifest.tmp
+knowledge/notes-manifest.json

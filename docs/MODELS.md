@@ -8,7 +8,7 @@ Piper runs in the separate worker without any GPU devices or driver mounts.
 
 ## Runtime settings
 
-- Context: 4096 tokens. Output cap: 1024 tokens; persona instructions favour brief
+- Context: 131072 tokens with a q8_0 KV cache (raised from 4096 on 2026-10-09). Output cap: 1024 tokens; persona instructions favour brief
   spoken answers, while allowing technical explanations.
 - Thinking: false for conversational latency. Keep-alive: -1 to retain loaded weights
   until the model server is stopped or the model is explicitly unloaded.

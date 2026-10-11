@@ -24,7 +24,7 @@ belong to independently enforced sandbox policy.
 API: `GET /api/personas`, `GET /api/health`, `POST /api/chat` with
 `{"persona":"home-assistant","messages":[{"role":"user","content":"Hello"}]}`.
 Conversation must alternate user/assistant and end in user; max 40 messages,
-8000 characters each, 64 KiB body. Ollama context 4096 tokens, output max 1024
+8000 characters each, 64 KiB body. Ollama context 131072 tokens, output max 1024
 tokens, 120-second timeout; long histories may be truncated by the model context.
 409 signals busy inference, 400 invalid input, 502 local model failure.
 `POST /api/voice` returns 501 until capture/STT/TTS integration exists.

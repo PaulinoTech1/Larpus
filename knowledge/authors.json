@@ -1,0 +1,1921 @@
+{
+  "version": 1,
+  "source": "research/catalog.json",
+  "entries": {
+    "mit-71a3fc47-9d1c-4531-ba61-63ab03aa0606": {
+      "authors": [
+        "John, Brandon"
+      ],
+      "cite": "John, 2022"
+    },
+    "mit-ac2818b4-03bf-48c3-b02b-4ab9ae5f5627": {
+      "authors": [
+        "Chung, Hye Won"
+      ],
+      "cite": "Chung, 2009"
+    },
+    "mit-d0682cb2-7a20-498d-a11d-0ccaedc1ab63": {
+      "authors": [
+        "Sloan, Robert M., Jr"
+      ],
+      "cite": "Sloan, 2017"
+    },
+    "mit-03be0fe4-d113-4729-83e9-89e265e997c0": {
+      "authors": [
+        "Erbsen, Andres"
+      ],
+      "cite": "Erbsen, 2017"
+    },
+    "mit-1c6be95f-a703-4fb7-8805-12a226a248cb": {
+      "authors": [
+        "Miller, Rachel A., S.M. (Rachel Ann). Massachusetts Institute of Technology"
+      ],
+      "cite": "Miller, 2012"
+    },
+    "mit-5886ff7d-44c2-4fee-a2e7-21d72b1a49fe": {
+      "authors": [
+        "Propson, Helen"
+      ],
+      "cite": "Propson, 2024"
+    },
+    "mit-3879e3e7-9920-48b0-93f2-9e3fb23896ef": {
+      "authors": [
+        "Figueiredo, Rob"
+      ],
+      "cite": "Figueiredo, 2006"
+    },
+    "mit-5dfbb3cd-7db1-4caa-aa0a-5224ffc18cdf": {
+      "authors": [
+        "Xia, Andrew."
+      ],
+      "cite": "Xia, 2019"
+    },
+    "mit-b48dd190-4e44-4091-ab98-7a33db282a47": {
+      "authors": [
+        "Hohenberger, Susan Rae"
+      ],
+      "cite": "Hohenberger, 2006"
+    },
+    "mit-bfb89f8a-39a1-4860-a4dc-df27233e360a": {
+      "authors": [
+        "Banerjee, Utsav"
+      ],
+      "cite": "Banerjee, 2021"
+    },
+    "mit-faa7dc71-62d7-4c19-914b-bc7042da1eb0": {
+      "authors": [
+        "Kaliski, Burton Stephen"
+      ],
+      "cite": "Kaliski, 1988"
+    },
+    "mit-e25f92d5-8d2e-4377-a8da-d942c42ae308": {
+      "authors": [
+        "Vafa, Neekon"
+      ],
+      "cite": "Vafa, 2026"
+    },
+    "mit-92497269-647f-4590-ba52-4dc0e4a5d228": {
+      "authors": [
+        "Degwekar, Akshay(Akshay Dhananjai)"
+      ],
+      "cite": "Degwekar, 2019"
+    },
+    "mit-566af8d3-ad89-48fe-8868-639af115f6f5": {
+      "authors": [
+        "Jeong, Taehoon."
+      ],
+      "cite": "Jeong, 2020"
+    },
+    "mit-8f0c31a1-bd84-45a1-978f-f6b10eab41ff": {
+      "authors": [
+        "Lysyanskaya, Anna"
+      ],
+      "cite": "Lysyanskaya, 2002"
+    },
+    "nist-fips197": {
+      "authors": [
+        "National Institute of Standards and Technology"
+      ],
+      "cite": "National Institute of Standards and Technology, 2023"
+    },
+    "crystals-dilithium": {
+      "authors": [
+        "CRYSTALS authors (listed in the original specification)"
+      ],
+      "cite": "CRYSTALS authors (listed in the original specification), 2021"
+    },
+    "crystals-kyber": {
+      "authors": [
+        "CRYSTALS authors (listed in the original specification)"
+      ],
+      "cite": "CRYSTALS authors (listed in the original specification), 2021"
+    },
+    "nist-sp800186": {
+      "authors": [
+        "National Institute of Standards and Technology"
+      ],
+      "cite": "National Institute of Standards and Technology, 2023"
+    },
+    "nist-sp80038d": {
+      "authors": [
+        "National Institute of Standards and Technology"
+      ],
+      "cite": "National Institute of Standards and Technology, 2007"
+    },
+    "nist-fips204": {
+      "authors": [
+        "National Institute of Standards and Technology"
+      ],
+      "cite": "National Institute of Standards and Technology, 2024"
+    },
+    "nist-fips203": {
+      "authors": [
+        "National Institute of Standards and Technology"
+      ],
+      "cite": "National Institute of Standards and Technology, 2024"
+    },
+    "nist-sp800227": {
+      "authors": [
+        "National Institute of Standards and Technology"
+      ],
+      "cite": "National Institute of Standards and Technology, 2025"
+    },
+    "mit-36094b1a-34a3-4b45-945d-86fa1ed0959c": {
+      "authors": [
+        "Peikert, Christioher Jason"
+      ],
+      "cite": "Peikert, 2001"
+    },
+    "mit-4905e0e4-e9aa-4d6d-bf7b-f0dffb23fc3e": {
+      "authors": [
+        "Kaliski, Burton Stephen"
+      ],
+      "cite": "Kaliski, 1984"
+    },
+    "mit-65536c37-2e38-4dce-a65e-0a6f0297407a": {
+      "authors": [
+        "Parnell, Todd C."
+      ],
+      "cite": "Parnell, 1999"
+    },
+    "mit-73a8c440-3679-477b-897b-1787af3fdf6f": {
+      "authors": [
+        "Woodruff, David Paul"
+      ],
+      "cite": "Woodruff, 2002"
+    },
+    "upf-96ebbf0a": {
+      "authors": [
+        "Ariadna Prat Bosch"
+      ],
+      "cite": "Ariadna Prat Bosch, 2025"
+    },
+    "radboud-ntt": {
+      "authors": [
+        "Gia Linh Hoang"
+      ],
+      "cite": "Gia Linh Hoang, 2018"
+    },
+    "radboud-fourq": {
+      "authors": [
+        "Ischa Stork"
+      ],
+      "cite": "Ischa Stork, 2018"
+    },
+    "radboud-aes": {
+      "authors": [
+        "Joost Kremers"
+      ],
+      "cite": "Joost Kremers, 2011"
+    },
+    "mit-ab72d6da-7538-4a03-ad15-fa981e5808af": {
+      "authors": [
+        "Jarecki, Stanisław (Stanisław Michal)"
+      ],
+      "cite": "Jarecki, 1996"
+    },
+    "mit-434251a5-d92f-4481-ad77-e5ae287af7f1": {
+      "authors": [
+        "Kohnfelder, Loren M"
+      ],
+      "cite": "Kohnfelder, 1978"
+    },
+    "mit-ab884e90-1821-4440-9899-5c4f274120ae": {
+      "authors": [
+        "Raman, Sanjay S."
+      ],
+      "cite": "Raman, 2002"
+    },
+    "mit-05a7d6ee-bb74-4dd2-9467-e9fbc78f18c0": {
+      "authors": [
+        "Savvides, George"
+      ],
+      "cite": "Savvides, 2002"
+    },
+    "mit-558685ee-5da1-4248-94e5-2396b74b7f97": {
+      "authors": [
+        "Lin, Amerson H"
+      ],
+      "cite": "Lin, 2005"
+    },
+    "mit-2a76a510-7aa2-49c7-90b4-6522cfafaff6": {
+      "authors": [
+        "Artz, Michael Lyle"
+      ],
+      "cite": "Artz, 2002"
+    },
+    "mit-8f6b08a1-7f2d-4394-ab8c-c8f6abe99c14": {
+      "authors": [
+        "Horne, Amanda"
+      ],
+      "cite": "Horne, 2022"
+    },
+    "mit-f06cd3dc-a1a4-4046-b6b2-213a9b8a4374": {
+      "authors": [
+        "Webster, Seth E. (Seth Emerson)"
+      ],
+      "cite": "Webster, 1998"
+    },
+    "mit-cf9bc349-2c6e-4979-80ab-8fca1ec8051e": {
+      "authors": [
+        "Blessing, Jenny"
+      ],
+      "cite": "Blessing, 2021"
+    },
+    "mit-fcf65555-b0b0-4eb9-b8c3-78913663c2ea": {
+      "authors": [
+        "Dehnert, Alexander Worthington"
+      ],
+      "cite": "Dehnert, 2013"
+    },
+    "mit-63079438-77b6-425d-a0a4-8ce989ce1cda": {
+      "authors": [
+        "Kim, David Sunghyo"
+      ],
+      "cite": "Kim, 2025"
+    },
+    "mit-e6772e55-424b-4249-aef1-2cbd86ed100a": {
+      "authors": [
+        "Falco, Gregory J"
+      ],
+      "cite": "Falco, 2018"
+    },
+    "mit-603075d6-a29e-4324-970c-1599e249d95e": {
+      "authors": [
+        "Fu, Kevin E. (Kevin Edward)"
+      ],
+      "cite": "Fu, 2005"
+    },
+    "mit-4314233b-15ce-46b1-979e-82b9002a1d39": {
+      "authors": [
+        "Weis, Stephen August"
+      ],
+      "cite": "Weis, 2006"
+    },
+    "mit-6d328ead-a323-4242-bba8-86692f6dfdfb": {
+      "authors": [
+        "Boyko, Victor (Victor V.)"
+      ],
+      "cite": "Boyko, 2000"
+    },
+    "mit-f30b44ae-7b54-4e31-9712-5b17a914999f": {
+      "authors": [
+        "Baldwin, Robert W. (Robet William)"
+      ],
+      "cite": "Baldwin, 1987"
+    },
+    "mit-fc75a492-7c93-4074-a521-6783620a08e6": {
+      "authors": [
+        "Kaminsky, Michael"
+      ],
+      "cite": "Kaminsky, 2004"
+    },
+    "mit-2ee36c72-bee6-4416-a7fb-004b46421996": {
+      "authors": [
+        "Morcos, Alexander"
+      ],
+      "cite": "Morcos, 1998"
+    },
+    "mit-55012c72-5459-49b5-91a5-a6dcad19bf6e": {
+      "authors": [
+        "Kendall, Kristopher (Kristopher Robert)"
+      ],
+      "cite": "Kendall, 1999"
+    },
+    "mit-0d510d36-5fce-461c-bc3d-56fd8a2a89a4": {
+      "authors": [
+        "Weber, Daniel James"
+      ],
+      "cite": "Weber, 1998"
+    },
+    "mit-03744e66-e000-44a0-9bfe-df0565d8ea95": {
+      "authors": [
+        "Das, Kumar J. (Kumar Jay)"
+      ],
+      "cite": "Das, 2000"
+    },
+    "radboud-maritime": {
+      "authors": [
+        "Bezayite Amenu"
+      ],
+      "cite": "Bezayite Amenu, 2025"
+    },
+    "radboud-kubernetes-security": {
+      "authors": [
+        "Willem Medendorp"
+      ],
+      "cite": "Willem Medendorp, 2023"
+    },
+    "radboud-falco": {
+      "authors": [
+        "Dinesh Kumar"
+      ],
+      "cite": "Dinesh Kumar, 2025"
+    },
+    "mit-756aa40f-ee3e-4cc4-b9ee-10ad2811b393": {
+      "authors": [
+        "Pang, Kenneth K. (Kenneth Kwok Kit)"
+      ],
+      "cite": "Pang, 1998"
+    },
+    "radboud-adversarial-prompts": {
+      "authors": [
+        "Roel van Maanen"
+      ],
+      "cite": "Roel van Maanen, 2025"
+    },
+    "mit-6c8eabc2-4496-4840-8d19-e96ce8400aa9": {
+      "authors": [
+        "Dingledine, Roger"
+      ],
+      "cite": "Dingledine, 2000"
+    },
+    "mit-626d8745-7261-4388-9520-7161ce31d892": {
+      "authors": [
+        "Vailong, Hubert J. B. (Hubert Jean Bernard)"
+      ],
+      "cite": "Vailong, 1997"
+    },
+    "mit-8e302d8c-9dc0-4268-acf8-68c0bea6eab4": {
+      "authors": [
+        "Teichman, Jeremy Alan"
+      ],
+      "cite": "Teichman, 1998"
+    },
+    "mit-702655f8-7a73-4a1b-bc43-2e1dc7476f87": {
+      "authors": [
+        "Sethuraman, Sandeep"
+      ],
+      "cite": "Sethuraman, 2006"
+    },
+    "mit-47b00fe2-a90c-415d-8ab9-a92cd186c7aa": {
+      "authors": [
+        "Metas, Nick."
+      ],
+      "cite": "Metas, 1959"
+    },
+    "mit-1bb9b7b6-e3bb-4f66-8ca1-3be4a464a42b": {
+      "authors": [
+        "Kuo, C.-C. Jay (Chung-Chieh Jay)"
+      ],
+      "cite": "Kuo, 1985"
+    },
+    "mit-95e9fe8c-78b7-4f4b-bafb-7305fe3654b9": {
+      "authors": [
+        "Spantini, Alessio"
+      ],
+      "cite": "Spantini, 2013"
+    },
+    "mit-45f7b5c4-a1ba-4939-9545-213751bbc73f": {
+      "authors": [
+        "Malek, Bola"
+      ],
+      "cite": "Malek, 2021"
+    },
+    "mit-c6671196-46b6-4ba2-8198-75e330a0b112": {
+      "authors": [
+        "Caramanis, Constantine (Constantine Michael)"
+      ],
+      "cite": "Caramanis, 2001"
+    },
+    "mit-3b3c8b88-caa0-40a2-82ff-4138dc4e0838": {
+      "authors": [
+        "Evans, Lawrence C."
+      ],
+      "cite": "Evans, 2010"
+    },
+    "mit-38ea4135-4a43-4d3a-9a8f-c1847915c5d0": {
+      "authors": [
+        "Chen, Linan, Ph. D. Massachusetts Institute of Technology"
+      ],
+      "cite": "Chen, 2011"
+    },
+    "mit-94d70011-859f-4ce3-8bfe-9d302776180e": {
+      "authors": [
+        "Frontin, Cory"
+      ],
+      "cite": "Frontin, 2023"
+    },
+    "mit-722fb978-e5ec-4c05-b935-9b8262e58959": {
+      "authors": [
+        "Parente, Robert Bruce"
+      ],
+      "cite": "Parente, 1966"
+    },
+    "mit-af6a2cb5-d83c-43fc-8fc2-25efb8111cb8": {
+      "authors": [
+        "Martinson, Wade S"
+      ],
+      "cite": "Martinson, 2000"
+    },
+    "mit-6c39f577-bc45-4238-af62-97efe82a70ce": {
+      "authors": [
+        "Lewis, Alexander M. (Alexander McDowell)"
+      ],
+      "cite": "Lewis, 2009"
+    },
+    "mit-72a81fa6-a46d-4bda-b6c6-20e9404413ee": {
+      "authors": [
+        "Dubiner, Moshe"
+      ],
+      "cite": "Dubiner, 1981"
+    },
+    "mit-0b811b44-b985-4ef0-89b1-fdbabfa4cb4e": {
+      "authors": [
+        "Wenker, Jerome"
+      ],
+      "cite": "Wenker, 1956"
+    },
+    "mit-38718bfd-9cd0-402b-8346-be8df35eb976": {
+      "authors": [
+        "Romberg, Bernhard Walter"
+      ],
+      "cite": "Romberg, 1956"
+    },
+    "mit-97ed42cf-92cd-4f55-8eba-2081cea97b10": {
+      "authors": [
+        "Mannos, Murray"
+      ],
+      "cite": "Mannos, 1937"
+    },
+    "mit-75f22260-94f9-4609-a42c-090bb259845c": {
+      "authors": [
+        "Di Salvatore, Philip."
+      ],
+      "cite": "Di Salvatore, 1936"
+    },
+    "mit-3a3cfdbf-8fcf-4a0d-99e6-d95553743e93": {
+      "authors": [
+        "Larson, David F. H"
+      ],
+      "cite": "Larson, 2016"
+    },
+    "mit-88834748-1dfb-4411-833c-c87487d6c5ed": {
+      "authors": [
+        "Bharath, Ranjeetha"
+      ],
+      "cite": "Bharath, 2013"
+    },
+    "mit-54715ba9-fabc-4bd9-9a13-531065aa5c73": {
+      "authors": [
+        "Brainerd, Andrew Eric"
+      ],
+      "cite": "Brainerd, 2010"
+    },
+    "mit-003582e9-2210-4571-af86-d08f085571d8": {
+      "authors": [
+        "Creese, Thomas M."
+      ],
+      "cite": "Creese, 1956"
+    },
+    "mit-4c06bdf1-a78a-4d05-b1cd-8de41dd1c1f7": {
+      "authors": [
+        "Holland, John H. (John Henry)"
+      ],
+      "cite": "Holland, 1950"
+    },
+    "mit-8a1e3416-6524-47d8-8777-45ffcb9fcb4b": {
+      "authors": [
+        "Christopher, Jason W"
+      ],
+      "cite": "Christopher, 2005"
+    },
+    "mit-a316e95f-6a0e-4d2d-85c8-3dee48a8b0b3": {
+      "authors": [
+        "Keskiner, Eser"
+      ],
+      "cite": "Keskiner, 2001"
+    },
+    "mit-eae14043-809b-428c-9972-7e96235bab6f": {
+      "authors": [
+        "Simon, Garrett(Garrett Kenji)"
+      ],
+      "cite": "Simon, 2020"
+    },
+    "mit-3c297b60-806a-4c2b-87b4-18c9fcaa7556": {
+      "authors": [
+        "Lee, Yuan"
+      ],
+      "cite": "Lee, 2021"
+    },
+    "mit-cf01f99f-211f-4dbd-8e14-29d8db0e6c95": {
+      "authors": [
+        "Haas, Violet B."
+      ],
+      "cite": "Haas, 1949"
+    },
+    "mit-acad59db-5b91-423f-a8a2-1d1b6c3a8a35": {
+      "authors": [
+        "Mookerji, Bhaskar"
+      ],
+      "cite": "Mookerji, 2011"
+    },
+    "mit-2b16416f-66ad-42b4-928b-2399020f8df0": {
+      "authors": [
+        "Forney, G. David"
+      ],
+      "cite": "Forney, 1963"
+    },
+    "mit-439a28d3-6b91-4978-b748-7e9dadb53a3c": {
+      "authors": [
+        "Chung, Hyeyoun, M. Eng. Massachusetts Institute of Technology"
+      ],
+      "cite": "Chung, 2008"
+    },
+    "mit-b80b1aca-2484-4b2e-9a99-9af9036de7f7": {
+      "authors": [
+        "Pant, Mihir"
+      ],
+      "cite": "Pant, 2015"
+    },
+    "mit-e29b0ec0-ed15-4602-9b4a-9aec4ff5dbe4": {
+      "authors": [
+        "Mezei, Márk (Márk Koppany)"
+      ],
+      "cite": "Mezei, 2014"
+    },
+    "mit-efd85c44-cd96-4606-8032-bfbe17a54054": {
+      "authors": [
+        "Wei, Annie Y."
+      ],
+      "cite": "Wei, 2024"
+    },
+    "mit-c563723b-2c42-4408-8618-de9426ad6acd": {
+      "authors": [
+        "Teklemariam, Grum"
+      ],
+      "cite": "Teklemariam, 2002"
+    },
+    "mit-599863ce-70e6-4d4d-b562-a847182e583a": {
+      "authors": [
+        "Liu, Yi-Xiang"
+      ],
+      "cite": "Liu, 2021"
+    },
+    "mit-82501941-46cb-4f14-bd84-bbbc6c072034": {
+      "authors": [
+        "Mendez, Enrique"
+      ],
+      "cite": "Mendez, 2023"
+    },
+    "mit-d540fb86-8085-4721-8abf-ffc6a03f3a9d": {
+      "authors": [
+        "Karamlou, Amir H."
+      ],
+      "cite": "Karamlou, 2023"
+    },
+    "mit-84033887-c00f-4ae0-8e6c-0cb4032d079f": {
+      "authors": [
+        "Seetharam, Kushal"
+      ],
+      "cite": "Seetharam, 2022"
+    },
+    "mit-1b0d5533-083f-4e5f-ae80-a593b097384f": {
+      "authors": [
+        "Loh, Huanqian"
+      ],
+      "cite": "Loh, 2006"
+    },
+    "mit-ca2630b9-ecc6-4142-be0c-a37a8d7ca9bb": {
+      "authors": [
+        "Mookerji, Bhaskar"
+      ],
+      "cite": "Mookerji, 2009"
+    },
+    "mit-0fff1dd1-8d3e-4f0a-9e42-757e60783e04": {
+      "authors": [
+        "Chen, Chang-Han"
+      ],
+      "cite": "Chen, 2022"
+    },
+    "mit-bbdce9ff-93a2-49ea-829f-0bae01e97de1": {
+      "authors": [
+        "Hamilton, John Christie"
+      ],
+      "cite": "Hamilton, 1967"
+    },
+    "mit-bdb096c2-2285-43e2-bf60-00c83d124317": {
+      "authors": [
+        "Tassev, Svetlin Valentinov"
+      ],
+      "cite": "Tassev, 2005"
+    },
+    "mit-9c7d547b-ece7-4901-a5f9-f7d5ceccd0b4": {
+      "authors": [
+        "Ganguli, Surya"
+      ],
+      "cite": "Ganguli, 1998"
+    },
+    "mit-8d6cf310-5c50-4de4-a77d-a612aa077f2a": {
+      "authors": [
+        "Lin, Ziliang (Ziliang Carter)"
+      ],
+      "cite": "Lin, 2008"
+    },
+    "mit-807643a7-ce20-4399-9725-20a14b5f3786": {
+      "authors": [
+        "Phan, Trung Van"
+      ],
+      "cite": "Phan, 2015"
+    },
+    "mit-b61b51fa-c1c8-4970-9037-eb679e9e245f": {
+      "authors": [
+        "Thacker, William Dickey"
+      ],
+      "cite": "Thacker, 1978"
+    },
+    "mit-a13ca090-590e-410b-a7f9-db2866082e4e": {
+      "authors": [
+        "Gharibyan, Hrant"
+      ],
+      "cite": "Gharibyan, 2014"
+    },
+    "mit-5a45e8c8-47db-4dbe-b922-3f897fc20892": {
+      "authors": [
+        "Lu, Peter Guang Yi"
+      ],
+      "cite": "Lu, 2013"
+    },
+    "mit-9c911dc4-0994-43c3-9776-ae0931628eaa": {
+      "authors": [
+        "Slavov, Stanislav"
+      ],
+      "cite": "Slavov, 2022"
+    },
+    "mit-9c65ebfd-f7f3-4907-a78a-f4875e7af97a": {
+      "authors": [
+        "Reddy, Sushrutha P."
+      ],
+      "cite": "Reddy, 2020"
+    },
+    "mit-54e4a80f-1ee2-4b20-92b3-d9858ab79c64": {
+      "authors": [
+        "Grullon, Dylan Emanuel Centeno."
+      ],
+      "cite": "Grullon, 2019"
+    },
+    "mit-2651a716-e0cc-41af-8cf0-0515d060cbfc": {
+      "authors": [
+        "Rho, Saeyoung."
+      ],
+      "cite": "Rho, 2020"
+    },
+    "mit-54dee97a-e7ee-43b3-a8c5-497e573974b9": {
+      "authors": [
+        "Gong, Yutao"
+      ],
+      "cite": "Gong, 2025"
+    },
+    "mit-0197052d-c4ff-4716-b713-1da15b73270d": {
+      "authors": [
+        "Jain, Bonny"
+      ],
+      "cite": "Jain, 2014"
+    },
+    "mit-feeb7653-ae03-4454-8a6c-130ea1ae901a": {
+      "authors": [
+        "Nikolov, Stanislav"
+      ],
+      "cite": "Nikolov, 2012"
+    },
+    "mit-fb421d82-a37b-4656-8c00-88e846365927": {
+      "authors": [
+        "Johnson, Matthew James, Ph. D. Massachusetts Institute of Technology"
+      ],
+      "cite": "Johnson, 2014"
+    },
+    "mit-e214f85d-2e79-4143-a171-e55fa14a304d": {
+      "authors": [
+        "Yao, Leon"
+      ],
+      "cite": "Yao, 2025"
+    },
+    "mit-840d5386-2270-4812-9c88-b5b0344fcf8c": {
+      "authors": [
+        "Klosin, Sylvia"
+      ],
+      "cite": "Klosin, 2025"
+    },
+    "mit-954dcfa4-9f5c-4b6a-8345-4a695e817a90": {
+      "authors": [
+        "Xia, Eric"
+      ],
+      "cite": "Xia, 2025"
+    },
+    "mit-612350e6-bbc1-474a-81fb-0d15fdb01da1": {
+      "authors": [
+        "Spantini, Alessio"
+      ],
+      "cite": "Spantini, 2017"
+    },
+    "mit-ba9c2f47-7191-48aa-96a4-6252c872f0bd": {
+      "authors": [
+        "Baptista, Ricardo Miguel"
+      ],
+      "cite": "Baptista, 2022"
+    },
+    "mit-bb27a990-9a12-49b7-8e56-3d0fd888de0c": {
+      "authors": [
+        "Dikkala, Sai Nishanth."
+      ],
+      "cite": "Dikkala, 2020"
+    },
+    "mit-831602ee-f5f1-41c0-9e72-15642ed45ee8": {
+      "authors": [
+        "Lai, Ian"
+      ],
+      "cite": "Lai, 2003"
+    },
+    "mit-0f6b270d-5c2f-4e58-bf47-11f6f1f05283": {
+      "authors": [
+        "Acosta, Wesley C. (Wesley Cordell)"
+      ],
+      "cite": "Acosta, 2003"
+    },
+    "mit-18e8e23e-5c6a-4efd-b6b8-30f82b013921": {
+      "authors": [
+        "Coffrin, Jane S"
+      ],
+      "cite": "Coffrin, 2017"
+    },
+    "mit-04c4ebc4-9b56-459c-9a9e-4edfe6aba4ee": {
+      "authors": [
+        "Kummel, Kathryn"
+      ],
+      "cite": "Kummel, 2025"
+    },
+    "mit-869096a4-0767-4d6a-9d66-ee84c77f4fd0": {
+      "authors": [
+        "Rooney, Stuart Allen"
+      ],
+      "cite": "Rooney, 1965"
+    },
+    "mit-742a136e-ab72-4a05-a765-df81ae203afc": {
+      "authors": [
+        "Yahalomi, Daniel Alexander"
+      ],
+      "cite": "Yahalomi, 2018"
+    },
+    "mit-3ef00a65-2c33-48f2-83e6-d55a597fb665": {
+      "authors": [
+        "Fitzmaurice, Jean Anne."
+      ],
+      "cite": "Fitzmaurice, 1986"
+    },
+    "mit-99059c4b-a25f-47fe-afe5-0d5202ec6a3c": {
+      "authors": [
+        "Li, Derek Z"
+      ],
+      "cite": "Li, 2011"
+    },
+    "mit-8e2032dd-72d3-4c06-94bb-41b2688f2842": {
+      "authors": [
+        "Rodewald, Oliver Russell"
+      ],
+      "cite": "Rodewald, 2011"
+    },
+    "mit-b655ca08-0913-4cf5-8707-9a09eca8ac54": {
+      "authors": [
+        "Lienhard, Jasper Z."
+      ],
+      "cite": "Lienhard, 2015"
+    },
+    "mit-85292616-2f9c-4e94-ba86-698d9b4a96d2": {
+      "authors": [
+        "Ahmed, Sarah"
+      ],
+      "cite": "Ahmed, 2001"
+    },
+    "mit-a8099982-81a6-4bc0-be42-1b485725f349": {
+      "authors": [
+        "Joshi, Kavya (Kavya U.)"
+      ],
+      "cite": "Joshi, 2013"
+    },
+    "mit-2370612b-96a3-4a60-b09c-2e8cb3fca7e2": {
+      "authors": [
+        "Fellheimer, Eric Todd"
+      ],
+      "cite": "Fellheimer, 2006"
+    },
+    "mit-757ec9d0-b19f-474a-8c8e-18d7761e4eaa": {
+      "authors": [
+        "Goldstein, Matthew (Matthew S.)"
+      ],
+      "cite": "Goldstein, 2011"
+    },
+    "mit-783ede36-65d2-4ab6-bb55-6fb43081f122": {
+      "authors": [
+        "Tran, Tho"
+      ],
+      "cite": "Tran, 2021"
+    },
+    "mit-f78a697a-4cfd-4563-9744-0e2ec46787c6": {
+      "authors": [
+        "Chung, Chanwoo (Computer scientist) Massachusetts Institute of Technology"
+      ],
+      "cite": "Chung, 2016"
+    },
+    "mit-956fbcb1-de5a-4f4c-957b-57e3e1b2f867": {
+      "authors": [
+        "Chang, Ryan"
+      ],
+      "cite": "Chang, 2025"
+    },
+    "mit-53501520-9ccf-4ea9-a6dc-ad385b5646af": {
+      "authors": [
+        "Yuan, Gina,M. Eng.Massachusetts Institute of Technology."
+      ],
+      "cite": "Yuan, 2019"
+    },
+    "mit-d5dc21ae-d873-4e98-8f03-7d73ed156733": {
+      "authors": [
+        "LaCurts, Katrina L. (Katrina Leigh)"
+      ],
+      "cite": "LaCurts, 2014"
+    },
+    "mit-77ccc43a-eb33-46f1-89e8-34499dd59752": {
+      "authors": [
+        "Chen, Haogang"
+      ],
+      "cite": "Chen, 2016"
+    },
+    "mit-995a5207-d85d-4ebc-8108-93786476e807": {
+      "authors": [
+        "Balazinska, Magdalena"
+      ],
+      "cite": "Balazinska, 2006"
+    },
+    "mit-c2f28a81-76e0-4b89-8b14-acb3c3c68ec6": {
+      "authors": [
+        "Jones, Evan P. C. (Evan Philip Charles)"
+      ],
+      "cite": "Jones, 2012"
+    },
+    "mit-8f599c8a-1373-4996-9e0f-95c317be572c": {
+      "authors": [
+        "Chung, Chanwoo"
+      ],
+      "cite": "Chung, 2023"
+    },
+    "mit-9c5c3bdc-8bad-48dc-b4ac-1444fde28af4": {
+      "authors": [
+        "Oom Temudo de Castro, Miguel"
+      ],
+      "cite": "Oom Temudo de Castro, 2001"
+    },
+    "mit-0472c9bb-cac2-4008-a2ed-64b4fdb840f6": {
+      "authors": [
+        "Chajed, Tej"
+      ],
+      "cite": "Chajed, 2022"
+    },
+    "mit-543df230-6406-44be-aaf9-7c0c9b2b9cab": {
+      "authors": [
+        "Schmeidler, Yonah"
+      ],
+      "cite": "Schmeidler, 1998"
+    },
+    "mit-11aaf9f1-d5b0-49de-b4d2-7a71c66692b2": {
+      "authors": [
+        "Gidwani, Gautam A"
+      ],
+      "cite": "Gidwani, 1989"
+    },
+    "mit-85ab81b6-f077-4764-bd2d-9dd4d8fc550d": {
+      "authors": [
+        "Gan, Francis C. K"
+      ],
+      "cite": "Gan, 1989"
+    },
+    "mit-6bbe9080-d608-4ddd-9b7d-825ad2c233e1": {
+      "authors": [
+        "Coffing, Charles L."
+      ],
+      "cite": "Coffing, 1999"
+    },
+    "mit-3aeaed77-dd5c-4259-9e08-eff37029aa80": {
+      "authors": [
+        "Byun, Brian Y. G"
+      ],
+      "cite": "Byun, 1986"
+    },
+    "mit-cca02e40-5bdf-45f2-9e0f-a6d4a55e2862": {
+      "authors": [
+        "Almedia, Danilo (Danilo D'Amico)"
+      ],
+      "cite": "Almedia, 1998"
+    },
+    "mit-1755cbcb-d452-492b-8f9d-9643b724f1a0": {
+      "authors": [
+        "Yao, James Chung-Yo"
+      ],
+      "cite": "Yao, 1989"
+    },
+    "radboud-kubernetes-scaling": {
+      "authors": [
+        "Joshua Steinmann"
+      ],
+      "cite": "Joshua Steinmann, 2022"
+    },
+    "mit-897e8567-9b1e-4ed9-9f7c-1efe622f736e": {
+      "authors": [
+        "Lyubashevskiy, Igor B. (Igor Boris)"
+      ],
+      "cite": "Lyubashevskiy, 1998"
+    },
+    "mit-790cf43f-3a9f-46c7-8521-acac796be4b0": {
+      "authors": [
+        "Ho, Benjamin"
+      ],
+      "cite": "Ho, 2000"
+    },
+    "pjm-blackwell-1956-vector-minimax": {
+      "authors": [
+        "Blackwell, David"
+      ],
+      "cite": "Blackwell, 1956"
+    },
+    "caltech-fong-2024-behavioral-game-theory": {
+      "authors": [
+        "Fong, Meng-Jhang"
+      ],
+      "cite": "Fong, 2024"
+    },
+    "caltech-lin-2024-behavioral-solution-concepts": {
+      "authors": [
+        "Lin, Po-Hsuan"
+      ],
+      "cite": "Lin, 2024"
+    },
+    "strang-calculus": {
+      "authors": [
+        "Strang, Gilbert"
+      ],
+      "cite": "Strang, 2017"
+    },
+    "guichard-calculus": {
+      "authors": [
+        "Guichard, David"
+      ],
+      "cite": "Guichard, 2023"
+    },
+    "keisler-elementary-calculus": {
+      "authors": [
+        "Keisler, H. Jerome"
+      ],
+      "cite": "Keisler, 2026"
+    },
+    "loomis-sternberg-advanced-calculus": {
+      "authors": [
+        "Loomis, Lynn H.",
+        "Sternberg, Shlomo"
+      ],
+      "cite": "Loomis & Sternberg, 1990"
+    },
+    "mit-18s096-matrix-calculus": {
+      "authors": [
+        "Edelman, Alan",
+        "Johnson, Steven G."
+      ],
+      "cite": "Edelman & Johnson, 2023"
+    },
+    "mit-18100a-real-analysis": {
+      "authors": [
+        "Rodriguez, Casey"
+      ],
+      "cite": "Rodriguez, 2020"
+    },
+    "mit-18100b-real-analysis": {
+      "authors": [
+        "Colding, Tobias Holck"
+      ],
+      "cite": "Colding, 2025"
+    },
+    "sternberg-real-variable": {
+      "authors": [
+        "Sternberg, Shlomo"
+      ],
+      "cite": "Sternberg, 2005"
+    },
+    "hunter-measure-theory": {
+      "authors": [
+        "Hunter, John K."
+      ],
+      "cite": "Hunter, 2011"
+    },
+    "driver-analysis-tools": {
+      "authors": [
+        "Driver, Bruce K."
+      ],
+      "cite": "Driver, 2003"
+    },
+    "melrose-functional-analysis": {
+      "authors": [
+        "Melrose, Richard"
+      ],
+      "cite": "Melrose, 2020"
+    },
+    "teschl-schroedinger-operators": {
+      "authors": [
+        "Teschl, Gerald"
+      ],
+      "cite": "Teschl, 2014"
+    },
+    "miller-1803-ode-notes": {
+      "authors": [
+        "Miller, Haynes R."
+      ],
+      "cite": "Miller, 2010"
+    },
+    "teschl-ode-dynamical-systems": {
+      "authors": [
+        "Teschl, Gerald"
+      ],
+      "cite": "Teschl, 2012"
+    },
+    "hunter-pde-notes": {
+      "authors": [
+        "Hunter, John K."
+      ],
+      "cite": "Hunter, 2014"
+    },
+    "dunkel-1804-complex-analysis": {
+      "authors": [
+        "Dunkel, Joern",
+        "Orloff, Jeremy"
+      ],
+      "cite": "Dunkel & Orloff, 2019"
+    },
+    "princeton-mat330-complex-analysis": {
+      "authors": [
+        "Shapiro, Jacob"
+      ],
+      "cite": "Shapiro, 2024"
+    },
+    "boyd-convex-optimization": {
+      "authors": [
+        "Boyd, Stephen",
+        "Vandenberghe, Lieven"
+      ],
+      "cite": "Boyd & Vandenberghe, 2004"
+    },
+    "nemirovski-modern-convex-optimization": {
+      "authors": [
+        "Ben-Tal, Aharon",
+        "Nemirovski, Arkadi"
+      ],
+      "cite": "Ben-Tal & Nemirovski, 2023"
+    },
+    "han-2024-spde-random-operators": {
+      "authors": [
+        "Han, Yi"
+      ],
+      "cite": "Han, 2024"
+    },
+    "turner-2025-unparameterised-path-space": {
+      "authors": [
+        "Turner, William F."
+      ],
+      "cite": "Turner, 2025"
+    },
+    "sujanani-2024-first-order-methods": {
+      "authors": [
+        "Sujanani, Arnesh M."
+      ],
+      "cite": "Sujanani, 2024"
+    },
+    "cherney-denton-thomas-waldron-linear-algebra": {
+      "authors": [
+        "Cherney, David",
+        "Denton, Tom",
+        "Thomas, Rohit",
+        "Waldron, Andrew"
+      ],
+      "cite": "Cherney et al., 2013"
+    },
+    "treil-linear-algebra-done-wrong": {
+      "authors": [
+        "Treil, Sergei"
+      ],
+      "cite": "Treil, 2017"
+    },
+    "boyd-vandenberghe-vmls": {
+      "authors": [
+        "Boyd, Stephen",
+        "Vandenberghe, Lieven"
+      ],
+      "cite": "Boyd & Vandenberghe, 2018"
+    },
+    "lankham-nachtergaele-schilling-linear-algebra": {
+      "authors": [
+        "Lankham, Isaiah",
+        "Nachtergaele, Bruno",
+        "Schilling, Anne"
+      ],
+      "cite": "Lankham et al., 2016"
+    },
+    "margalit-rabinoff-interactive-linear-algebra": {
+      "authors": [
+        "Margalit, Dan",
+        "Rabinoff, Joseph"
+      ],
+      "cite": "Margalit & Rabinoff, 2019"
+    },
+    "strang-zoomnotes-linear-algebra": {
+      "authors": [
+        "Strang, Gilbert"
+      ],
+      "cite": "Strang, 2021"
+    },
+    "hatcher-algebraic-topology": {
+      "authors": [
+        "Hatcher, Allen"
+      ],
+      "cite": "Hatcher, 2002"
+    },
+    "hatcher-vector-bundles-k-theory": {
+      "authors": [
+        "Hatcher, Allen"
+      ],
+      "cite": "Hatcher, 2017"
+    },
+    "hatcher-point-set-topology-notes": {
+      "authors": [
+        "Hatcher, Allen"
+      ],
+      "cite": "Hatcher, 2005"
+    },
+    "hatcher-3-manifolds": {
+      "authors": [
+        "Hatcher, Allen"
+      ],
+      "cite": "Hatcher, 2007"
+    },
+    "miller-18905-algebraic-topology": {
+      "authors": [
+        "Miller, Haynes"
+      ],
+      "cite": "Miller, 2016"
+    },
+    "may-concise-algebraic-topology": {
+      "authors": [
+        "May, J. P."
+      ],
+      "cite": "May, 1999"
+    },
+    "cavalieri-math490-topology": {
+      "authors": [
+        "Cavalieri, Renzo",
+        "students), et al. (Math 490"
+      ],
+      "cite": "Cavalieri & students), 2010"
+    },
+    "shi-2023-unstable-periodic-homotopy": {
+      "authors": [
+        "Shi, Yuqing"
+      ],
+      "cite": "Shi, 2023"
+    },
+    "appenzeller-2024-affine-buildings": {
+      "authors": [
+        "Appenzeller, Raphael"
+      ],
+      "cite": "Appenzeller, 2024"
+    },
+    "nist-sp-800-125": {
+      "authors": [
+        "NIST"
+      ],
+      "cite": "NIST, 2011"
+    },
+    "nist-sp-800-125a-r1": {
+      "authors": [
+        "NIST"
+      ],
+      "cite": "NIST, 2018"
+    },
+    "nist-sp-800-125b": {
+      "authors": [
+        "NIST"
+      ],
+      "cite": "NIST, 2016"
+    },
+    "nist-sp-800-123": {
+      "authors": [
+        "NIST"
+      ],
+      "cite": "NIST, 2008"
+    },
+    "nist-sp-800-190": {
+      "authors": [
+        "NIST"
+      ],
+      "cite": "NIST, 2017"
+    },
+    "qubes-arch-spec": {
+      "authors": [
+        "Rutkowska, Joanna",
+        "Wojtczuk, Rafal",
+        "Invisible Things Lab"
+      ],
+      "cite": "Rutkowska et al., 2010"
+    },
+    "qubes-security": {
+      "authors": [
+        "Qubes OS Project"
+      ],
+      "cite": "Qubes OS Project, 2026"
+    },
+    "qubes-security-bulletins": {
+      "authors": [
+        "Qubes OS Project"
+      ],
+      "cite": "Qubes OS Project, 2026"
+    },
+    "qubes-security-design-goals": {
+      "authors": [
+        "Qubes OS Project"
+      ],
+      "cite": "Qubes OS Project, 2026"
+    },
+    "ubuntu-security-features": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2026"
+    },
+    "arch-wiki-security": {
+      "authors": [
+        "Arch Linux community"
+      ],
+      "cite": "Arch Linux community, 2026"
+    },
+    "kali-docs-policy": {
+      "authors": [
+        "OffSec / Kali Linux"
+      ],
+      "cite": "OffSec / Kali Linux, 2026"
+    },
+    "mint-verify-iso": {
+      "authors": [
+        "Linux Mint"
+      ],
+      "cite": "Linux Mint, 2026"
+    },
+    "kernel-kvm-api": {
+      "authors": [
+        "Linux kernel developers"
+      ],
+      "cite": "Linux kernel developers, 2026"
+    },
+    "qemu-security": {
+      "authors": [
+        "QEMU Project"
+      ],
+      "cite": "QEMU Project, 2026"
+    },
+    "qemu-security-process": {
+      "authors": [
+        "QEMU Project"
+      ],
+      "cite": "QEMU Project, 2026"
+    },
+    "kernel-kconfig-language": {
+      "authors": [
+        "Linux kernel developers"
+      ],
+      "cite": "Linux kernel developers, 2026"
+    },
+    "kspp-recommended-settings": {
+      "authors": [
+        "Linux Kernel Self-Protection Project"
+      ],
+      "cite": "Linux Kernel Self-Protection Project, 2026"
+    },
+    "kernel-self-protection": {
+      "authors": [
+        "Cook, Kees",
+        "Linux kernel developers"
+      ],
+      "cite": "Cook & Linux kernel developers, 2026"
+    },
+    "kernel-x86-iommu": {
+      "authors": [
+        "Linux kernel developers"
+      ],
+      "cite": "Linux kernel developers, 2026"
+    },
+    "kernel-vfio": {
+      "authors": [
+        "Linux kernel developers"
+      ],
+      "cite": "Linux kernel developers, 2026"
+    },
+    "xen-security-policy": {
+      "authors": [
+        "Xen Project"
+      ],
+      "cite": "Xen Project, 2026"
+    },
+    "xen-xsa-148": {
+      "authors": [
+        "Xen Project Security Team"
+      ],
+      "cite": "Xen Project Security Team, 2015"
+    },
+    "xen-xsa-182": {
+      "authors": [
+        "Xen Project Security Team"
+      ],
+      "cite": "Xen Project Security Team, 2016"
+    },
+    "ubuntu-cve-2015-3456-venom": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2015"
+    },
+    "ubuntu-cve-2016-5195-dirty-cow": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2016"
+    },
+    "ubuntu-cve-2022-0847-dirty-pipe": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2022"
+    },
+    "ubuntu-cve-2024-6387-regresshion": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2024"
+    },
+    "cisa-xz-utils-alert": {
+      "authors": [
+        "CISA"
+      ],
+      "cite": "CISA, 2024"
+    },
+    "thunderclap-ndss2019": {
+      "authors": [
+        "Markettos, A. Theodore",
+        "Rothwell, Colin",
+        "Gutstein, Brett F.",
+        "Pearce, Allison",
+        "Neumann, Peter G.",
+        "Moore, Simon W.",
+        "Watson, Robert N. M."
+      ],
+      "cite": "Markettos et al., 2019"
+    },
+    "cisa-aa21-321a-iran": {
+      "authors": [
+        "CISA",
+        "FBI",
+        "ACSC",
+        "NCSC-UK"
+      ],
+      "cite": "CISA et al., 2021"
+    },
+    "cisa-aa23-335a-irgc": {
+      "authors": [
+        "CISA",
+        "FBI",
+        "NSA",
+        "EPA",
+        "INCD"
+      ],
+      "cite": "CISA et al., 2023"
+    },
+    "cisa-aa24-241a-iran": {
+      "authors": [
+        "FBI",
+        "CISA",
+        "DC3"
+      ],
+      "cite": "FBI et al., 2024"
+    },
+    "cisa-aa24-038a-volt-typhoon": {
+      "authors": [
+        "CISA",
+        "NSA",
+        "FBI",
+        "Five Eyes partners"
+      ],
+      "cite": "CISA et al., 2024"
+    },
+    "thesis-litty-toronto": {
+      "authors": [
+        "Litty, Lionel"
+      ],
+      "cite": "Litty, 2010"
+    },
+    "thesis-unimi-hw-virt": {
+      "authors": [
+        "Fattori, Aristide"
+      ],
+      "cite": "Fattori, 2014"
+    },
+    "thesis-cam-pcie-tr934": {
+      "authors": [
+        "Rothwell, Colin L."
+      ],
+      "cite": "Rothwell, 2019"
+    },
+    "thesis-kemerlis-columbia": {
+      "authors": [
+        "Kemerlis, Vasileios P."
+      ],
+      "cite": "Kemerlis, 2015"
+    },
+    "thesis-mehrab-vt": {
+      "authors": [
+        "Mehrab, A K M Fazla"
+      ],
+      "cite": "Mehrab, 2023"
+    },
+    "intel-vtd-spec": {
+      "authors": [
+        "Intel Corporation"
+      ],
+      "cite": "Intel Corporation, 2024"
+    },
+    "amd-iommu-spec": {
+      "authors": [
+        "Advanced Micro Devices"
+      ],
+      "cite": "Advanced Micro Devices, 2026"
+    },
+    "csi-linux-updating": {
+      "authors": [
+        "CSI Linux"
+      ],
+      "cite": "CSI Linux, 2024"
+    },
+    "qubes-qsb-001": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2011"
+    },
+    "qubes-qsb-022": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2015"
+    },
+    "qubes-qsb-024": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2016"
+    },
+    "qubes-qsb-058": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2020"
+    },
+    "qubes-qsb-079": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2022"
+    },
+    "qubes-qsb-095": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2023"
+    },
+    "qubes-qsb-100": {
+      "authors": [
+        "Qubes OS Security Team"
+      ],
+      "cite": "Qubes OS Security Team, 2024"
+    },
+    "qubes-device-handling-security": {
+      "authors": [
+        "Qubes OS Project"
+      ],
+      "cite": "Qubes OS Project, 2026"
+    },
+    "qubes-architecture": {
+      "authors": [
+        "Qubes OS Project"
+      ],
+      "cite": "Qubes OS Project, 2026"
+    },
+    "qubes-gui-security": {
+      "authors": [
+        "Qubes OS Project"
+      ],
+      "cite": "Qubes OS Project, 2026"
+    },
+    "kernel-apparmor": {
+      "authors": [
+        "Linux kernel developers"
+      ],
+      "cite": "Linux kernel developers, 2026"
+    },
+    "kernel-lsm-index": {
+      "authors": [
+        "Linux kernel developers"
+      ],
+      "cite": "Linux kernel developers, 2026"
+    },
+    "ubuntu-apparmor": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2026"
+    },
+    "ubuntu-usg": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2026"
+    },
+    "ubuntu-kernel-docs": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2026"
+    },
+    "ubuntu-security-team-faq": {
+      "authors": [
+        "Canonical"
+      ],
+      "cite": "Canonical, 2026"
+    },
+    "arch-security-tracker": {
+      "authors": [
+        "Arch Linux Security Team"
+      ],
+      "cite": "Arch Linux Security Team, 2026"
+    },
+    "arch-security-team-wiki": {
+      "authors": [
+        "Arch Linux"
+      ],
+      "cite": "Arch Linux, 2026"
+    },
+    "arch-wiki-kernel-parameters": {
+      "authors": [
+        "Arch Linux"
+      ],
+      "cite": "Arch Linux, 2026"
+    },
+    "arch-wiki-apparmor": {
+      "authors": [
+        "Arch Linux"
+      ],
+      "cite": "Arch Linux, 2026"
+    },
+    "kali-recompiling-kernel": {
+      "authors": [
+        "OffSec / Kali Linux"
+      ],
+      "cite": "OffSec / Kali Linux, 2026"
+    },
+    "kali-root-policy": {
+      "authors": [
+        "OffSec / Kali Linux"
+      ],
+      "cite": "OffSec / Kali Linux, 2026"
+    },
+    "mint-2016-iso-hack": {
+      "authors": [
+        "Lefebvre, Clement",
+        "Linux Mint"
+      ],
+      "cite": "Lefebvre & Linux Mint, 2016"
+    },
+    "thesis-kuleuven-vanbulck": {
+      "authors": [
+        "Van Bulck, Jo"
+      ],
+      "cite": "Van Bulck, 2020"
+    },
+    "thesis-luebeck-wilke": {
+      "authors": [
+        "Wilke, Luca"
+      ],
+      "cite": "Wilke, 2024"
+    },
+    "thesis-umd-petroni": {
+      "authors": [
+        "Petroni, Nick Louis, Jr."
+      ],
+      "cite": "Petroni, 2008"
+    },
+    "thesis-tugraz-lipp": {
+      "authors": [
+        "Lipp, Moritz"
+      ],
+      "cite": "Lipp, 2021"
+    },
+    "pd-cry-01": {
+      "authors": [
+        "Guo, Chun Fen",
+        "Pereira, Olivier",
+        "Peters, Thomas",
+        "Standaert, François-Xavier"
+      ],
+      "cite": "Guo et al., 2020"
+    },
+    "pd-cry-02": {
+      "authors": [
+        "Berti, Francesco",
+        "Guo, Chun Fen",
+        "Pereira, Olivier",
+        "Peters, Thomas",
+        "Standaert, François-Xavier"
+      ],
+      "cite": "Berti et al., 2019"
+    },
+    "pd-cry-03": {
+      "authors": [
+        "Beyne, Tim",
+        "Verbauwhede, Michiel"
+      ],
+      "cite": "Beyne & Verbauwhede, 2023"
+    },
+    "pd-cry-04": {
+      "authors": [
+        "Ravi, Prasanna",
+        "Paiva, Thales Bandiera",
+        "Jap, Dirmanto",
+        "D’Anvers, Jan-Pieter",
+        "Bhasin, Shivam"
+      ],
+      "cite": "Ravi et al., 2024"
+    },
+    "pd-cry-05": {
+      "authors": [
+        "Daemen, Joan",
+        "Mennink, Bart",
+        "Assche, Gilles Van"
+      ],
+      "cite": "Daemen et al., 2018"
+    },
+    "pd-cry-06": {
+      "authors": [
+        "Leander, Gregor",
+        "Tezcan, Cihangir",
+        "Wiemer, Friedrich"
+      ],
+      "cite": "Leander et al., 2018"
+    },
+    "pd-qmp-01": {
+      "authors": [
+        "Bouchard, Frédéric",
+        "Heshami, Khabat",
+        "England, Duncan G.",
+        "Fickler, Robert",
+        "Boyd, Robert W.",
+        "Englert, Berthold-Georg",
+        "Sánchez-Soto, Luis Lorenzo",
+        "Karimi, Ebrahim"
+      ],
+      "cite": "Bouchard et al., 2018"
+    },
+    "pd-qmp-03": {
+      "authors": [
+        "Giarmatzi, Christina",
+        "Costa, Fabio"
+      ],
+      "cite": "Giarmatzi & Costa, 2021"
+    },
+    "pd-qmp-04": {
+      "authors": [
+        "Regula, Bartosz",
+        "Takagi, Ryuji",
+        "Gu, Mile"
+      ],
+      "cite": "Regula et al., 2021"
+    },
+    "pd-mat-01": {
+      "authors": [
+        "Baldwin, John A.",
+        "Sivek, Steven"
+      ],
+      "cite": "Baldwin & Sivek, 2016"
+    },
+    "pd-psy-03": {
+      "authors": [
+        "Mukherjee, Sumitava",
+        "Sahay, Arvind",
+        "Pammi, V. S. Chandrasekhar",
+        "Srinivasan, Narayanan"
+      ],
+      "cite": "Mukherjee et al., 2017"
+    },
+    "pd-psy-04": {
+      "authors": [
+        "Lange, Florian",
+        "Dewitte, Siegfried"
+      ],
+      "cite": "Lange & Dewitte, 2023"
+    },
+    "pd-sys-01": {
+      "authors": [
+        "Inamdar, Aleeza Suhel",
+        "Fiebig, Tobias",
+        "Kaur, Mannat"
+      ],
+      "cite": "Inamdar et al., 2026"
+    },
+    "pd-ker-01": {
+      "authors": [
+        "Bulekov, Alexander",
+        "Liu, Qiang",
+        "Egele, Manuel",
+        "Payer, Mathias"
+      ],
+      "cite": "Bulekov et al., 2024"
+    },
+    "pd-ker-02": {
+      "authors": [
+        "Busch, Marcel",
+        "Mao, Philipp",
+        "Payer, Mathias"
+      ],
+      "cite": "Busch et al., 2024"
+    },
+    "ec-sta-01": {
+      "authors": [
+        "Barber, Rina Foygel",
+        "Drton, Mathias"
+      ],
+      "cite": "Barber & Drton, 2015"
+    },
+    "ec-sta-02": {
+      "authors": [
+        "Munch, Elizabeth",
+        "Turner, Katharine",
+        "Bendich, Paul",
+        "Mukherjee, Sayan",
+        "Mattingly, Jonathan Christopher",
+        "Harer, John"
+      ],
+      "cite": "Munch et al., 2015"
+    },
+    "ec-sta-03": {
+      "authors": [
+        "Camerlenghi, Federico",
+        "Lijoi, Antonio",
+        "Orbanz, Peter",
+        "Pruenster, Igor"
+      ],
+      "cite": "Camerlenghi et al., 2018"
+    },
+    "ec-sta-04": {
+      "authors": [
+        "Hirshberg, David A.",
+        "Wager, Stefan"
+      ],
+      "cite": "Hirshberg & Wager, 2021"
+    },
+    "ec-sta-05": {
+      "authors": [
+        "Antonelli, Joseph",
+        "Trippa, Lorenzo",
+        "Haneuse, Sebastien"
+      ],
+      "cite": "Antonelli et al., 2016"
+    },
+    "ec-ker-01": {
+      "authors": [
+        "Zhang, Hang",
+        "Kim, Jangha",
+        "Yuan, Chuhong",
+        "Qian, Zhiyun",
+        "Kim, Taesoo"
+      ],
+      "cite": "Zhang et al., 2025"
+    },
+    "ec-sys-01": {
+      "authors": [
+        "Krombholz, Katharina",
+        "Mayer, Wilfried",
+        "Schmiedecker, Martin",
+        "Weippl, Edgar"
+      ],
+      "cite": "Krombholz et al., 2017"
+    },
+    "ec-sys-02": {
+      "authors": [
+        "Kaur, Mannat",
+        "Parkin, Simon",
+        "Janssen, Marijn",
+        "Fiebig, Tobias"
+      ],
+      "cite": "Kaur et al., 2022"
+    },
+    "ec-psy-01": {
+      "authors": [
+        "Votipka, Daniel",
+        "Rabin, Seth",
+        "Micinski, Kristopher",
+        "Foster, Jeffrey S.",
+        "Mazurek, Michelle L."
+      ],
+      "cite": "Votipka et al., 2020"
+    },
+    "ec-psy-02": {
+      "authors": [
+        "Rostami, Asreen",
+        "Vigren, Minna",
+        "Raza, Shahid",
+        "Brown, Barry"
+      ],
+      "cite": "Rostami et al., 2022"
+    },
+    "ec-lrp-01": {
+      "authors": [
+        "Votipka, Daniel",
+        "Fulton, Kelsey R.",
+        "Parker, James",
+        "Hou, Matthew",
+        "Mazurek, Michelle L.",
+        "Hicks, Michael"
+      ],
+      "cite": "Votipka et al., 2020"
+    },
+    "ec4-psy-01": {
+      "authors": [
+        "Zonca, Joshua",
+        "Coricelli, Giorgio",
+        "Polonio, Luca"
+      ],
+      "cite": "Zonca et al., 2020"
+    },
+    "ec4-psy-02": {
+      "authors": [
+        "Columbus, Simon",
+        "BOHM, ROBERT M."
+      ],
+      "cite": "Columbus & BOHM, 2021"
+    },
+    "ec4-psy-03": {
+      "authors": [
+        "Bauer, Stefan",
+        "Bernroider, Edward W. N.",
+        "Chudzikowski, Katharina"
+      ],
+      "cite": "Bauer et al., 2017"
+    },
+    "ec4-mat-01": {
+      "authors": [
+        "He, Zhuo-Heng"
+      ],
+      "cite": "He, 2019"
+    },
+    "ec4-mat-02": {
+      "authors": [
+        "Panda, Swarup Kumar",
+        "Pati, Sukanta"
+      ],
+      "cite": "Panda & Pati, 2015"
+    },
+    "ec4-mat-03": {
+      "authors": [
+        "Atik, Fouzul"
+      ],
+      "cite": "Atik, 2018"
+    },
+    "ec4-mat-04": {
+      "authors": [
+        "Burgdorf, Sabine",
+        "Laurent, Monique",
+        "Piovesan, Teresa"
+      ],
+      "cite": "Burgdorf et al., 2017"
+    }
+  }
+}

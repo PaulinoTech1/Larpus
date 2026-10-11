@@ -3,17 +3,21 @@ import json
 import hashlib
 import subprocess
 import threading
+import re
+import time
 from runtime.agents import ROOT
 from runtime.isolation import query, read_oci, wsl_command
 
 LOCK=threading.Lock()
-PROFILE=ROOT/'data/voice-deployment.json'
+PROFILE=ROOT/('voice-deployment.json' if (ROOT/'voice-deployment.json').is_file() else 'data/voice-deployment.json')
 
 def preflight():
     profile=json.loads(PROFILE.read_text(encoding='utf-8-sig'))
     if profile.get('version')!=1 or profile.get('worker_sha256')!=hashlib.sha256((ROOT/'runtime/voice_worker.py').read_bytes()).hexdigest():
         raise ValueError('Voice worker source changed; rebuild voice image')
-    item=query('inspect','larpus-voice')[0]
+    name=profile.get('container','larpus-voice')
+    if not re.fullmatch(r'larpus-voice(?:-[a-f0-9]{32})?',name):raise ValueError('Invalid voice identity')
+    item=query('inspect',name)[0]
     host=item['HostConfig']
     if item['Image']!=profile['image'] or not item['State']['Running']:
         raise ValueError('Voice image drift or stopped worker')
@@ -34,13 +38,16 @@ def call(request):
     if not LOCK.acquire(blocking=False):
         raise OSError('Voice worker busy')
     try:
-        preflight()
-        result=subprocess.run(wsl_command('podman','exec','--interactive','larpus-voice','python','/app/voice_worker.py'),input=json.dumps(request).encode(),capture_output=True,timeout=120,check=True)
+        start=time.monotonic();preflight();profile=json.loads(PROFILE.read_text(encoding='utf-8-sig'))
+        arguments=['podman','exec','--interactive',profile.get('container','larpus-voice'),'python','/app/voice_worker.py']
+        if profile.get('protocol')=='unix-persistent':arguments.append('--client')
+        result=subprocess.run(wsl_command(*arguments),input=json.dumps(request).encode(),capture_output=True,timeout=120,check=True)
         if len(result.stdout)>16000000:
             raise ValueError('Voice response too large')
         reply=json.loads(result.stdout)
         if not isinstance(reply,dict) or 'error' in reply:
             raise ValueError('Invalid voice response')
+        reply.setdefault('timing',{})['gateway_ms']=round((time.monotonic()-start)*1000)
         return reply
     except (OSError,ValueError,KeyError,subprocess.SubprocessError) as exc:
         raise OSError('Local voice unavailable; no cloud fallback.') from exc

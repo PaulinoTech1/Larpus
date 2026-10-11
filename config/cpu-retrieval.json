@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "reviewed_on": "2026-10-09",
+  "purpose": "CPU-only semantic retrieval and reranking over the approved library; never GPU, never Ollama.",
+  "approval": "Owner-approved one-time online fetch on 2026-10-09: two BAAI ONNX models and three Python packages, installed without transitive dependencies.",
+  "packages": {
+    "onnxruntime": {"version": "1.23.2", "wheels": {
+      "linux-cp312": {"file": "onnxruntime-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", "sha256": "0f9b4ae77f8e3c9bee50c27bc1beede83f786fe1d52e99ac85aa8d65a01e9b77", "bytes": 17382649},
+      "win-cp310": {"file": "onnxruntime-1.23.2-cp310-cp310-win_amd64.whl", "sha256": "0be6a37a45e6719db5120e9986fcd30ea205ac8103fd1fb74b6c33348327a0cc", "bytes": 13467651}}},
+    "tokenizers": {"version": "0.23.3", "wheels": {
+      "linux-cp312": {"file": "tokenizers-0.23.3-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", "sha256": "376851d22bcf9d650a5c3090bb83e6cf9e895fbf0595369fa4cd43c1f69b5f87", "bytes": 3396193},
+      "win-cp310": {"file": "tokenizers-0.23.3-cp310-abi3-win_amd64.whl", "sha256": "1f0823bb00c5fdc98e487354d54dd55a03848d61a1a0bf29a68c77f24f3b26c3", "bytes": 2872101}}},
+    "numpy": {"version": "2.2.6", "wheels": {
+      "linux-cp312": {"file": "numpy-2.2.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", "sha256": "fd83c01228a688733f1ded5201c678f0c53ecc1006ffbc404db9f7a899ac6249", "bytes": 16527618},
+      "win-cp310": {"file": "numpy-2.2.6-cp310-cp310-win_amd64.whl", "sha256": "f0fd6321b839904e15c46e0d257fdd101dd7f530fe03fd6359c1ea63738703f3", "bytes": 12904620}}}
+  },
+  "models": {
+    "embedder": {
+      "directory": "bge-small-en-v1.5",
+      "repository": "BAAI/bge-small-en-v1.5",
+      "revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+      "license": "MIT",
+      "max_tokens": 512,
+      "query_prefix": "Represent this sentence for searching relevant passages: ",
+      "files": {
+        "model.onnx": {"upstream": "onnx/model.onnx", "sha256": "828e1496d7fabb79cfa4dcd84fa38625c0d3d21da474a00f08db0f559940cf35", "bytes": 133093490},
+        "tokenizer.json": {"upstream": "tokenizer.json", "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66", "bytes": 711396},
+        "config.json": {"upstream": "config.json", "sha256": "094f8e891b932f2000c92cfc663bac4c62069f5d8af5b5278c4306aef3084750", "bytes": 743}
+      }
+    },
+    "reranker": {
+      "directory": "bge-reranker-base",
+      "repository": "BAAI/bge-reranker-base",
+      "revision": "2cfc18c9415c912f9d8155881c133215df768a70",
+      "license": "MIT",
+      "max_tokens": 224,
+      "files": {
+        "model.onnx": {"upstream": "onnx/model.onnx", "sha256": "15b9a8c3da82eddf263df571281166e00e9308fe19d077084b642ebfcaf06d2b", "bytes": 1112459588},
+        "tokenizer.json": {"upstream": "tokenizer.json", "sha256": "9eb652ac4e40cc093272bbbe0f55d521cf67570060227109b5cdc20945a4489e", "bytes": 17098107},
+        "config.json": {"upstream": "config.json", "sha256": "289adf7ada1eb6b4afa7589a48a032d45a076cf2e46dcdb3b4cabc33be14f708", "bytes": 799}
+      }
+    }
+  },
+  "runtime": {
+    "threads": 8,
+    "bm25_candidates": 10,
+    "semantic_candidates": 6,
+    "rerank_batch": 4,
+    "rerank_deadline_seconds": 0.9,
+    "semantic_min_rerank_score": 0.0
+  }
+}

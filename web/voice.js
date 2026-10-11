@@ -6,7 +6,9 @@ window.larpusVoice = (() => {
   let recording=false, processing=false, session=0, resumeAt=0, noise=0.006;
   let playback=null, playToken=0, lastText='', lastAudio=null;
   let speechQueue=[],queueActive=false,queueRunning=false,queueToken=0;
-  let preparedSpeech=null;
+  let preparedSpeech=null,interruptFrames=[],interruptDuration=0,replyStarted=0;
+  function timing(result,start,kind){const t=result.timing||{};el('voice-latency').textContent=`${kind}: ${((performance.now()-start)/1000).toFixed(2)}s request${Number.isFinite(t.worker_ms)?` / ${(t.worker_ms/1000).toFixed(2)}s worker / ${t.model_cached?'warm model':'first model use'}`:''}. Playback timing excludes physical speaker delay.`;}
+  function pipeline(value){if(typeof window.larpusPipeline==='function')window.larpusPipeline(value);}
   const speed=()=>Number(el('voice-speed').value);
   const status=text=>{el('voice-status').textContent=text;};
   const label=text=>{button.querySelector('span').textContent=text;};
@@ -69,7 +71,8 @@ window.larpusVoice = (() => {
     try{
       const total=captured.reduce((n,c)=>n+c.length,0),samples=new Float32Array(total);
       let offset=0;for(const chunk of captured){samples.set(chunk,offset);offset+=chunk.length;}
-      const response=await api('/api/voice',{action:'transcribe',audio:wav(samples,rate)});
+      pipeline('TRANSCRIBING');const start=performance.now();
+      const response=await api('/api/voice',{action:'transcribe',audio:wav(samples,rate)});timing(response,start,'Recognition');
       if(!enabled || active!==session)return;
       const transcript=(response.transcript||'').trim();
       if(!transcript){status('No confident speech detected. Nothing was sent.');return;}
@@ -83,7 +86,7 @@ window.larpusVoice = (() => {
       if(response.audio && el('voice-output').checked)play(response);
       if(!command(transcript)){el('prompt').value=transcript;el('chat').requestSubmit();}
     }catch(error){notice.textContent=error.message;}
-    finally{if(active===session){processing=false;resumeAt=performance.now()+700;labels();}}
+    finally{if(active===session){processing=false;resumeAt=performance.now()+700;labels();if(!busy)pipeline('MIC READY');}}
   }
   async function devices(){
     if(!navigator.mediaDevices?.enumerateDevices)return;
@@ -106,6 +109,17 @@ window.larpusVoice = (() => {
       enabled=true;noise=0.006;button.setAttribute('aria-pressed','true');await devices();labels();
       status(el('voice-mode').value==='push'?'Mic ready. Click RECORD, speak, then STOP RECORDING.':'Listening locally. Pause after speaking; transcripts appear for review.');
       processor.onaudioprocess=event=>{
+        // Optional barge-in uses sustained microphone energy; transcript review
+        // still applies. Echo/noise behaviour requires physical room acceptance.
+        if(enabled && el('voice-interrupt').checked && el('voice-mode').value==='handsfree' && playback && !playback.audio.paused){
+          const frame=new Float32Array(event.inputBuffer.getChannelData(0));
+          const rms=Math.sqrt(frame.reduce((sum,x)=>sum+x*x,0)/frame.length);
+          if(rms>Math.max(.045,noise*5)){
+            interruptFrames.push(frame);interruptDuration+=frame.length/context.sampleRate;
+            if(interruptDuration>=.3){const kept=interruptFrames;stopPlayback();window.larpusCancelGeneration?.();resumeAt=0;chunks=kept;speaking=true;voiced=length=interruptDuration;interruptFrames=[];interruptDuration=0;status('Interrupted. Listening for your next message.');}
+          }else{interruptFrames=[];interruptDuration=0;}
+          return;
+        }
         if(!enabled || processing || busy || playback || queueActive || queueRunning || performance.now()<resumeAt || (el('voice-mode').value==='push' && !recording)){clearAudio();return;}
         const frame=new Float32Array(event.inputBuffer.getChannelData(0)),seconds=frame.length/context.sampleRate;
         const rms=Math.sqrt(frame.reduce((sum,x)=>sum+x*x,0)/frame.length);
@@ -133,11 +147,11 @@ window.larpusVoice = (() => {
     audio.playbackRate=speed();audio.preservesPitch=true;clearAudio();recording=false;
     return new Promise(resolve=>{
       const finish=()=>{
-        if(playback?.audio===audio){playback=null;URL.revokeObjectURL(url);resumeAt=performance.now()+1000;labels();}
+        if(playback?.audio===audio){playback=null;URL.revokeObjectURL(url);resumeAt=performance.now()+1000;labels();pipeline(busy?'GENERATING':enabled?'MIC READY':'STANDBY');}
         resolve();
       };
       playback={audio,url,resolve};audio.onended=finish;audio.onerror=()=>{notice.textContent='Audio could not play. The reply is still displayed.';finish();};
-      audio.onplay=labels;audio.onpause=labels;
+      audio.onplay=()=>{labels();pipeline('SPEAKING');if(replyStarted)el('voice-latency').textContent+=` First playback event ${( (performance.now()-replyStarted)/1000).toFixed(2)}s after send; not measured at the speaker.`;replyStarted=0;};audio.onpause=labels;
       labels();audio.play().catch(()=>{if(token===playToken)notice.textContent='Click REPEAT to allow browser audio playback.';finish();});
     });
   }
@@ -147,12 +161,28 @@ window.larpusVoice = (() => {
     stopPlayback();const token=playToken;
     await audioPlay(result.audio,token);
   }
+  // Speech gets plain sentences: on-screen citations, author credits and markdown
+  // stay visible in the transcript but are never read aloud.
+  function speakable(text){
+    return String(text)
+      .replace(/```[\s\S]*?```/g,' ')
+      .replace(/\[([^\]]+)\]\((?:https?:)?[^)]*\)/g,'$1')
+      .replace(/https?:\/\/\S+/g,' ')
+      .replace(/\s*\[[a-z0-9][a-z0-9-]*\]/gi,'')
+      .replace(/\s*\((?:[A-Z][^()]{0,80}?),\s*\d{4}[a-z]?\)/g,'')
+      .replace(/^\s{0,3}#{1,6}\s*/gm,'')
+      .replace(/^\s*(?:[-*+?]|\d+[.)])\s+/gm,'')
+      .replace(/[*_`~#>|\\]+/g,' ')
+      .replace(/\s+([,.;:!?])/g,'$1')
+      .replace(/[ \t]{2,}/g,' ');
+  }
   function parts(text){
+    text=speakable(text);
     const out=[];
     while(text.length>2000){let cut=text.lastIndexOf(' ',2000);if(cut<1)cut=2000;out.push(text.slice(0,cut));text=text.slice(cut).trimStart();}
     if(text.trim())out.push(text);return out;
   }
-  function beginReply(){stopPlayback();queueActive=el('voice-output').checked;labels();}
+  function beginReply(){replyStarted=performance.now();stopPlayback();queueActive=el('voice-output').checked;labels();}
   function enqueueSpeech(text){
     if(!queueActive || !el('voice-output').checked)return;
     speechQueue.push(...parts(text));pumpSpeech();
@@ -163,7 +193,7 @@ window.larpusVoice = (() => {
     if(!preparedSpeech && speechQueue.length){
       // At most one prepared WAV ahead of playback, CPU synthesis stays serial.
       const token=playToken,text=speechQueue.shift();
-      preparedSpeech={token,promise:api('/api/voice',{action:'synthesize',text}).then(result=>({result}),error=>({error}))};
+      const start=performance.now();preparedSpeech={token,promise:api('/api/voice',{action:'synthesize',text}).then(result=>{timing(result,start,'Synthesis');return {result};},error=>({error}))};
     }
   }
   async function pumpSpeech(){
@@ -195,7 +225,7 @@ window.larpusVoice = (() => {
       if(text===lastText && lastAudio){await audioPlay(lastAudio,token);return;}
       status('Preparing replay locally...');
       for(const part of parts(text)){
-        const result=await api('/api/voice',{action:'synthesize',text:part});
+        const start=performance.now(),result=await api('/api/voice',{action:'synthesize',text:part});timing(result,start,'Replay synthesis');
         if(token!==playToken)return;
         await audioPlay(result.audio,token);
         if(token!==playToken)return;
@@ -225,5 +255,5 @@ window.larpusVoice = (() => {
   navigator.mediaDevices?.addEventListener('devicechange',()=>devices().catch(()=>{}));
   window.addEventListener('pagehide',()=>{stop();lastAudio=null;lastText='';});
   labels();devices().catch(()=>{});
-  return {get enabled(){return enabled;},get speakEnabled(){return el('voice-output').checked;},play,repeat,pause,stop,stopPlayback,beginReply,enqueueSpeech,finishReply};
+  return {get playing(){return !!playback;},get enabled(){return enabled;},get speakEnabled(){return el('voice-output').checked;},play,repeat,pause,stop,stopPlayback,beginReply,enqueueSpeech,finishReply};
 })();

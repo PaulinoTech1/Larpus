@@ -43,5 +43,11 @@ function frames(count,amplitude){for(let i=0;i<count;i++)processor.onaudioproces
  assert.equal(audios.length,before+1);assert.equal(requests.at(-1).text,'Third checked sentence.');
  voice.stopPlayback();await tick();assert.equal(audios.length,before+1,'cancelling discards prepared audio');
  const whole=voice.repeat();await tick();assert.equal(requests.at(-1).text,'First checked sentence. Second checked sentence. Third checked sentence.');audios.at(-1).onended();await whole;
+ now+=2000;await element('mic').onclick();element('voice-mode').value='handsfree';element('voice-interrupt').checked=true;reply={transcript:'A new utterance.'};
+ let interrupted=0;sandbox.window.larpusCancelGeneration=()=>{interrupted++;voice.stopPlayback();};
+ const barge=voice.play({content:'Interruptible reply.',audio:'AAA='});await tick();
+ const interruptedAudio=audios.at(-1);frames(3,0.1);await barge;assert.equal(interrupted,1);assert.equal(interruptedAudio.paused,true);
+ frames(8,0.1);frames(8,0);await tick();assert.equal(element('prompt').value,'A new utterance.','new speech remains available for transcript review');
+ assert.equal(element('chat').submissions||0,0,'interruption never bypasses transcript review');voice.stop();
  console.log('Voice UI: mic selection, silence/review gates, pause/resume, speed, replay and cancellation passed.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

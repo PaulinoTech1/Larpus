@@ -2,158 +2,209 @@
 
 **LARP: Larp, Always Ready Prep.** LARPs all the way down.
 
-A local-first home AI station: a practical home assistant and a LARP partner for
-any subculture, including rehearsing life as an IT/cybersecurity professional.
-Personas are swappable configs. Privacy is the feature: no cloud APIs, accounts,
-remote fonts, analytics, or fallback inference. Single box, single owner.
+A private home AI station and eccentric, Jarvis-inspired LARP companion for
+research, study, scenario preparation and professional roleplay. Personas and
+skills are configurable. Single box, single owner; no OS action tools.
 
-The visual identity is a rotating torus beneath **∭ₜ dV = 2π²Rr²**.
-The canvas torus fills in a repeating six-second sweep, holds for one second,
-then starts again. The forming percentage is decorative, not inference progress.
-Reduced motion shows a static, fully formed torus. Reference dimensions R = 2
-and r = 0.8 give the displayed approximate volume of 25.266.
+Inference, retrieval and speech run locally. The deployed agents have no internet
+access, cloud fallback, telemetry or external account requirement. Initial setup
+and owner-approved reference downloads need internet; GitHub archive preparation
+may use the owner's existing credentials, which never enter the agent runtime.
 
-## Current access and decisions
+The visual identity is a rotating torus beneath **?? dV = 2??Rr?**.
+Its repeating fill and forming percentage are decorative, not inference progress.
+Reduced motion shows a static torus. R = 2 and r = 0.8 give a volume of about 25.266.
 
-Local: **http://127.0.0.1:8080**, no password.
-LAN: **https://192.168.1.2:8080**, password required.
-Use [restart instructions](docs/DEPLOYMENT.md) and [CA trust setup](docs/HTTPS.md).
-Production runs from a frozen release: [updates and rollback](docs/UPDATES.md)
-keep the station usable during edits, builds, tests and scans, with a brief switch
-only after candidate preparation succeeds.
-Twelve [personas](docs/PERSONAS.md) are available. The
-[decision record](docs/DECISIONS.md) explains accepted choices and pending work.
+## Deployed station
 
-Replies now [stream as inspected sentences](docs/STREAMING.md), with CPU speech
-queued while the GPU continues generating. Pause/resume and full-reply replay
-remain available in the voice controls.
+Verified against the owner's active frozen release on **2026-10-11**. Counts and
+settings below describe that deployment; a fresh clone does not include its
+private models, credentials, downloaded corpus or prepared runtime.
 
-[Approved local knowledge](docs/APPROVED_KNOWLEDGE.md) supplies cited documentation
-and research to every persona, prioritising relevant material from its field.
-References include Linux/platforms, consumer CPUs and dated
-[AI product/model pricing](docs/AI_PRODUCT_REFERENCES.md). The model never browses
-or downloads its own data.
+| Component | Current deployment |
+| --- | --- |
+| Host | Windows 11 Home; Ryzen 9 5900X, 64 GB RAM, RTX 3090 Ti with 24 GB VRAM |
+| Isolation | Dedicated WSL2 distro, rootless Podman, network-disabled inference/agent pod; separate offline CPU voice container |
+| Model | `qwen3.5:27b-q4_K_M`, GPU inference, non-thinking replies |
+| Context | **131,072 tokens configured**; 1,024-token normal reply ceiling. The requested 262,144-token target is not the active setting. |
+| Personas and skills | 12 personas; 69 locally authored, hash-checked prompt skills |
+| Approved library | 266 documents / 45,566 indexed passages; all personas can retrieve across roles |
+| Local access | **http://127.0.0.1:8080**, password-free |
+| Home LAN access | **https://192.168.1.2:8080**, password, rate limits and subnet checks; local CA trust required |
 
-[Local GitHub archives](docs/GITHUB_ARCHIVES.md) add screened repository source
-and documentation to that library. The owner-side downloader uses existing Git
-credentials; the running agents remain offline and never receive those credentials.
+LAN address and subnet are this owner's deployment settings, not universal defaults.
+Ollama listens on `127.0.0.1:11434` **inside the isolated pod**, with no published
+inference port. MCP uses stdio; voice adds no host listening port.
 
-## First slice
+Current health reports functional checks passing, with overall status **degraded**
+for the security-scan warning. A passing health probe is not a full security audit,
+answer-quality certification or proof of physical GPU-memory residency.
 
-The owner's Windows 11 Home station now defaults to the dedicated WSL2/rootless
-Podman executor. For normal use, initialize the password with `python -m runtime.auth`
-and launch `./scripts/run-isolated.ps1`; see [Windows Home isolation](docs/WINDOWS-HOME-ISOLATION.md).
-The instructions below are an explicit **unsandboxed host development** alternative.
-They are not the isolated deployment.
+## What works
 
-Python 3.10+ runs the gateway; Node 22+ is only needed to prepare local KaTeX assets.
-Install Ollama separately. Initial downloads need internet; runtime needs none.
+- [Configurable personas](docs/PERSONAS.md) and [local skills](docs/SKILLS.md),
+  including 60 role-specific skills, four original shared skills and five
+  [Microsoft implementation skills](docs/MICROSOFT_IMPLEMENTATION.md).
+  Switching role or skill preserves the conversation; these are prompt
+  specializations of the same model, not separately trained experts.
+- [Approved local knowledge](docs/APPROVED_KNOWLEDGE.md), with role preferences,
+  bounded reference passages and source cards. CPU semantic retrieval and
+  reranking supplement keyword search, with keyword fallback if that tier is
+  unavailable. Downloaded content remains untrusted reference data.
+- [Screened owner GitHub archives](docs/GITHUB_ARCHIVES.md), including the
+  owner's 22-repository collection and ownership attribution. Raw mirrors and
+  credentials stay outside the agent; only approved text enters its index.
+- [Sentence streaming](docs/STREAMING.md), with inspected text displayed and
+  queued for CPU speech while GPU generation continues.
+- [British English voice](docs/VOICE_INTEGRATION.md): microphone selection,
+  push-to-talk, optional hands-free capture, transcript review, playback speed,
+  pause/resume and reply replay. Wit comes from persona wording. VoiceStudio's
+  ASR adapter and Piper TTS are used; full VoiceStudio, cloning and wake-word
+  detection are not deployed.
+- [Companion controls](docs/COMPANION.md): optional browser-local saved chats,
+  explicit remembered notes and source previews. Local HTTP and LAN HTTPS have
+  separate browser storage. Saving is opt-in; no cross-device synchronization.
+- Context usage reporting and validated compression/handoff protocol support in
+  the active runtime. Summaries are lossy conversation data, never permissions;
+  they do not establish reliable recall across a filled context window.
+
+## Start, update and recover
+
+For the **already provisioned** station, run owner commands from this checkout:
+
+```powershell
+python scripts/releases.py start
+python scripts/releases.py status
+```
+
+Production uses the frozen release selected by `data/releases/active.json`, not
+this working tree. Editing source does not deploy it. For an application update:
+
+```powershell
+python scripts/releases.py stage
+python scripts/releases.py prepare ID
+# After preparation succeeds:
+python scripts/releases.py activate ID
+```
+
+Replace `ID` with the staged release ID. Preparation keeps the active gateway,
+model and CPU voice available. Activation drains requests and briefly rebinds the
+same ports; failed readiness restores the previous release. LAN sessions require
+another login after a gateway process change. Use `python scripts/releases.py
+rollback` for an explicit return. See [update boundaries](docs/UPDATES.md).
+
+For a fresh installation, use the [Windows Home isolation guide](docs/WINDOWS-HOME-ISOLATION.md)
+and [deployment/rebuild guide](docs/DEPLOYMENT.md), including cached dependencies,
+images, model files, GPU mounts and verification gates. Set the LAN password
+locally with `python -m runtime.auth`; see [authentication](docs/AUTH.md),
+[LAN setup](docs/LAN.md) and [CA trust](docs/HTTPS.md). Preserve owner credentials,
+TLS material, model caches and quarantine when rebuilding.
+
+## Security boundaries and limits
+
+The [sealed local MCP server](docs/MCP.md) exposes three fixed operations with no
+direct-inference fallback. Network isolation comes from the deployed Podman
+boundary, not from MCP itself. Code, configurations and model mounts are read-only;
+the agent receives no owner home, Windows drives, GitHub credentials or container
+socket. The model cannot read the private DLP quarantine.
+
+[Unicode and instruction filters](docs/TEXT_FILTER.md) screen inputs.
+[Output DLP](docs/OUTPUT-DLP.md) screens generated output and holds flagged replies
+for owner-side investigation outside web access. These defenses can have false
+positives and false negatives; they do not guarantee prevention of prompt injection
+or sensitive-data disclosure. Keep secrets out of model context.
+
+[Local health monitoring](docs/HEALTH.md) checks runtime boundaries, model/voice
+availability, policy probes and exact MCP tool schemas. Local SkillSpector static
+scan evidence is checked separately; retained findings remain warnings rather
+than being described as a clean security result.
+
+OpenShell remains an unimplemented target layer. The current deployment uses
+WSL2/rootless Podman without it. See [architecture](docs/ARCHITECTURE.md) and the
+[decision record](docs/DECISIONS.md).
+
+## Research and nightly study notes
+
+Six [research archives](research/CATALOG.md) cover cryptography, IT/cybersecurity,
+continuous mathematics, statistics, enterprise systems administration and quantum
+physics. The documented archive build contains 150 student PDFs: each role has
+10 undergraduate dissertations/capstone reports, eight master's theses and seven
+doctoral theses. Eight supplementary cryptography references cover primitives
+and implementation constraints. See [verification and rebuild details](docs/RESEARCH_ARCHIVES.md).
+
+Original PDFs and archive packages remain in ignored `data/research/`; they are
+not served by the HUD. Git tracks source catalogs and authored briefs, not
+downloaded originals, raw repository mirrors, model weights, corpus databases,
+embedding arrays or SQLite working files. Owner preparation extracts and screens approved text into
+the read-only knowledge index. The runtime does not open arbitrary archive PDFs
+or follow instructions inside downloaded documents.
+
+The owner-side [study-note builder](docs/NOTES_THROUGHPUT.md) resumes saved windows
+and targets 8?15 source-quoted facts for substantive passages, permitting fewer
+when the source supports fewer. Notes are derived aids, not lossless replacements
+for original passages. Building or publishing new notes does not update the
+active frozen release. Background generation shares GPU inference with chat and
+can increase response latency. The Sunday extension through October 12 at 10 AM
+Eastern is a one-time local scheduling exception, not the normal nightly policy.
+
+See the [persona/model strategy](docs/MODEL_STRATEGY.md) for when specialist
+models would justify their loading, memory and evaluation costs.
+
+## Work in progress and validation
+
+The checkout contains [teaching-profile adaptation](docs/TEACHING.md) and
+[paired capability comparisons](docs/CAPABILITY_TRIALS.md) that are **not deployed**.
+Live capability comparisons are deferred until notes for the current source
+collection finish. More documents, skills or context capacity do not establish
+subject-matter expertise: the [companion evaluation](docs/COMPANION.md) records
+citation, correctness and style weaknesses in its initial 29-scenario baseline.
+Physical microphone, room-noise and rendered-browser acceptance remain separate
+from automated checks.
+
+To run the checkout's Python tests in a temporary copy without private documents
+or credentials:
+
+```powershell
+python scripts/test-local.py
+# Browser-logic suites use Node.js, for example:
+node tests/voice-ui.cjs
+node tests/chat-stream-ui.cjs
+node tests/memory-ui.cjs
+```
+
+These checks do not activate a release or replace preparation gates. Historical
+receipts are scoped to their recorded source and deployment; they do not certify
+the entire current working tree. See [verification](docs/VERIFICATION.md).
+
+## Explicit host development alternative
+
+This mode runs outside the deployed container boundary. Do not launch it over the
+production listeners or apply the isolated deployment's security claims to it.
+Python 3.10+, Node 22+ for local assets, GPU drivers and a separate local Ollama
+installation are prerequisites. Prepare downloads with internet access:
 
 ```powershell
 npm.cmd ci --ignore-scripts
 npm.cmd run vendor
 python -m pip install -r requirements.txt
 ollama pull qwen3.5:27b-q4_K_M
-# Start Ollama if its desktop service is not already running:
-ollama serve
 ```
 
-In another terminal:
-
-```powershell
-python -m runtime.auth
-$env:LARPUS_ISOLATION='host' # Development only; explicitly bypasses container isolation.
-python -m runtime.gateway
-```
-
-Open **http://127.0.0.1:8080** without a password; LAN HTTPS requires it. See
-[password setup and rate limits](docs/AUTH.md). Select a persona and send a message.
-Responses render as plain text; the torus accelerates while thinking. The mic button enables opt-in local listening and British English spoken replies;
-see [voice setup](docs/VOICE_INTEGRATION.md). Choose a microphone, record with
-push-to-talk, review the transcript, and use pause/resume, speed and replay controls. History lives only
-in browser memory and is reset on reload or persona change. No tools execute.
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-`LARPUS_PORT` optionally changes the UI port. Ollama is deliberately fixed at
-`127.0.0.1:11434`, ignoring proxy variables. Use local model tags only, disable
-Ollama cloud features (`OLLAMA_NO_CLOUD=1` in the Ollama service environment), and
-apply an outbound firewall deny rule for inference processes. A loopback URL
-alone cannot prove the model server never uses external services.
-
-## Runtime roadmap
-
-For the owner's Windows 11 Home station, use the
-[dedicated WSL2/rootless Podman isolation deployment](docs/WINDOWS-HOME-ISOLATION.md).
-Its sealed stdio executor refuses host fallback. Windows Sandbox is unavailable
-on Home. The dedicated distro and containers are installed; real network-denial,
-GPU inference and DLP-quarantine checks passed. See the guide for remaining gates.
-
-Target hardware: RTX 3090 Ti / 24 GB, Ryzen 9 5900X, 64 GB RAM. The
-host development slice remains available explicitly. **OpenShell remains a target
-layer; the Windows Home deployment currently enforces rootless Podman boundaries
-without OpenShell.** See [architecture](docs/ARCHITECTURE.md),
-[deployment gates](docs/DEPLOYMENT.md), [voice plan](docs/VOICE_INTEGRATION.md), and
-[persona format](docs/AGENTS.md). For trusted home-network access, see
-[LAN setup](docs/LAN.md).
-
-Chat now passes through the pinned Steganography/stegdetect Unicode inspector
-and local override/role-marker filters before inference. See
-[text filtering and its limits](docs/TEXT_FILTER.md). This reduces exposure to
-some prompt attacks; it does not guarantee prompt-injection prevention.
-
-The HUD now routes chat and model status through a local stdio MCP server with
-three fixed operations and no direct-inference fallback. See
-[MCP setup and network isolation limits](docs/MCP.md). MCP exposes no internet
-tools; an OS firewall/sandbox is still required for enforced egress denial.
-
-The Windows Home default supplies that boundary through its tested network-disabled
-rootless Podman pod; the explicit host developer mode remains unverified.
-
-## Local skills, models and health
-
-Generated chat passes through [local output DLP and owner quarantine](docs/OUTPUT-DLP.md)
-before reaching MCP or the HUD. Held replies remain outside web access; inspection
-is available only through the local owner CLI. The deployed private quarantine is inside the isolated runtime and is never
-mounted into the model container.
-
-The HUD offers five dedicated skills for each of its twelve roles, plus four
-preserved shared [locally authored, hash-checked prompt skills](docs/SKILLS.md).
-Browse the [60 specialist skills](docs/ROLE_SKILLS.md); select one per conversation.
-No downloaded or executable skills are accepted. [Model selection and benchmarking](docs/MODELS.md)
-recommend Qwen3 14B for the 3090 Ti, keeping the existing baseline until tested locally.
-The gateway runs [continuous local health checks](docs/HEALTH.md), including
-OWASP-recommended SkillSpector static scans and exact MCP tool-schema drift checks.
-Health appears in the HUD; missing services and unverified containment
-remain visible. No cloud scanner is used.
-
-## Persona research archives
-
-Six [research catalogs](research/CATALOG.md) cover cryptography, IT/cybersecurity,
-continuous mathematics, statistics, enterprise systems administration, and quantum
-physics. Each catalogs 10 undergraduate student reports, 8 master's theses, and
-7 doctoral theses. All 150 student PDFs are downloaded and verified. Cryptography also
-has 8 supplementary primary references covering AES, ECC, ML-KEM, ML-DSA and
-implementation constraints. See [archive paths, verification and rebuild steps](docs/RESEARCH_ARCHIVES.md).
-
-The private PDFs/ZIPs stay in ignored `data/research/`. These are reference
-documents, not skills or agent instructions; the runtime does not ingest them.
+Start Ollama with cloud features disabled and use an explicit host-mode gateway;
+see [development instructions](docs/DEPLOYMENT.md). A loopback address alone does
+not enforce egress denial. Optional retrieval and corpus preparation have separate
+dependencies and artifacts. The isolated installation has its own Ollama service;
+it does not require starting another Windows Ollama instance.
 
 ## Licensing
 
-Larpus source retains the repository's [MIT license](LICENSE). KaTeX is MIT and
-its license is copied beside the locally prepared assets. The deployed private voice worker uses a pinned VoiceStudio ASR adapter;
-its source checkout is external and it is AGPL-3.0-only. Personal home use is compatible with this plan;
-redistributing it or a combined/modified application can require corresponding
-source and preservation of notices. Modified versions offered over a network
-must offer their corresponding source to those users. A sidecar boundary does
-not automatically exempt an integrated product from copyleft. Review the exact
-combination before distribution; model weights have separate terms.
-See [third-party notices](LICENSE-NOTICE.md) and
-[VoiceStudio's license notice](https://github.com/debpalash/VoiceStudio/blob/main/LICENSE-NOTICE.md).
+Larpus-authored source retains the [MIT license](LICENSE). Dependencies and model
+weights retain their own terms. The private voice image includes VoiceStudio ASR
+adapter source under AGPL-3.0-only and Piper under GPL-3.0. Distribution and
+network use of modified covered software can carry source and notice obligations;
+a sidecar boundary does not automatically resolve copyleft obligations. Review
+the exact combination before redistribution. See [third-party notices](LICENSE-NOTICE.md)
+and [voice integration licensing](docs/VOICE_INTEGRATION.md).
 
-No mobile app, multi-user service, cloud account, or remote telemetry is planned.
-
-Microsoft implementation references, shared skills, retained conversations and the measured context HUD: [details](docs/MICROSOFT_IMPLEMENTATION.md).
+No public service, multi-user accounts, mobile app or autonomous OS actions are
+part of the deployed station.

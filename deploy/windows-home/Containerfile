@@ -1,8 +1,12 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 WORKDIR /app
+# Pinned CPU-only retrieval models first: an unchanged 1.2 GB layer is reused across releases.
+COPY vendor/retrieval-models/ /app/vendor/retrieval-models/
 COPY vendor/runtime-wheels/ /wheels/
-RUN python -m pip install --no-index --find-links=/wheels mcp==2.3.0 stegdetect && rm -rf /wheels
+RUN python -m pip install --no-index --find-links=/wheels mcp==2.3.0 stegdetect \
+ && python -m pip install --no-index --no-deps --find-links=/wheels onnxruntime==1.23.2 tokenizers==0.23.3 numpy==2.2.6 \
+ && rm -rf /wheels
 COPY runtime/ /app/runtime/
 COPY agents/ /app/agents/
 COPY skills/ /app/skills/
@@ -10,6 +14,7 @@ COPY config/ /app/config/
 COPY knowledge/ /app/knowledge/
 COPY LICENSE LICENSE-NOTICE.md /app/
 RUN mkdir -p /app/data/quarantine && chown -R 1000:1000 /app/data && chmod 700 /app/data/quarantine
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUTF8=1 PYTHONIOENCODING=utf-8 HOME=/tmp/larpus OTEL_SDK_DISABLED=true OLLAMA_NO_CLOUD=1
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUTF8=1 PYTHONIOENCODING=utf-8 HOME=/tmp/larpus OTEL_SDK_DISABLED=true OLLAMA_NO_CLOUD=1 LARPUS_RETRIEVAL_WORKER=remote
 USER 1000:1000
-CMD ["python", "-c", "import time; time.sleep(2147483647)"]
+# Persistent CPU retrieval worker; never exits, even when models are absent.
+CMD ["python", "-m", "runtime.retrieval_worker", "--serve"]

@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 from runtime import inference
+from runtime.context import CAPACITY
 from runtime.agents import load_personas,messages_for
 from runtime.skills import load_skills
 
@@ -19,8 +20,8 @@ class MicrosoftContextTests(unittest.TestCase):
 
     def test_context_counts_are_measured_bounded_and_prompt_free(self):
         usage=inference.context_usage({'prompt_eval_count':1200,'eval_count':140},2)
-        self.assertEqual(usage,{'capacity':4096,'prompt_tokens':1200,'output_tokens':140,'output_limit':1024,'omitted_messages':2,'measurement':'ollama-final'})
-        for frame in ({},{'prompt_eval_count':True,'eval_count':1},{'prompt_eval_count':4097,'eval_count':1},{'prompt_eval_count':1,'eval_count':-1}):
+        self.assertEqual(usage,{'capacity':CAPACITY,'prompt_tokens':1200,'output_tokens':140,'output_limit':1024,'omitted_messages':2,'measurement':'ollama-final'})
+        for frame in ({},{'prompt_eval_count':True,'eval_count':1},{'prompt_eval_count':CAPACITY+1,'eval_count':1},{'prompt_eval_count':1,'eval_count':-1}):
             self.assertIsNone(inference.context_usage(frame))
 
     def test_both_inference_paths_attach_counts_after_dlp(self):

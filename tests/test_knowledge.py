@@ -63,7 +63,8 @@ class KnowledgeTests(unittest.TestCase):
         turns=[{'role':'system','content':'Persona.'}]
         for _ in range(3):turns.extend([{'role':'user','content':'Old question '*250},{'role':'assistant','content':'Old answer '*250}])
         turns.append({'role':'user','content':'Ubuntu 26.04 kernel'})
-        augmented,evidence=knowledge.augment(turns,'linux-kernel-expert')
+        # Exercise trimming with the legacy 4096-token input bound (4096 context - 256 output - 1024 reserve).
+        with patch.object(knowledge,'INPUT_BOUND',2816):augmented,evidence=knowledge.augment(turns,'linux-kernel-expert')
         self.assertLess(len(augmented),len(turns))
         self.assertEqual(augmented[-1]['role'],'user')
         self.assertTrue(evidence)
@@ -121,5 +122,24 @@ class KnowledgeTests(unittest.TestCase):
                 ('astra-brief','GPT-6 Astra pricing','https://developers.openai.com','2026','document','GPT-6 Astra API pricing is USD 10 input per million tokens.','home-assistant')])
         db.close();self.pin()
         self.assertEqual({x['id'] for x in knowledge.retrieve('home-assistant','Compare Sol 6.1 and Astra 6.0 API pricing')},{'sol-brief','astra-brief'})
+
+
+    def test_continuation_matches_literal_file_prefix(self):
+        with sqlite3.connect(self.database) as db:
+            db.executemany('INSERT INTO chunks VALUES (?,?,?,?,?,?,?)',[
+                ('continuity-doc','Continuity study','https://example.com','2026','section_a offset 0','Continuity convergence analysis. '+('Bounded sequences are examined carefully. '*20),'mathematician'),
+                ('continuity-doc','Continuity study','https://example.com','2026','sectionXa offset 100','Wrong document section must remain separate.','mathematician'),
+                ('continuity-doc','Continuity study','https://example.com','2026','section_a offset 800','Correct continuation concludes with assumptions.','mathematician')])
+        db.close();self.pin()
+        result=knowledge.retrieve('mathematician','continuity convergence analysis')[0]
+        self.assertIn('Correct continuation',result['text'])
+        self.assertNotIn('Wrong document',result['text'])
+        self.assertLessEqual(len(result['text']),1200)
+
+    def test_microsoft_365_alias_selects_full_document(self):
+        with sqlite3.connect(self.database) as db:
+            db.execute('INSERT INTO chunks VALUES (?,?,?,?,?,?,?)',('microsoft-enterprise','Microsoft 365 deployment','https://learn.microsoft.com','2026','document','Microsoft 365 enterprise deployment planning requires staged testing.','system-administrator'))
+        db.close();self.pin()
+        self.assertEqual(knowledge.retrieve('home-assistant','Microsoft 365 enterprise deployment')[0]['id'],'microsoft-enterprise')
 
 if __name__=='__main__':unittest.main()

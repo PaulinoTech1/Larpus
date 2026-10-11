@@ -27,10 +27,15 @@ The executor validates sealed source and images and never falls back to host mod
 
 Browser selects approved personas/skills, never upstream URLs or system prompts.
 Inputs are validated/filtered; replies render as text. Chat history is browser
-memory only; held output is the intentional persistence exception. AEI is this
+memory by default, with opt-in bounded localStorage chats and explicitly saved
+owner notes. Local and LAN origins keep separate storage. Held output remains
+in the private quarantine. AEI is this
 project's configurable agent interface, not an external SDK.
 
 Voice uses a separate network-disabled CPU container over stdio, not port 7861.
+The candidate persistent worker caches CPU models behind a permission-restricted
+Unix socket inside the container. A release-local pinned profile selects it; the
+previous worker remains available for rollback.
 A pinned VoiceStudio ASR adapter and Piper British TTS are deployed; full studio,
 cloning and wake-word remain future work. See VOICE_INTEGRATION.md for AGPL/GPL
 distribution implications and model terms. OpenShell is a future
@@ -40,7 +45,7 @@ not carry the Podman isolation claims.
 See [exact mounts/rebuild](WINDOWS-HOME-ISOLATION.md), [HTTPS](HTTPS.md),
 [decisions](DECISIONS.md) and [verification](VERIFICATION.md).
 
-The selected inference model is qwen3.5:27b-q4_K_M at 4096 context, with
+The selected inference model is qwen3.5:27b-q4_K_M at 131072 context, with
 non-thinking replies and verified full GPU residency before release. /api/ps is
 an additional fixed loopback-only status route, not a model-accessible tool. Voice
 remains CPU-only in its separate worker. See [model deployment](MODELS.md).

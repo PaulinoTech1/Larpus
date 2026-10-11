@@ -14,9 +14,9 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     with tempfile.TemporaryDirectory(prefix='larpus-tests-') as temporary:
         workspace=Path(temporary)
-        for directory in ('runtime','agents','skills','config','scripts','deploy','tests','web'):
+        for directory in ('runtime','agents','skills','config','scripts','deploy','tests','web','evals'):
             shutil.copytree(ROOT/directory,workspace/directory,ignore=shutil.ignore_patterns('__pycache__'))
-        for name in ('.containerignore','.gitattributes','LICENSE','LICENSE-NOTICE.md','requirements.txt','requirements-knowledge.txt'):
+        for name in ('.containerignore','.gitattributes','LICENSE','LICENSE-NOTICE.md','requirements.txt','requirements-knowledge.txt','requirements-retrieval.txt'):
             shutil.copyfile(ROOT/name,workspace/name)
         library=workspace/'knowledge';library.mkdir()
         shutil.copyfile(ROOT/'knowledge/sources.json',library/'sources.json')

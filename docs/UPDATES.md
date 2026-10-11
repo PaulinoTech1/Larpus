@@ -91,3 +91,38 @@ The update manager is an owner Windows CLI, not an agent skill or model tool.
 Use it from this working checkout; frozen release copies are execution payloads,
 not the place to edit or upgrade the owner tooling. Source-tree integrity failures
 remain fail-closed within each release rather than being disabled for availability.
+
+## Persistent voice rollout
+
+Voice worker code updates now build a separate CPU-only, network-disabled container
+from the cached pinned image. Preparation checks the release-local profile and
+worker readiness without replacing the active voice service or global legacy
+profile. The new profile is checksum-pinned in the prepared release receipt.
+Unchanged persistent worker hashes reuse the prior persistent container; changed
+hashes get a new per-release container. Retain earlier voice containers for rollback.
+No new ports or host-writable voice mounts are added. Model/dependency/driver changes
+still require their own maintenance plan.
+
+The working-checkout `start` command selects the active release's voice container
+from its local profile, falling back to the legacy profile for old releases. Its
+restart regression uses mocked process/container operations; it does not simulate
+an actual Windows/WSL reboot. Always invoke owner tooling from this checkout.
+
+## Idle container cleanup
+
+`python scripts/releases.py prune` stops (never removes) every running
+`larpus-agent*`/`larpus-voice*` container except those used by the active and
+previous releases, leaving the pod infra and `larpus-model` alone. `start` and
+`activate` run it automatically, because `podman pod start` revives every retained
+release. Stopped releases keep their images and snapshots; start one manually
+before rolling back further than the previous release.
+
+## Activation readiness depends on a loaded GPU model
+
+`activate`/`start` readiness reads `/api/station-health`, which is a monitor
+file (refreshed about every 60 seconds), not a live Ollama probe. After WSL
+restarts or model-container swaps the model may be unloaded, so `model_gpu`
+stays `warning` and cutover/rollback both fail even when the candidate is fine.
+Load the model once (send a chat, or a sealed `/api/chat` with the configured
+`num_ctx`) and wait for `model_gpu: pass` before activating. See the 2026-10-09
+decision entry for the full incident, the prune interaction, and recovery steps.
