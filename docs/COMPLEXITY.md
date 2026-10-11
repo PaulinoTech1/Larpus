@@ -55,7 +55,7 @@ Largest current review targets: retrieval `_retrieve` (103 decisions), gateway `
 
 Unexpected MCP, inference, evidence, notes and voice failures emit one bounded JSON record to stderr: UTC timestamp, stable failure code, random diagnostic ID, exception types, filename/line/function frames, numeric OS/process error codes and cause links. The HUD receives a generic error plus an ID; it does not receive stack traces. MCP and notes stdout remain protocol-only. Existing owner launchers capture stderr in ignored `data/releases/<release-id>.gateway.log` and notes logs; notes worker stderr is `data/study-notes-worker.log`. Follow the ID through the logs. Do not upload private logs unchanged.
 
-Exception messages, absolute paths, source lines, locals, request/model text and credentials are deliberately omitted. This is verbose structural evidence, not raw exception dumping. A broken stderr sink cannot mask the original failure, but its diagnostic record may be lost. No new retention service or host ACL is installed. Expected broker rejection codes retain their existing behavior. Optional retrieval fallback and voice degradation remain explicit existing behaviors; not every swallowed exception in the project has been instrumented.
+Unreviewed exception messages, absolute paths, source lines, locals, request/model text and credentials are deliberately omitted. Known authored messages now have an exact reviewed catalog. This is verbose structural evidence, not raw exception dumping. A broken stderr sink cannot mask the original failure, but its diagnostic record may be lost. No new retention service or host ACL is installed. Expected broker rejection codes retain their existing behavior. Optional retrieval fallback and voice degradation remain explicit existing behaviors; not every swallowed exception in the project has been instrumented.
 
 | Code | Recovery direction |
 | --- | --- |
@@ -79,3 +79,5 @@ These changes are checkout-only until a new frozen snapshot is staged, prepared 
 The isolated unittest suite reported 205 tests OK, with two platform/data skips. Chat streaming, context, voice, teaching, memory and diagnostic-ID Node checks passed. The complexity gate and approved broker prompt-hash check passed. These are checkout/synthetic tests, not a new static scan receipt or live deployment acceptance. The active frozen release remains stopped.
 
 See [second- and third-order consequences and the Windows workload shutdown](INTERACTION_CONSEQUENCES.md) for propagation chains, observed events and unresolved causes.
+
+[Verbose error catalog and local diagnostic lookup](VERBOSE_ERRORS.md) describes exact known messages and unknown-error limits.

@@ -37,7 +37,7 @@ def preflight():
 
 def call(request):
     if not LOCK.acquire(blocking=False):
-        raise OSError('Voice worker busy')
+        raise failure('LARP-VOICE-UNAVAILABLE',OSError('Voice worker busy'),'Voice worker busy')
     try:
         start=time.monotonic();preflight();profile=json.loads(PROFILE.read_text(encoding='utf-8-sig'))
         arguments=['podman','exec','--interactive',profile.get('container','larpus-voice'),'python','/app/voice_worker.py']

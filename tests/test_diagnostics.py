@@ -44,6 +44,30 @@ class DiagnosticTests(unittest.TestCase):
     def test_unknown_code_rejected(self):
         with self.assertRaises(ValueError):diagnostics.report('untrusted',ValueError())
 
+    def test_exact_known_message_has_specific_reason_and_action(self):
+        detail=diagnostics.describe(ValueError('Model stream ended without completion'))
+        self.assertEqual(detail['message'],'Model stream ended without completion')
+        self.assertEqual(detail['message_source'],'reviewed-literal')
+        self.assertIn('framing',detail['action'])
+
+    def test_unknown_message_cannot_smuggle_known_text(self):
+        detail=diagnostics.describe(ValueError('Invalid model content SECRET token'))
+        self.assertEqual(detail['reason'],'UNCLASSIFIED')
+        self.assertNotIn('SECRET',json.dumps(detail))
+
+    def test_json_coordinates_without_raw_document(self):
+        try:json.loads('{"SECRET":\n broken}')
+        except json.JSONDecodeError as exc:detail=diagnostics.describe(exc)
+        self.assertEqual(detail['reason'],'INVALID-JSON')
+        self.assertEqual(detail['json_line'],2)
+        self.assertNotIn('SECRET',json.dumps(detail))
+
+    def test_timeout_is_actionable_without_subprocess_command(self):
+        import subprocess
+        detail=diagnostics.describe(subprocess.TimeoutExpired(['private-command','SECRET'],120))
+        self.assertEqual(detail['reason'],'TIMEOUT')
+        self.assertNotIn('SECRET',json.dumps(detail))
+
     def test_notes_stdout_stays_protocol_only(self):
         from runtime import notes_worker
         source=io.StringIO(json.dumps({'model':'local','messages':[]})+'\n')
