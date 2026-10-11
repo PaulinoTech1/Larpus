@@ -24,17 +24,19 @@ private models, credentials, downloaded corpus or prepared runtime.
 | Component | Current deployment |
 | --- | --- |
 | Host | Windows 11 Home; Ryzen 9 5900X, 64 GB RAM, RTX 3090 Ti with 24 GB VRAM |
-| Isolation | Dedicated WSL2 distro, rootless Podman, network-disabled inference/agent pod; separate offline CPU voice container |
+| Isolation | Dedicated WSL2 distro, rootless Podman; separate offline agent and model namespaces connected through a private inference broker; separate offline CPU voice container |
 | Model | `qwen3.5:27b-q4_K_M`, GPU inference, non-thinking replies |
 | Context | **131,072 tokens configured**; 1,024-token normal reply ceiling. The requested 262,144-token target is not the active setting. |
 | Personas and skills | 12 personas; 69 locally authored, hash-checked prompt skills |
-| Approved library | 266 documents / 45,566 indexed passages; all personas can retrieve across roles |
+| Approved library | 404 documents / 76,660 indexed passages; all personas can retrieve across roles |
 | Local access | **http://127.0.0.1:8080**, password-free |
 | Home LAN access | **https://192.168.1.2:8080**, password, rate limits and subnet checks; local CA trust required |
 
 LAN address and subnet are this owner's deployment settings, not universal defaults.
 Ollama listens on `127.0.0.1:11434` **inside the isolated pod**, with no published
-inference port. MCP uses stdio; voice adds no host listening port.
+inference port. The agent reaches only the [private inference broker](docs/INFERENCE_BROKER.md)
+over a Unix socket; raw Ollama TCP and model administration are denied. MCP uses
+stdio; neither the broker nor voice adds a host listening port.
 
 Current health reports functional checks passing, with overall status **degraded**
 for the security-scan warning. A passing health probe is not a full security audit,
@@ -144,7 +146,9 @@ and targets 8?15 source-quoted facts for substantive passages, permitting fewer
 when the source supports fewer. Notes are derived aids, not lossless replacements
 for original passages. Building or publishing new notes does not update the
 active frozen release. Background generation shares GPU inference with chat and
-can increase response latency. The Sunday extension through October 12 at 10 AM
+can increase response latency. Updated chat and note generation coordinate admission
+so a waiting chat gets the next slot; an in-flight passage is not preempted.
+The Sunday extension through October 12 at 10 AM
 Eastern is a one-time local scheduling exception, not the normal nightly policy.
 
 See the [persona/model strategy](docs/MODEL_STRATEGY.md) for when specialist
@@ -152,8 +156,9 @@ models would justify their loading, memory and evaluation costs.
 
 ## Work in progress and validation
 
-The checkout contains [teaching-profile adaptation](docs/TEACHING.md) and
-[paired capability comparisons](docs/CAPABILITY_TRIALS.md) that are **not deployed**.
+The active release includes optional [teaching-profile controls](docs/TEACHING.md).
+The [paired capability comparison tooling](docs/CAPABILITY_TRIALS.md) is available,
+but its live comparisons have not been run.
 Live capability comparisons are deferred until notes for the current source
 collection finish. More documents, skills or context capacity do not establish
 subject-matter expertise: the [companion evaluation](docs/COMPANION.md) records

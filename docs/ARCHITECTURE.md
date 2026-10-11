@@ -14,13 +14,20 @@ Local HTTP 127.0.0.1:8080 (no password)
 LAN HTTPS 192.168.1.2:8080 (password + subnet checks)
   -> Windows gateway, shared authentication and limits
   -> fixed WSL/Podman stdio MCP
-Dedicated Larpus WSL2 / rootless network=none pod:
-  trusted persona/skill/MCP runtime -> Ollama loopback :11434
+Dedicated Larpus WSL2 / rootless containers:
+  trusted persona/skill/MCP runtime (own network=none namespace)
+    -> private Unix socket -> minimal broker (network=none model pod)
+    -> Ollama loopback :11434 (same pod as broker)
   generated reply -> DLP -> private quarantine -> approved output
 ```
 
-Only network is shared; PID/IPC/filesystems are separate. No published inference
-port. Code/configs/models are read-only. Model gets narrow read-only GPU libraries
+Only broker and model share a network namespace; the agent cannot reach raw
+Ollama TCP. PID/IPC/filesystems are separate. No published inference port.
+The broker allows pinned text chat and filtered model status, with bounded bodies,
+streams and inference options; no model administration or arbitrary destinations.
+Its only volume is a private socket; the agent mounts that volume read-only.
+See [broker policy, mounts and limits](INFERENCE_BROKER.md).
+Code/configs/models are read-only. Model gets narrow read-only GPU libraries
 and one NVIDIA package plus /dev/dxg; agent gets no GPU, Windows drives, owner
 home, passwords or container sockets. Only trusted DLP mounts writable quarantine.
 The executor validates sealed source and images and never falls back to host mode.

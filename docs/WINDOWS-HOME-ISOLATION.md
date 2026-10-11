@@ -9,8 +9,8 @@ Hyper-V Manager, install unofficial Sandbox packages, or rely on Pro-only policy
 ```text
 Home LAN -> password/rate-limited Windows gateway :8080
                   -> wsl.exe -> rootless podman exec -> MCP stdio
-Dedicated WSL2: network=none pod, only network namespace shared
-  trusted agent/MCP/DLP container -> loopback Ollama :11434 -> model container
+Dedicated WSL2: agent network=none; broker/model network=none pod
+  trusted agent/MCP/DLP -> private Unix socket -> broker -> Ollama :11434
            |                                          |
    private quarantine volume                    model cache read-only
    no GPU or host files                         WSL GPU device/libraries
@@ -22,7 +22,7 @@ proxy or owner home mount is used. The model and agent have separate PID/IPC
 namespaces, read-only root filesystems, dropped capabilities, no-new-privileges,
 resource limits and disabled container logs. Temporary directories are bounded
 noexec/nosuid/nodev tmpfs; source/personas/skills/policy are baked into the sealed
-image. External network is absent from the shared pod. The model cannot mount
+image. External network is absent from both namespaces. The model cannot mount
 the DLP evidence volume. MCP/DLP is trusted mediation, not model-generated code.
 
 This moves Ollama off Windows into WSL2; it never exposes the Windows host's
@@ -141,7 +141,8 @@ named Larpus deployment; do not delete its quarantine volume automatically.
 | Component | Port/mount | Access |
 |---|---|---|
 | Windows HUD gateway | HTTP loopback and HTTPS LAN, port 8080 | Local bypass; LAN password + shared limits |
-| Ollama in isolated pod | 127.0.0.1:11434, no published port | Shared pod loopback only |
+| Ollama in isolated pod | 127.0.0.1:11434, no published port | Broker/model pod loopback only; denied from agent |
+| Inference broker | larpus-broker-<release-ID> -> /run/larpus-broker; inference.sock | Broker RW, agent RO; noexec/nosuid/nodev, UID1000, directory0700/socket0600; no host port |
 | MCP | stdio through wsl/podman exec | No listening port |
 | Model cache | /home/larpus/models -> /models | Model only, read-only |
 | GPU libraries | /usr/lib/wsl/lib -> same path | Model only, read-only |
@@ -150,6 +151,7 @@ named Larpus deployment; do not delete its quarantine volume automatically.
 | Quarantine | larpus-quarantine -> /app/data/quarantine | Trusted MCP/DLP only, writable, noexec/nosuid/nodev |
 | Model temporary files | /tmp, 1 GiB | Ephemeral tmpfs |
 | Agent temporary files | /tmp, 128 MiB | Ephemeral tmpfs |
+| Broker temporary files | /tmp, 16 MiB | Ephemeral tmpfs; no model/corpus/quarantine mounts |
 
 The Windows data/quarantine folder belongs to host development mode; it is not
 the isolated evidence store. Investigate the Linux volume through trusted stdio:
@@ -178,9 +180,10 @@ WSL2 provides a Linux VM; rootless Podman supplies workload boundaries within it
 Its security depends on an updated Windows/WSL/kernel/driver and tested runtime,
 not merely on being a separate distro.
 
-Restart the isolated backend after a distro/Windows restart using
-`wsl --distribution Larpus --user larpus --exec env XDG_RUNTIME_DIR=/run/user/1000 podman pod start larpus-offline`,
-then run the Windows isolation check before the gateway. Nothing automatically
+Restart the active frozen deployment after a distro/Windows restart using
+`python scripts/releases.py start`. It selects the pinned model pod, broker,
+independent agent and voice before gateway readiness checks. Starting only the
+model pod does not start the separate agent. Nothing automatically
 falls back to Windows Ollama. The deployment preserves existing quarantine volumes
 on rebuild, and fails if existing named containers/pod have not been reviewed/stopped.
 Its infra container uses the cached Python image and sleep, publishing no services;

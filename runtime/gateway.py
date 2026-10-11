@@ -11,10 +11,12 @@ from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
 from runtime.mcp_client import chat as mcp_chat, health as mcp_health, stream_chat as mcp_stream
 from runtime.skills import summaries
+from runtime.inference_admission import Admission, Busy
 
 WEB = ROOT / 'web'
 PERSONAS = load_personas()
 LOCK = threading.Lock()
+ADMISSION=Admission(ROOT/'data/inference-admission')
 DRAIN=ROOT/'release-state/drain'
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
@@ -130,13 +132,20 @@ class Handler(BaseHTTPRequestHandler):
             except (ValueError,TypeError,KeyError):
                 return self.reply(400,{'error':'Invalid or oversized compression batch.'})
             if not LOCK.acquire(blocking=False):return self.reply(409,{'error':'Inference busy. Try again shortly.'})
+            ticket=ADMISSION.interactive()
+            try:ticket.__enter__()
+            except (Busy,OSError):
+                LOCK.release()
+                return self.reply(503,{'error':'Waiting for local background inference. Retry shortly.'},{'Retry-After':'5'})
             try:
                 result=mcp_chat(data['persona'],messages)
                 status=result.pop('status',502)
                 return self.reply(status,result)
             except (OSError,ValueError,KeyError,TypeError):
                 return self.reply(502,{'error':'Local compression unavailable. Original chat retained.'})
-            finally:LOCK.release()
+            finally:
+                ticket.__exit__(None,None,None)
+                LOCK.release()
         if self.path == '/api/voice':
             try:
                 from runtime.voice import call
@@ -202,6 +211,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(400, {'error': 'Invalid chat request. Use a known persona and alternating messages, up to 8000 characters each.'})
         if not LOCK.acquire(blocking=False):
             return self.reply(409, {'error': 'Inference busy. Try again shortly.'})
+        ticket=ADMISSION.interactive()
+        try:ticket.__enter__()
+        except (Busy,OSError):
+            LOCK.release()
+            return self.reply(503,{'error':'Waiting for local background inference. Retry shortly.'},{'Retry-After':'5'})
         try:
             if self.path=='/api/chat/stream':
                 self.headers_out(200,'application/x-ndjson',None,{'X-Accel-Buffering':'no'})
@@ -235,6 +249,7 @@ class Handler(BaseHTTPRequestHandler):
         except (OSError, ValueError, KeyError, TypeError):
             self.reply(502, {'error':'Local MCP unavailable or invalid response. No direct inference fallback.'})
         finally:
+            ticket.__exit__(None,None,None)
             LOCK.release()
 
     def authorized(self):

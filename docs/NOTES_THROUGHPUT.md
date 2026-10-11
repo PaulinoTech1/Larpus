@@ -86,3 +86,37 @@ retain their 900-second timeout; a hung WSL transport is not independently timed
 out by the owner pipe reader. This is bounded worker-failure recovery, not a
 complete service supervisor or inference scheduler. Chat/background priority
 still requires a separately prepared gateway integration.
+
+## Read-only progress report
+
+Run `python scripts/notes-health.py` from the owner checkout. It reads the build
+SQLite database in read-only mode and at most the last 2 MB / 200 parsed log
+events. It reports committed windows, retained notes, age of the newest saved
+window, successful-request median, and recent worker errors/retries. It does
+not print original passages, generated notes or answers, call Ollama, publish
+notes or alter the active release.
+
+`recent_progress` means a saved window is less than three minutes old;
+`needs_check` means progress is older or missing, not that a worker is proven
+stalled. A newest error/retry produces `recovery_or_failure` until a saved-window
+event follows. `unknown` means no build database, and read/schema errors report
+`unavailable`. This is not a live process/GPU check. Timing covers only successful
+requests in a bounded log tail; it is not an ETA, retention-quality score or
+comparison against the superseded five-fact format.
+
+## Cooperative chat priority
+
+The gateway chat and compression routes and the owner generator share OS locks
+in ignored data/inference-admission. A waiting interactive request reserves
+priority; the generator cannot begin another passage ahead of it. One admitted
+request holds inference until completion or failure. Process death releases OS
+locks; no stale-file deletion is required. Existing auth, input filtering, MCP
+routing and output DLP remain in place. No new model tools, ports or mounts.
+
+An in-flight passage is not preempted. The gateway waits up to 60 seconds for
+admission, then returns HTTP 503 with Retry-After: 5 and keeps browser conversation
+state. STOP/disconnection does not immediately cancel an admission wait. Continuous
+chat can starve background work. This coordinates updated gateway chat/compression
+and generate only, not arbitrary Ollama clients, owner probes or the separate
+answers CLI. Both the gateway release and restarted generator must adopt it;
+a source edit alone does not change an existing process.

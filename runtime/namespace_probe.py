@@ -31,9 +31,17 @@ def check():
     secure_directory()
     if QUARANTINE.stat().st_mode & 0o077:
         raise ValueError('Quarantine is not owner-only')
-    with socket.create_connection(('127.0.0.1',11434),timeout=2):
-        pass
-    return {'denied_external_and_lan':True,'denied_dns_udp':True,'local_ollama':True,'host_paths_absent':True,'quarantine_owner_only':True,'effective_and_bounding_capabilities_zero':True}
+    broker=Path(__file__).resolve().parents[1]/'config/inference-broker.json'
+    if broker.exists() and json.loads(broker.read_text()).get('enabled') is True:
+        try:
+            with socket.create_connection(('127.0.0.1',11434),timeout=2):pass
+        except OSError:pass
+        else:raise ValueError('Agent can bypass inference broker')
+        from runtime.local_ollama import ollama
+        if not ollama('/api/tags',timeout=2).get('models'):raise ValueError('Broker model unavailable')
+    else:
+        with socket.create_connection(('127.0.0.1',11434),timeout=2):pass
+    return {'raw_ollama_denied':broker.exists(),'denied_external_and_lan':True,'denied_dns_udp':True,'local_ollama':True,'host_paths_absent':True,'quarantine_owner_only':True,'effective_and_bounding_capabilities_zero':True}
 
 if __name__=='__main__':
     print(json.dumps(check()))

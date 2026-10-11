@@ -27,6 +27,15 @@ stay running; a second GPU model is not loaded. Linux runtime wheels come from
 `/home/larpus/build/vendor/runtime-wheels`, with SHA256SUMS checked. The cached
 Python image is resolved to its local immutable image ID before the build.
 
+Broker-enabled candidates also build a minimal offline broker in the existing
+model pod and a release-specific private socket volume. The candidate agent uses
+its own network-disabled namespace and mounts only that socket volume read-only
+alongside its existing quarantine. Model and voice are not replaced. Restart the
+owner nightly writer around activation so it selects the new agent. After a
+broker cutover, retained pre-broker agents are stopped; rollback can restart them
+and deliberately restores their weaker raw model boundary. See
+[inference broker](INFERENCE_BROKER.md) for exact policy and maintenance scope.
+
 The candidate must pass Python tests, voice/chat UI tests, isolation probes,
 exact approved MCP discovery and complete static scans. Skills must be clean.
 The MCP finding inventory must match the previously reviewed category/pattern/
@@ -126,3 +135,39 @@ stays `warning` and cutover/rollback both fail even when the candidate is fine.
 Load the model once (send a chat, or a sealed `/api/chat` with the configured
 `num_ctx`) and wait for `model_gpu: pass` before activating. See the 2026-10-09
 decision entry for the full incident, the prune interaction, and recovery steps.
+
+## Cooperative admission activation ? 2026-10-11
+
+Activated 8ab6f5664f874fbc9b5a7a4f8a1e12ac; retained
+3cb9d1eea7424d929209ecf9cc549f59 for rollback. Preparation passed the Python
+suite, five configured Node suites, six isolation probes and all 70 static
+scan targets. All 69 skills were clean; the MCP inventory matched eight reviewed
+warnings. Functional readiness passed; overall health remains degraded for the
+scan warning. No model/voice images, ports, authentication or shared dependencies
+were replaced. The gateway cutover briefly rebound listeners; it was not zero
+downtime. CPU voice and the model service stayed running.
+
+The first snapshot was rejected because changing note-builder WAL/SHM files
+entered its payload inventory. Those transient files are now excluded consistently
+from copying and hashing. The rejected snapshot remains for investigation;
+production was not stopped or modified to bypass the rejection.
+
+An initial owner background-admission probe expired under continuous competing
+background work. The controlled live probe then reserved the gateway's interactive
+priority, held the inference slot, and verified HTTP 200 after release. Separate
+live checks confirmed the updated generator yielded at a passage boundary and
+saved another window after release (2549 -> 2550 committed windows). This establishes
+cooperative admission, not preemption, fairness between background callers, or a
+latency benchmark. Private numeric receipt: data/chat-priority-live.json.
+
+The generator alone was restarted to adopt the coordination code; committed
+progress and the Monday 10 AM Eastern exception remain intact. LAN unauthenticated
+API access remained 401 with CA validation. Served JavaScript contains the requested
+LARP 3.5 27B Limitless LARP label. Refresh existing tabs to load updated UI code;
+LAN sessions need another login. Physical microphone/rendered-browser acceptance
+was not performed.
+
+The snapshot also adopts the prepared 404-document / 76660-passage approved library,
+whose embedding/library hash binding matches, and the optional teaching controls
+already present in the checkout. Live capability comparisons remain deferred.
+No current changes were committed or pushed during this activation.

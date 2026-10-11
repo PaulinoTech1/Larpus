@@ -39,11 +39,22 @@ podman run --detach --pull=never --name larpus-model --pod larpus-offline \
   --env=HOME=/tmp --env=OLLAMA_HOST=127.0.0.1:11434 --env=OLLAMA_MODELS=/models \
   --env=OLLAMA_NO_CLOUD=1 --env=OLLAMA_NOPRUNE=1 --env=LD_LIBRARY_PATH=/usr/lib/wsl/lib \
   --entrypoint=/bin/ollama "$2" serve >&2
-podman run --detach --pull=never --name larpus-agent --pod larpus-offline \
+# Broker is the only agent-facing inference entry point; no host ports.
+broker_name="larpus-broker-$(python3 -c 'import uuid;print(uuid.uuid4().hex)')"
+podman build --pull=never --network=none --build-arg "BASE_IMAGE=$1" -f deploy/windows-home/Broker.Containerfile -t localhost/larpus-broker:sealed . >&2
+broker_image=$(podman image inspect localhost/larpus-broker:sealed --format '{{.Id}}')
+broker_image=${broker_image#sha256:}
+podman run --detach --pull=never --name "$broker_name" --pod larpus-offline \
+  --read-only --read-only-tmpfs=false --user=1000:1000 --cap-drop=ALL --security-opt=no-new-privileges \
+  --pids-limit=64 --memory=256m --cpus=1 --log-driver=none \
+  --tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m \
+  --volume="$broker_name:/run/larpus-broker:rw,noexec,nosuid,nodev" "$broker_image" >&2
+podman run --detach --pull=never --name larpus-agent --network=none \
   --read-only --read-only-tmpfs=false --user=1000:1000 --cap-drop=ALL --security-opt=no-new-privileges \
   --pids-limit=64 --memory=12g --cpus=8 --log-driver=none \
   --tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m \
   --volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev \
+  --volume="$broker_name:/run/larpus-broker:ro,noexec,nosuid,nodev" \
   "$agent_image" >&2
-printf '{"version":1,"distro":"Larpus","user":"larpus","agent_image":"%s","model_image":"%s","source_fingerprint":"%s","gpu_driver":"%s"}\n' "$agent_image" "$model_image" "$3" "$gpu_driver"
+printf '{"version":1,"distro":"Larpus","user":"larpus","agent_image":"%s","model_image":"%s","source_fingerprint":"%s","gpu_driver":"%s","broker":{"container":"%s","image":"%s","volume":"%s"}}\n' "$agent_image" "$model_image" "$3" "$gpu_driver" "$broker_name" "$broker_image" "$broker_name"
 # A failed deployment leaves evidence for inspection; it never starts host inference.

@@ -7,7 +7,7 @@ from runtime.local_ollama import ollama, chat_stream
 from runtime.text_filter import TextHeld
 from runtime.skills import summaries
 from runtime.dlp import gate, stream_pending
-from runtime.knowledge import augment
+from runtime.knowledge import augment, NOTE_TIER
 from runtime.context import CAPACITY,OUTPUT_LIMIT,INPUT_BOUND,COMPRESS_PREFIX,SUMMARY_SYSTEM,ContextPressure,upper_bound,compression_data,compression_envelope,summary_result,encoded,validate_record
 
 PERSONAS=load_personas()
@@ -92,8 +92,11 @@ def chat(persona, messages, skill=None, on_chunk=None):
                 result['citation_check']=citation_check(text,evidence)
                 result['sources']=[]
                 for source in evidence:
-                    preview=gate(source['text'],prepared[0]['content'])
-                    result['sources'].append({**{k:source[k] for k in ('id','title','url','snapshot','locator')},
+                    derived=source.get('tier')==NOTE_TIER
+                    preview=gate(source['original_passage'] if derived else source['text'],prepared[0]['content'])
+                    result['sources'].append({**{k:source[k] for k in ('id','title','url','locator')},
+                        'snapshot':source.get('snapshot','derived study note') if derived else source['snapshot'],
+                        **({'tier':NOTE_TIER} if derived else {}),
                         'preview':preview['content'] if preview.get('status')==200 else 'Preview withheld by local output screening.'})
             return result
         if on_chunk is not None:

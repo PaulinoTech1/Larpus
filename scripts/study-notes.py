@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from runtime.text_filter import inspect_message
+from runtime.inference_admission import Admission, Busy
 BUILD=ROOT/'knowledge/notes.build.sqlite'
 WINDOW=4000
 WORKER=r'''
@@ -143,6 +144,7 @@ class NotesWorker:
     """Owner-side bounded recovery; never restarts the gateway or model service."""
     def __init__(self,agent):
         self.agent=agent;self.proc=None;self.errors=None
+        self.admission=Admission(ROOT/'data/inference-admission')
 
     def start(self):
         path=ROOT/'data/study-notes-worker.log';path.parent.mkdir(parents=True,exist_ok=True)
@@ -161,9 +163,10 @@ class NotesWorker:
         for attempt in range(3):
             if time.time()>=deadline:return {'error':'worker-unavailable'}
             try:
-                if self.proc is None:self.start()
-                self.proc.stdin.write(json.dumps(job)+'\n');self.proc.stdin.flush()
-                line=self.proc.stdout.readline()
+                with self.admission.background(deadline):
+                    if self.proc is None:self.start()
+                    self.proc.stdin.write(json.dumps(job)+'\n');self.proc.stdin.flush()
+                    line=self.proc.stdout.readline()
                 if not line:raise EOFError('Worker exited')
                 reply=json.loads(line)
                 if not isinstance(reply,dict) or not ('ok' in reply or 'error' in reply):raise ValueError('Worker protocol')

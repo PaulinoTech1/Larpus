@@ -11,7 +11,7 @@
   "environment": "Fixed child environment allowlist in bundled mcp_client.py; no credentials forwarded",
   "process": "Configured Python interpreter and runtime.mcp_server stdio child; trusted Windows DLP also invokes the fixed ACL helper",
   "output_guard": "Trusted DLP reads fixed policy, stages generated text in restricted quarantine and invokes only the fixed Windows ACL helper with a fixed directory argument. None of these are model-callable tools. Owner CLI can inspect and delete inert evidence.",
-  "network": "Only fixed Ollama /api/chat, /api/tags and /api/ps routes at literal IPv4 loopback port 11434; no proxies or redirects. Production rootless Podman pod has network=none and no published inference ports.",
+  "network": "Only fixed /api/chat, /api/tags and /api/ps routes. Production agent has its own network=none namespace and a private Unix socket to the pinned broker; raw Ollama TCP is denied. Broker and model share a separate network=none pod with fixed IPv4 loopback port 11434 and no published inference ports, proxies or redirects. Explicit host development alone uses direct numeric loopback.",
   "tools": [
     "chat_local",
     "list_personas",

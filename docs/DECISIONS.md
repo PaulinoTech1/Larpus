@@ -544,3 +544,23 @@ note task/processes, and a hash-verified prepared release through sealed MCP.
 This is cooperative scheduling, not an exclusive GPU lock or automatic proof of
 corpus completion. No scheduled run, activation, notes interruption, download,
 automatic grading or profile promotion. See CAPABILITY_TRIALS.md.
+
+## Private inference broker (2026-10-11)
+
+The owner requested a broker to strengthen LLM isolation. Move the trusted
+agent into its own network-disabled namespace and retain Ollama in its existing
+network-disabled pod. A minimal stdlib broker in that model pod exposes only a
+private UID1000 Unix socket mounted read-only by the agent. This avoids a new
+host port and makes raw model TCP unavailable from the agent. The broker has no
+GPU, model files, corpus, quarantine, owner credentials or container socket.
+
+Pin the current model, 131072 context, GPU99 and non-thinking behavior; permit
+bounded text chat, optional JSON format, streaming and filtered model status.
+Reject administration, arbitrary destinations, tools, images and unexpected
+options. Keep a 6000-token output ceiling for existing nightly notes. Explicit
+host development remains outside this boundary; isolated failure never falls
+back to host inference. Preserve model/voice containers and resume the nightly
+writer against the new agent at cutover. Retain pinned rollback, while stopping
+old raw-access agents after activation. Rollback to an older release restores
+its weaker boundary. This limits API reachability, not prompt semantics or DLP
+correctness. See INFERENCE_BROKER.md for limits and verification evidence.

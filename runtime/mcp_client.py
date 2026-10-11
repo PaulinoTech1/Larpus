@@ -14,6 +14,7 @@ def child_parameters():
     if mode()=='wsl-podman':
         command=child_args()
         return StdioServerParameters(command=command[0],args=command[1:],cwd=str(ROOT),env=env)
+    env['LARPUS_ISOLATION']='host'
     return StdioServerParameters(command=sys.executable,args=['-m','runtime.mcp_server'],cwd=str(ROOT),env=env)
 
 async def call_async(tool, arguments=None, on_chunk=None):

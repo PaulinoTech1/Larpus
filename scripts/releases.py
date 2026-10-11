@@ -20,7 +20,7 @@ STORE=ROOT/'data/releases'
 DIRECTORIES=('runtime','agents','skills','config','scripts','deploy','tests','web','knowledge','evals')
 FILES=('.containerignore','.gitattributes','LICENSE','LICENSE-NOTICE.md','requirements.txt','requirements-knowledge.txt','requirements-retrieval.txt','package.json','package-lock.json')
 # Resumable owner build temporaries never enter a frozen release.
-BUILD_TEMP=('approved.build.sqlite','notes.build.sqlite','notes.build.sqlite-journal','embeddings.build.npy','embeddings-rowids.build.npy','embeddings-manifest.tmp')
+BUILD_TEMP=('approved.build.sqlite','notes.build.sqlite','notes.build.sqlite-journal','embeddings.build.npy','embeddings-rowids.build.npy','embeddings-manifest.tmp','notes.build.sqlite-wal','notes.build.sqlite-shm')
 # Agent container limits: room for CPU embedding/reranking (owner-approved 2026-10-09).
 AGENT_LIMITS=('--pids-limit=64','--memory=12g','--cpus=8')
 HTTP=urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -167,7 +167,21 @@ def prepare(identifier):
     print('Building offline candidate; current gateway remains available.',flush=True)
     podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Containerfile','-t','localhost/larpus-agent:'+identifier,linux)
     profile['agent_image']=podman('image','inspect','localhost/larpus-agent:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
-    podman('run','--detach','--pull=never','--name',profile['agent_name'],'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges',*AGENT_LIMITS,'--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev',profile['agent_image'])
+    broker_policy=dest/'config/inference-broker.json'
+    boundary=['--pod','larpus-offline']
+    if broker_policy.exists() and read(broker_policy).get('enabled') is True:
+        name='larpus-broker-'+identifier
+        podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Broker.Containerfile','-t','localhost/larpus-broker:'+identifier,linux)
+        broker_image=podman('image','inspect','localhost/larpus-broker:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
+        podman('run','--detach','--pull=never','--name',name,'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=64','--memory=256m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m','--volume='+name+':/run/larpus-broker:rw,noexec,nosuid,nodev',broker_image)
+        profile['broker']={'container':name,'image':broker_image,'volume':name}
+        for attempt in range(20):
+            try:
+                podman('exec',name,'python','-c',"from pathlib import Path; assert Path('/run/larpus-broker/inference.sock').is_socket()");break
+            except (RuntimeError,subprocess.CalledProcessError):time.sleep(.25)
+        else:raise ValueError('Broker failed readiness')
+        boundary=['--network=none','--volume='+name+':/run/larpus-broker:ro,noexec,nosuid,nodev']
+    podman('run','--detach','--pull=never','--name',profile['agent_name'],*boundary,'--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges',*AGENT_LIMITS,'--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev',profile['agent_image'])
     write(dest/'deployment.json',profile)
     prepare_voice(dest,old,linux)
     print(run(dest,sys.executable,'scripts/test-local.py'),flush=True)
@@ -231,9 +245,22 @@ def ready(state,timeout=60):
         time.sleep(.5)
     raise RuntimeError('New gateway functional readiness failed')
 
+def ensure_execution(root):
+    path=root/'deployment.json'
+    if not path.exists():return
+    profile=read(path)
+    selected=[(profile.get('agent_name','larpus-agent'),profile['agent_image'])]
+    if profile.get('broker'):selected.insert(0,(profile['broker']['container'],profile['broker']['image']))
+    for name,image in selected:
+        if not re.fullmatch(r'larpus-(?:agent|broker)(?:-[a-f0-9]{32})?',name):raise ValueError('Invalid retained execution identity')
+        item=json.loads(podman('inspect',name))[0]
+        if item['Image'].removeprefix('sha256:')!=image.removeprefix('sha256:'):raise ValueError('Retained execution image drift')
+        if not item['State']['Running']:podman('start',name)
+
 def cutover(identifier):
     if (STORE/'pending.json').exists():raise ValueError('Interrupted cutover recorded; run start to recover first')
     root=release_path(identifier);validate(root)
+    ensure_execution(root)
     run(root,sys.executable,'-m','runtime.isolation','check')
     old=read(STORE/'active.json')
     if identifier==old['id']:raise ValueError('Release already active')
@@ -275,6 +302,7 @@ def start():
     voice_name=voice.get('container','larpus-voice')
     if not re.fullmatch(r'larpus-voice(?:-[a-f0-9]{32})?',voice_name):raise ValueError('Invalid voice identity')
     podman('pod','start','larpus-offline');podman('start',voice_name)
+    if profile.get('broker'):podman('start',profile['broker']['container'])
     podman('start',profile.get('agent_name','larpus-agent'))
     new=launch(state['id'],state);write(STORE/'active.json',new);ready(new)
     print('Started active release '+state['id'])
@@ -287,6 +315,7 @@ def keep_names(state):
         root=release_path(identifier)
         profile=read(root/'deployment.json') if (root/'deployment.json').exists() else {}
         names.add(profile.get('agent_name','larpus-agent'))
+        if profile.get('broker'):names.add(profile['broker']['container'])
         voice_file=root/'voice-deployment.json' if (root/'voice-deployment.json').exists() else ROOT/'data/voice-deployment.json'
         names.add(read(voice_file).get('container','larpus-voice') if voice_file.exists() else 'larpus-voice')
     return names
@@ -298,9 +327,16 @@ def prune():
     active_time=release_path(state['id']).stat().st_mtime
     for folder in (STORE.iterdir() if STORE.is_dir() else []):
         if re.fullmatch(r'[a-f0-9]{32}',folder.name) and (folder/'deployment.json').exists() and folder.stat().st_mtime>active_time:
-            keep.add(read(folder/'deployment.json').get('agent_name','larpus-agent-'+folder.name))
+            profile=read(folder/'deployment.json')
+            keep.add(profile.get('agent_name','larpus-agent-'+folder.name))
+            if profile.get('broker'):keep.add(profile['broker']['container'])
+    active_profile=release_path(state['id'])/'deployment.json'
+    if active_profile.exists() and read(active_profile).get('broker') and state.get('previous'):
+        previous_profile=release_path(state['previous'])/'deployment.json'
+        if previous_profile.exists() and not read(previous_profile).get('broker'):
+            keep.discard(read(previous_profile).get('agent_name','larpus-agent'))
     running_names=podman('ps','--format','{{.Names}}').split()
-    idle=[n for n in running_names if re.fullmatch(r'larpus-(agent|voice)(-[a-z0-9-]+)?',n) and n not in keep]
+    idle=[n for n in running_names if re.fullmatch(r'larpus-(agent|voice|broker)(-[a-z0-9-]+)?',n) and n not in keep]
     if idle:podman('stop','--time','5',*idle,timeout=300)
     print(json.dumps({'kept':sorted(keep),'stopped':idle}),flush=True)
     return idle

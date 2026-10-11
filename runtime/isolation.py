@@ -55,7 +55,7 @@ def read_oci(item):
         raise ValueError('Oversized OCI configuration')
     return json.loads(result.stdout.decode())
 
-def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None):
+def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None,broker_volume=None,broker_only=False):
     host=item['HostConfig']
     if item['State']['Running'] is not True or item['Image'].removeprefix('sha256:')!=expected_image.removeprefix('sha256:'):
         raise ValueError('Container stopped or image drifted')
@@ -73,6 +73,8 @@ def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None):
         raise ValueError('Container resource limits missing')
     mounts={(m['Destination'],m.get('RW',False)) for m in item.get('Mounts',[]) if m['Type']!='tmpfs'}
     expected={('/models',False),('/usr/lib/wsl/lib',False)} if is_model else {('/app/data/quarantine',True)}
+    if broker_volume:
+        expected={('/run/larpus-broker',True)} if broker_only else expected|{('/run/larpus-broker',False)}
     if is_model and gpu_driver:
         expected.add((gpu_driver,False))
     if mounts!=expected or len([m for m in item.get('Mounts',[]) if m['Type']!='tmpfs'])!=len(expected):
@@ -84,6 +86,9 @@ def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None):
             expected_source={'/models':'/home/larpus/models','/usr/lib/wsl/lib':'/usr/lib/wsl/lib',gpu_driver:gpu_driver}[mount['Destination']]
             if mount['Type']!='bind' or mount['Source']!=expected_source:
                 raise ValueError('Unexpected model mount source')
+        elif mount['Destination']=='/run/larpus-broker':
+            if mount['Type']!='volume' or mount.get('Name')!=broker_volume or not {'noexec','nosuid','nodev'}.issubset(set(mount.get('Options',[]))):
+                raise ValueError('Invalid private broker volume')
         elif mount['Type']!='volume' or mount.get('Name')!='larpus-quarantine':
             raise ValueError('Agent quarantine must use the dedicated named volume')
         elif not {'noexec','nosuid','nodev'}.issubset(set(mount.get('Options',[]))):
@@ -124,20 +129,29 @@ def preflight():
     if info['host']['security']['rootless'] is not True:
         raise ValueError('Rootful Podman prohibited')
     selected_agent=agent_name(profile)
-    containers=query('inspect',selected_agent,MODEL)
+    broker=profile.get('broker')
+    if broker:
+        if set(broker)!={'container','image','volume'} or not re.fullmatch(r'larpus-broker-[a-f0-9]{32}',broker['container']) or broker['volume']!=broker['container'] or not re.fullmatch(r'[a-f0-9]{64}',broker['image']):
+            raise ValueError('Invalid pinned broker')
+    containers=query('inspect',selected_agent,MODEL,*([broker['container']] if broker else []))
     by_name={c['Name'].lstrip('/'):c for c in containers}
     agent,model=by_name[selected_agent],by_name[MODEL]
-    validate_container(agent,profile['agent_image'],False,read_oci(agent))
+    validate_container(agent,profile['agent_image'],False,read_oci(agent),broker_volume=broker['volume'] if broker else None)
     validate_container(model,profile['model_image'],True,read_oci(model),gpu_driver)
-    if not agent.get('Pod') or agent['Pod']!=model.get('Pod'):
+    if broker:
+        guard=by_name[broker['container']]
+        validate_container(guard,broker['image'],False,read_oci(guard),broker_volume=broker['volume'],broker_only=True)
+        if agent.get('Pod') or agent['HostConfig']['NetworkMode']!='none' or not model.get('Pod') or guard.get('Pod')!=model['Pod']:
+            raise ValueError('Broker/agent namespace separation drift')
+    elif not agent.get('Pod') or agent['Pod']!=model.get('Pod'):
         raise ValueError('Inference and guard are not in the same isolated pod')
-    pod=query('pod','inspect',agent['Pod'])
+    pod=query('pod','inspect',model['Pod'])
     if pod['InfraConfig']['HostNetwork'] or pod['InfraConfig']['Networks']:
         raise ValueError('Pod has external networking')
     infra=query('inspect',pod['InfraContainerID'])[0]
     if infra['HostConfig']['NetworkMode']!='none':
         raise ValueError('Pod must have network=none')
-    if any(c['HostConfig']['NetworkMode']!='container:'+pod['InfraContainerID'] for c in (agent,model)):
+    if any(c['HostConfig']['NetworkMode']!='container:'+pod['InfraContainerID'] for c in ((guard,model) if broker else (agent,model))):
         raise ValueError('Container network namespace drift')
     return profile
 
