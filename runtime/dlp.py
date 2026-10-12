@@ -88,7 +88,13 @@ def secure_directory():
     QUARANTINE.mkdir(parents=True,exist_ok=True,mode=0o700)
     if os.name=='nt':
         executable=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
-        subprocess.run([str(executable),'-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(QUARANTINE)],shell=False,check=True,capture_output=True,timeout=10)
+        # Windows PowerShell 5.1 resolves modules via PSModulePath in order. When launched
+        # from an environment that prepends PowerShell 7 paths (e.g. a pwsh parent process),
+        # 5.1 can find pwsh 7's Microsoft.PowerShell.Security first and fail to load it
+        # (wrong .NET runtime), breaking Get-Acl. Pin the 5.1 inbox module path first.
+        ps_env=dict(os.environ)
+        ps_env['PSModulePath']=os.pathsep.join((str(Path(os.environ['SYSTEMROOT'])/'system32/WindowsPowerShell/v1.0/Modules'),ps_env.get('PSModulePath','')))
+        subprocess.run([str(executable),'-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(QUARANTINE)],shell=False,check=True,capture_output=True,timeout=10,env=ps_env)
     else:
         QUARANTINE.chmod(0o700)
         if QUARANTINE.stat().st_uid!=os.getuid():
