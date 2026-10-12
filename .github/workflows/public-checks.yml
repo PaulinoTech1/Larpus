@@ -54,6 +54,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          python -c "import os, subprocess, tempfile; from pathlib import Path; d=Path(tempfile.mkdtemp()); print('target:', d); exe=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'; print('exe exists:', exe.exists()); r=subprocess.run([str(exe),'-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File','scripts/protect-quarantine.ps1','-Target',str(d)],capture_output=True,text=True,timeout=60); print('rc:', r.returncode); print('stdout tail:', r.stdout[-300:]); print('stderr tail:', r.stderr[-1500:])"
+          python -c "import os, subprocess, tempfile; from pathlib import Path; exe=str(Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'); print('PSModulePath:', os.environ.get('PSModulePath','<unset>')[:200]); r1=subprocess.run([exe,'-NoProfile','-NonInteractive','-Command','Import-Module Microsoft.PowerShell.Security; \"mod-ok\"'],capture_output=True,text=True,timeout=60); print('modload rc:', r1.returncode, 'out:', r1.stdout.strip()[-80:], 'err:', r1.stderr.strip()[-300:])"
       - name: Run public contracts and synthetic evaluations
         run: python scripts/ci.py
