@@ -54,6 +54,21 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          python -c "import os, subprocess, tempfile; from pathlib import Path; exe=str(Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'); print('PSModulePath:', os.environ.get('PSModulePath','<unset>')[:200]); r1=subprocess.run([exe,'-NoProfile','-NonInteractive','-Command','Import-Module Microsoft.PowerShell.Security; \"mod-ok\"'],capture_output=True,text=True,timeout=60); print('modload rc:', r1.returncode, 'out:', r1.stdout.strip()[-80:], 'err:', r1.stderr.strip()[-300:])"
+          @'
+          import os, subprocess, tempfile
+          from pathlib import Path
+          exe = str(Path(os.environ['SYSTEMROOT']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
+          print('PSModulePath:', os.environ.get('PSModulePath', '<unset>')[:300])
+          targets = {'runnertemp': str(Path(os.environ['RUNNER_TEMP']) / 'acl-probe-a'),
+                     'tempdir': tempfile.mkdtemp()}
+          import pathlib
+          pathlib.Path(targets['runnertemp']).mkdir(parents=True, exist_ok=True)
+          for label, target in targets.items():
+              r = subprocess.run([exe, '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+                                  '-File', 'scripts/protect-quarantine.ps1', '-Target', target],
+                                 capture_output=True, text=True, timeout=60)
+              print(label, 'rc:', r.returncode, 'err:', r.stderr.strip()[-400:].replace(chr(10), ' | '))
+          '@ | Out-File -FilePath diag_acl.py -Encoding utf8
+          python diag_acl.py
       - name: Run public contracts and synthetic evaluations
         run: python scripts/ci.py
