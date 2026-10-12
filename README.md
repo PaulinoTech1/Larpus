@@ -1,5 +1,9 @@
 # larpus
 
+## TL;DR
+
+A local-first home AI station: voice-driven home assistant with an MCP agent pipeline, DLP output filtering, and local inference on commodity GPU hardware. Goal: a private AI assistant that never sends your data to the cloud.
+
 **LARP: Larp, Always Ready Prep.** LARPs all the way down.
 
 A private home AI station and eccentric, Jarvis-inspired LARP companion for
