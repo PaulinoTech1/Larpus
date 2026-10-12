@@ -88,7 +88,7 @@ def secure_directory():
     QUARANTINE.mkdir(parents=True,exist_ok=True,mode=0o700)
     if os.name=='nt':
         executable=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
-        subprocess.run([str(executable),'-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(QUARANTINE)],shell=False,check=True,capture_output=True,timeout=10)
+        subprocess.run([str(executable),'-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(QUARANTINE)],shell=False,check=True,capture_output=True,timeout=10)
     else:
         QUARANTINE.chmod(0o700)
         if QUARANTINE.stat().st_uid!=os.getuid():
