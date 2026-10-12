@@ -72,11 +72,11 @@ On a stream failure, retain the browser transcript, mark partial output incomple
 
 ## Update scope
 
-These changes are checkout-only until a new frozen snapshot is staged, prepared and activated through [UPDATES.md](UPDATES.md). The previous provenance snapshot does not include them. No active release, model, voice service, binding, authentication or owner data is edited. Current station shutdown is not remedied by this work.
+The initial implementation was checkout-only. It was subsequently included in the frozen release recorded in [STATUS.md](STATUS.md), through [UPDATES.md](UPDATES.md). Model/voice images, bindings, authentication and owner data were not replaced. New edits remain checkout-only until the release workflow is repeated.
 
 ## Checkout validation
 
-The isolated unittest suite reported 205 tests OK, with two platform/data skips. Chat streaming, context, voice, teaching, memory and diagnostic-ID Node checks passed. The complexity gate and approved broker prompt-hash check passed. These are checkout/synthetic tests, not a new static scan receipt or live deployment acceptance. The active frozen release remains stopped.
+The isolated unittest suite reported 205 tests OK, with two platform/data skips. Chat streaming, context, voice, teaching, memory and diagnostic-ID Node checks passed. The complexity gate and approved broker prompt-hash check passed. These are checkout/synthetic tests, not a new static scan receipt or live deployment acceptance. The station was stopped at that original check; subsequent activation and workload restart are recorded in [STATUS.md](STATUS.md).
 
 See [second- and third-order consequences and the Windows workload shutdown](INTERACTION_CONSEQUENCES.md) for propagation chains, observed events and unresolved causes.
 

@@ -46,4 +46,4 @@ Next incident work: preserve the original dump, obtain authorized local elevated
 
 ## Validation and release status
 
-The complexity implementation committed as `89df1b5` had an isolated suite of 205 tests OK (two skips), plus HUD checks. This consequence review is static analysis and documentation. No new failure scenario, workload restart, prepared scan receipt or production activation is claimed. Private incident evidence remains in owner-local data. The commits are local; pushing was not requested for this task.
+The complexity implementation committed as `89df1b5` had an isolated suite of 205 tests OK (two skips), plus HUD checks. This consequence review is static analysis and documentation. No new failure scenario, workload restart, prepared scan receipt or production activation is claimed. Private incident evidence remains in owner-local data. At this review the commits were local. They were subsequently pushed; the implementation was later activated. See [STATUS.md](STATUS.md) and [UPDATES.md](UPDATES.md) for current dated state and later live evidence.

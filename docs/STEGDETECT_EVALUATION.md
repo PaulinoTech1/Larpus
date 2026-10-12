@@ -40,7 +40,7 @@ The corpus is authored synthetic and not independently human-labeled. Independen
 
 Run the command before and after a detector/gate change and retain the receipts. Investigate mismatch IDs by reading the authorized source corpus locally; do not publish private samples or prompts. The report intentionally exposes misses rather than forcing every metric green. Missing/invalid/duplicate labels fail the command; no successful receipt is created for malformed corpus input. Full scanner failures become inconclusive rows. This tracker is manual and local: scheduled evaluation and production sampling are not implemented.
 
-All changes remain checkout-only until staged, prepared and activated through the ordinary release flow. No upstream dependency, model or active release was changed.
+The tracker was subsequently included in the active snapshot recorded in [STATUS.md](STATUS.md). New changes still require the ordinary release flow. Activation did not change the upstream detector dependency or turn synthetic measurements into production-rate evidence.
 
 ## Validation evidence
 

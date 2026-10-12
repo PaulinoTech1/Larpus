@@ -77,11 +77,7 @@ proof that all factual claims or author attribution are correct.
 
 ## Deployment
 
-Changes and generated metadata are in the checkout. The station remains stopped
-following the Windows bugcheck investigation. No GPU/nightly restart, activation,
-commit or push was performed. Complete crash recovery, run metadata/prompt checks,
-prepare a new frozen release and activate through the updater. Restarting the old
-release alone will not install these protections.
+At the initial review these changes were checkout-only and the station was stopped after the Windows bugcheck. They were subsequently committed, pushed and included in active release `9d76eed753ad4ec9901c8b988e961248`. The nightly workload resumed and saved progress using the new chronology queue. See [STATUS.md](STATUS.md) and [UPDATES.md](UPDATES.md) for the dated deployment and recovery evidence. Restart success does not resolve the Windows crash or certify model attribution accuracy.
 
 Validation: the final pre-push offline suite passed 196 tests (two skips). Seven targeted
 provenance tests passed, including an added scoped-correction/history case.
@@ -89,8 +85,7 @@ Chat, context and teaching UI contracts passed. Headless retrieval against the
 actual corpus attached authors/dates and returned chronologically ordered evidence.
 These checks do not establish deployed model attribution accuracy or physical HUD acceptance.
 
-Staged candidate: `43afda5d3e184b249420caca0f8d043e`. Staged only, not prepared
-or activated. The active pointer remains `fb20ec0c6bc0419dbc6a3b298116820d`.
+Historical candidate: `43afda5d3e184b249420caca0f8d043e` was staged only and never prepared/activated. It was superseded by the later activated snapshot above; the active pointer is no longer the one recorded at initial review.
 
 An independent pre-push code review approved the authored changes; 15 focused
 checks passed with one Unix-socket skip on Windows. This does not certify live

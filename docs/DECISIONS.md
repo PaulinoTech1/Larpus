@@ -1,5 +1,7 @@
 # Larpus decision record
 
+Dated historical decisions and observations; deployment IDs and settings describe their recorded time. See [STATUS.md](STATUS.md) for the current dated snapshot. Older entries do not override later decisions.
+
 ## Name, author credits and clean speech (2026-10-09)
 
 Every persona prompt now states "Your name is LARPUS; if asked your name, say
@@ -106,7 +108,7 @@ the old release; the new agent container was running but not selected.
 
 ### Resolution and follow-ups
 
-- Release `d139aa4e80eb` is active; HUD meter default and accepted capacities include
+- Release `d139aa4e80eb` was active at this decision; HUD meter default and accepted capacities include
   131072 (still accepts 4096/16384/262144 for older measurements).
 - `prune` keeps prepared candidates; documented in UPDATES.md.
 - Operational rule: after WSL/`wsl --shutdown`/model-cache swaps, wait for

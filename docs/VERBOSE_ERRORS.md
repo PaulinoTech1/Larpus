@@ -70,4 +70,4 @@ This catalog covers authored voice, MCP, inference transport, notes-worker and i
 
 ## Checkout validation
 
-211 isolated tests reported OK, with two skips. Tests cover exact-message matching, secret-bearing unknown messages, JSON coordinate privacy, subprocess timeout privacy, protocol-only stdout and linked-ID lookup. Diagnostic HUD check and the existing complexity gate passed without changing baseline allowances. This validation covers the checkout, not a production activation; no frozen release or service was modified.
+211 isolated tests reported OK, with two skips. Tests cover exact-message matching, secret-bearing unknown messages, JSON coordinate privacy, subprocess timeout privacy, protocol-only stdout and linked-ID lookup. Diagnostic HUD check and the existing complexity gate passed without changing baseline allowances. These were checkout checks at implementation time. The system was subsequently activated and a candidate-container diagnostic smoke test passed; see [STATUS.md](STATUS.md) and [UPDATES.md](UPDATES.md).

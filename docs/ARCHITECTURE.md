@@ -82,3 +82,5 @@ runtime; no new model tool, port or host mount is exposed. See
 Complexity and failure tracking: [component value, interactions, regression gate and owner diagnostics](COMPLEXITY.md).
 
 See [second- and third-order consequences and the Windows workload shutdown](INTERACTION_CONSEQUENCES.md) for propagation chains, observed events and unresolved causes.
+
+[Public checkout CI](CI.md) is an owner-approved external development check using public/synthetic inputs only. It has no deployment capability and does not replace local preparation scans or live isolation checks. See [dated operational status](STATUS.md) for deployed evidence.

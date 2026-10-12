@@ -100,6 +100,16 @@ FORMATS = {'pdf', 'html', 'txt'}
 # Qubes OS security pack (official Qubes Security Bulletins) is accepted (2026-10-10).
 RESEARCH_PATH_PREFIXES = {
     'raw.githubusercontent.com': ('/QubesOS/qubes-secpack/',),
+    # 2026-10-11 primary-source refresh: exact reviewed records/file prefixes.
+    # This is not permission to ingest arbitrary articles from these publishers.
+    'www.jmlr.org': ('/papers/v26/24-0452.html','/papers/volume26/24-0452/24-0452.pdf'),
+    'annals.math.princeton.edu': ('/2025/202-2/p02','/2025/202-2/p03'),
+    'proceedings.iclr.cc': ('/paper_files/paper/2025/hash/5750f91d8fb9d5c02bd8ad2c3b44456b-Abstract-Conference.html',
+                            '/paper_files/paper/2025/file/5750f91d8fb9d5c02bd8ad2c3b44456b-Paper-Conference.pdf'),
+    'www.nature.com': ('/articles/s41586-025-08642-7','/articles/s41534-026-01213-2',
+                       '/articles/s41562-025-02194-6','/articles/s41562-026-02588-0'),
+    'www.nber.org': ('/papers/w33795','/system/files/working_papers/w33795/'),
+    'ai.nejm.org': ('/doi/full/10.1056/AIoa2400802','/doi/pdf/10.1056/AIoa2400802'),
 }
 
 

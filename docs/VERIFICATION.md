@@ -1,5 +1,7 @@
 # Current verification ? 2026-10-08
 
+This is a historical verification journal. Release IDs, counts, active/stopped state and commit status describe the time of each entry. See [STATUS.md](STATUS.md) for the latest dated operational snapshot and [UPDATES.md](UPDATES.md) for rollout evidence. Automated checks here do not certify later source changes.
+
 47 tests passed after the local voice addition. A real British TTS WAV was
 transcribed by VoiceStudio ASR/Faster Whisper in the offline CPU worker. A real
 home-assistant reply passed MCP/DLP and produced seven seconds of speech.
@@ -272,7 +274,7 @@ tests (the frozen candidate predates three owner-tool tests). See
 [live probes](AVAILABLE-UPDATES-PROBES.json) and the
 [candidate scan receipt](AVAILABLE-UPDATES-SCAN-RECEIPT.json). Physical audio and
 second-device LAN use were not tested. There is a brief listener interruption;
-LAN sessions require login again. Changes remain uncommitted.
+LAN sessions require login again. At this verification, changes were uncommitted.
 
 ## Meta Muse home reference update (2026-10-09)
 
@@ -306,7 +308,7 @@ Evidence: [retrieval](META-MUSE-RETRIEVAL-PROBES.json),
 [focused candidate answers](META-MUSE-FOCUSED-PROBES.json),
 [live gateway](META-MUSE-GATEWAY-PROBE.json), and
 [static scan receipt](META-MUSE-SCAN-RECEIPT.json). No cloud inference service,
-external account or model replacement was introduced. Changes are uncommitted.
+external account or model replacement was introduced. At this verification, changes were uncommitted.
 
 ## Local GitHub repository archive (2026-10-09)
 
@@ -341,7 +343,7 @@ objects, while the searchable index is bounded and excludes recognised sensitive
 or instruction-bearing content. Retrieval and focused replies do not certify all
 generated conclusions, repository security or exhaustive secret detection.
 No GitHub credentials, internet connection or write tools were added to the LLM.
-Changes remain uncommitted.
+At this verification, changes were uncommitted.
 
 ## Microsoft implementation and context controls (2026-10-09)
 
@@ -385,7 +387,7 @@ then completed with zero skill findings and the same eight baseline MCP findings
 No scanner rule, threshold or release gate was relaxed. Blocked candidates were
 never activated. Private intermediate reports remain under ignored data/ folders.
 
-Final prepared release `807c76f50c2c4f38ac9d859be935c713` is active, with
+Final prepared release `807c76f50c2c4f38ac9d859be935c713` was active at this verification, with
 `1fb042ecf3a74d4ea4c0d4604d7a1534` retained for rollback and no pending cutover.
 All 103 Python tests, three Node regression suites and six isolation probes passed.
 All 69 local skills completed clean static scans; MCP completed with the unchanged
@@ -398,7 +400,7 @@ requests retained Copper Finch across Entra/BitLocker skill changes (7.17 and
 Microsoft source metadata. Actual token totals were 1,540 and 1,720 of 4,096.
 CA-verified LAN root redirects to login; its unauthenticated persona API returns
 401. Local loopback HTTP remains password-free. No model/voice image, binding,
-credential, cloud runtime or volume change was made. Work remains uncommitted.
+credential, cloud runtime or volume change was made. At this verification, work was uncommitted.
 
 ## Owner project attribution (2026-10-09)
 
@@ -410,7 +412,7 @@ credits and licenses preserved and no inferred production experience.
 
 Release `0aa208337b6e479ebfdf97af0554213e` passed 105 Python tests, three UI
 regression suites, six isolation probes, 69 clean skill scans and the unchanged
-eight MCP warnings. It is active with the prior release retained. A live gateway
+eight MCP warnings. It was active at this verification with the prior release retained. A live gateway
 reply listed all 22 exact repository names, omitted none, cited github-catalog,
 and explicitly attributed the collection to the owner (HTTP 200, 9.95 seconds).
 Functional health passes; overall health remains degraded for the known warnings.

@@ -364,3 +364,7 @@ reviewed path prefix `https://raw.githubusercontent.com/QubesOS/qubes-secpack/`.
 - `ec4-mat-02` (mathematician) - On the inverse of a class of bipartite graphs with unique perfect matchings (Panda, Swarup Kumar; Pati, Sukanta, 2015; Electronic Journal of Linear Algebra 29:89-101); training_use `private-only`.
 - `ec4-mat-03` (mathematician) - On the distance and distance signless Laplacian eigenvalues of graphs and the smallest Geršgorin disc (Atik, Fouzul, 2018; Electronic Journal of Linear Algebra 34:191-204); training_use `private-only`.
 - `ec4-mat-04` (mathematician) - On the closure of the completely positive semidefinite cone and linear approximations to quantum colorings (Burgdorf, Sabine; Laurent, Monique; Piovesan, Teresa, 2017; Electronic Journal of Linear Algebra); training_use `private-only`.
+
+## Pending 2025-2026 research candidates
+
+[Persona research refresh](RESEARCH_2025_2026.md) records primary-source candidates, benefits, correction/supersession evidence and admission requirements. It is not part of the approved index. Source originals, rights review, author metadata and staged deployment remain pending; the live library and current writer queue were not changed.

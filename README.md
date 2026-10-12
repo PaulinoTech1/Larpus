@@ -11,11 +11,19 @@ access, cloud fallback, telemetry or external account requirement. Initial setup
 and owner-approved reference downloads need internet; GitHub archive preparation
 may use the owner's existing credentials, which never enter the agent runtime.
 
-The visual identity is a rotating torus beneath **?? dV = 2??Rr?**.
+The visual identity is a rotating torus beneath $\iiint_T dV = 2\pi^2 Rr^2$.
 Its repeating fill and forming percentage are decorative, not inference progress.
 Reduced motion shows a static torus. R = 2 and r = 0.8 give a volume of about 25.266.
 
 ## Deployed station
+
+See the dated [operational status](docs/STATUS.md) for the selected release, validation boundaries and later checks.
+
+Vetted references bridge gaps after the model's training period. Refresh priority
+depends on the persona: product pricing, security guidance and platform behavior
+change faster than foundational mathematics. See the [research refresh policy and
+persona priorities](docs/RESEARCH_2025_2026.md). Downloads and prepared queues are
+not live knowledge until admitted and integrated; automatic expiry is not implemented.
 
 Verified against the owner's active frozen release on **2026-10-11**. Counts and
 settings below describe that deployment; a fresh clone does not include its
@@ -43,7 +51,7 @@ capabilities, pins approved system templates, limits request/output budgets and
 cancels background generation for chat with a confirmed runner fence. Cancellation
 failure closes inference; it is not a guarantee against prompt injection or all
 denial of service. Reproducible local synthetic/live checks distinguish what ran
-from what remains unverified; no cloud CI is enabled by default.
+from what remains unverified. Owner-approved [public-only GitHub CI](docs/CI.md) is separate from the fully local runtime.
 
 Current health reports functional checks passing, with overall status **degraded**
 for the security-scan warning. A passing health probe is not a full security audit,
@@ -228,3 +236,5 @@ Complexity and failure tracking: [component value, interactions, regression gate
 Owner troubleshooting: [verbose errors and diagnostic-ID lookup](docs/VERBOSE_ERRORS.md).
 
 [Detection-rate, false-positive/negative and coverage tracking](docs/STEGDETECT_EVALUATION.md) separates synthetic evidence from production claims.
+
+Public checkout CI: [scope and reproduction instructions](docs/CI.md). Historical validation entries are receipts, not current deployment assertions.
