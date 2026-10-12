@@ -54,11 +54,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $probe = Join-Path $env:RUNNER_TEMP 'acl-probe'
-          New-Item -ItemType Directory -Path $probe -Force | Out-Null
-          $out = & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File scripts/protect-quarantine.ps1 -Target $probe 2>&1
-          "diag exit=$LASTEXITCODE"
-          $out | ForEach-Object { "diag ps1: $_" }
-          Get-Acl -LiteralPath $probe | Select-Object -ExpandProperty Access | ForEach-Object { "diag ace: $($_.IdentityReference) $($_.FileSystemRights)" }
+          python -c "import os, subprocess, tempfile; from pathlib import Path; d=Path(tempfile.mkdtemp()); print('target:', d); exe=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'; print('exe exists:', exe.exists()); r=subprocess.run([str(exe),'-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File','scripts/protect-quarantine.ps1','-Target',str(d)],capture_output=True,text=True,timeout=60); print('rc:', r.returncode); print('stdout tail:', r.stdout[-300:]); print('stderr tail:', r.stderr[-1500:])"
       - name: Run public contracts and synthetic evaluations
         run: python scripts/ci.py
