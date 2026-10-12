@@ -113,6 +113,7 @@ class StdioTests(unittest.TestCase):
         thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
         try:
             result=call('chat_local',{'persona':'home-assistant','messages':[{'role':'user','content':'Hello local model'}]})
+            print('TEMPDBG full result:',json.dumps(result)[:800])
             self.assertEqual(result['status'],200)
             self.assertEqual(result['content'],'Mock local reply')
             self.assertEqual(captured[0][0],'/api/chat')
