@@ -126,8 +126,8 @@ def gate(text,system_prompt=''):
             return {'status':422,'error':'Output held by local DLP for owner investigation.','incident':record['id']}
         staged.unlink()  # Clean content is released only after deletion succeeds.
         return {'status':200,'content':text}
-    except Exception:
-        return {'status':503,'error':'Local output inspection unavailable. Response withheld.'}
+    except Exception as exc:
+        return {'status':503,'error':'Local output inspection unavailable. Response withheld. TEMPDBG:'+repr(exc)[:300]}
 
 def main():
     parser=argparse.ArgumentParser(description='Owner-side quarantine inspection; never executes output')
