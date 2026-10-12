@@ -12,9 +12,10 @@ foreach ($sid in @($owner, $system)) {
     $acl.AddAccessRule($rule)
 }
 $item.SetAccessControl($acl)
-$actual = Get-Acl -LiteralPath $Target
-if (!$actual.AreAccessRulesProtected) { throw 'ACL inheritance remains enabled' }
-foreach ($rule in $actual.Access) {
-    $sid = $rule.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
-    if ($sid -notin @($owner.Value, $system.Value)) { throw 'Unexpected quarantine principal' }
+# Verify via .NET only: the Microsoft.PowerShell.Security module behind Get-Acl is not
+# reliably loadable in Windows PowerShell 5.1 on all hosts, so avoid the cmdlet here.
+$verify = (Get-Item -LiteralPath $Target).GetAccessControl([Security.AccessControl.AccessControlSections]::Access)
+if (!$verify.AreAccessRulesProtected) { throw 'ACL inheritance remains enabled' }
+foreach ($rule in $verify.GetAccessRules($true, $false, [Security.Principal.SecurityIdentifier])) {
+    if ($rule.IdentityReference.Value -notin @($owner.Value, $system.Value)) { throw 'Unexpected quarantine principal' }
 }
