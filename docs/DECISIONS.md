@@ -566,3 +566,28 @@ writer against the new agent at cutover. Retain pinned rollback, while stopping
 old raw-access agents after activation. Rollback to an older release restores
 its weaker boundary. This limits API reachability, not prompt semantics or DLP
 correctness. See INFERENCE_BROKER.md for limits and verification evidence.
+
+## Phone access through self-hosted Headscale (2026-10-15)
+
+The owner decided to reach LARPUS from his Google Pixel through a self-hosted
+Headscale control server and the stock open-source Tailscale Android client.
+No cloud anywhere: no Tailscale SaaS, no Tailscale-hosted DERP (embedded DERP
+enabled, default DERP map stripped), no third-party IdP and no cloud DNS. Optional
+self-hosted OIDC may add a sign-in layer. Authelia is recommended over Authentik
+for its smaller footprint. LARPUS's existing password auth remains required.
+
+Rationale: WireGuard end-to-end encryption, with control and relay on owner
+hardware, keeps the local-first, single-owner, no-account principle. The gateway
+is never exposed to WAN, and only Headscale's control/DERP ports would be reachable.
+Headscale runs in its own rootless Podman pod, separate from the offline larpus
+pod. This supersedes the Tailscale SaaS route in TAILSCALE_DEMO.md for ongoing
+access.
+
+Constraint: no port forwarding on the home router of any kind (no 443, no 3478,
+no UPnP), and no inbound IPv6 pinholes. The home PC makes outbound connections only;
+LAN.md's no-forwarding rule stands unchanged. Reachability is therefore either
+LAN-only (recommended: zero external infrastructure) or Headscale with embedded DERP on an
+off-site owner-controlled host. A rented VPS would be third-party infrastructure,
+mitigated by end-to-end WireGuard (the relay sees only ciphertext), disk encryption
+and no LARPUS data there. Design only: nothing is deployed. Reachability, OIDC, WSL networking and
+Android CA trust remain owner decisions or open questions. See MOBILE-ACCESS.md.
