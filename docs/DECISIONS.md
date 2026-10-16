@@ -591,3 +591,8 @@ off-site owner-controlled host. A rented VPS would be third-party infrastructure
 mitigated by end-to-end WireGuard (the relay sees only ciphertext), disk encryption
 and no LARPUS data there. Design only: nothing is deployed. Reachability, OIDC, WSL networking and
 Android CA trust remain owner decisions or open questions. See MOBILE-ACCESS.md.
+The design follows zero-trust tenets (NIST SP 800-207): no implicit trust from tailnet
+membership, a default-deny Headscale policy allowing only the tagged Pixel to reach the gateway port
+(no routes, exit node or SSH), single-use pre-auth keys, expiring and revocable node keys,
+per-request gateway authentication and local-only logs. Device posture on stock Android
+remains an acknowledged gap.

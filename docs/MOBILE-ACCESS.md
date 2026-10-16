@@ -144,20 +144,12 @@ Headscale with no policy file **allows all traffic**, and a policy without
 So a policy file is mandatory. Grants are the recommended form. Sketch, with
 users and tags to be fixed at implementation:
 
-```jsonc
-{
-  "tagOwners": { "tag:larpus": ["owner@"] },
-  "grants": [
-    // Only the owner's (untagged) devices, i.e. the Pixel, may reach LARPUS on the gateway port.
-    { "src": ["owner@"], "dst": ["tag:larpus"], "ip": ["tcp:<gateway-or-forward-port>"] }
-  ]
-  // No other grants: LARPUS cannot initiate to the phone; nothing else is allowed.
-}
-```
+The authoritative policy file is in [section 15](#15-zero-trust-networking-nist-sp-800-207).
+In short: the Pixel is tagged `tag:pixel`, the PC node is tagged `tag:larpus`, and one
+grant allows `tag:pixel` to reach `tag:larpus` on the gateway port only.
 
-- The PC node is tagged `tag:larpus`. Only the Pixel is registered as an untagged owner device.
-  Registering any other device would grant it access, so new registrations need
-  owner approval, and preauth keys are single-use and short-lived.
+- The PC node is tagged `tag:larpus` and the Pixel `tag:pixel`. Any other node, including
+  an untagged owner device, matches no grant and reaches nothing.
 - No exit nodes, subnet routes, Tailscale SSH or Taildrive.
 - After each reload, check that `headscale` logs a successful policy load. A
   rejected policy must not leave a stale filter. This was fixed in v0.29.5
@@ -297,7 +289,7 @@ Each step is independent of the frozen release pointer and needs no reseal.
 
 ## 14. Implementation plan (NOT executed, requires owner approval per step)
 
-0. The owner decides D1 (reachability: R-B LAN-only recommended, or R-A off-site), D2 (OIDC yes/no, Authelia), Q1 (WSL
+0. The owner decides D1 (reachability: R-B LAN-only recommended, or R-A off-site), D4 (shorter session lifetime), D2 (OIDC yes/no, Authelia), Q1 (WSL
    networking) and Option A/B/C for the PC node (section 3).
 1. **Phone CA test first (offline)**: a throwaway Headscale on the LAN only, with a cert from
    the chosen CA. Check whether the Tailscale Android app accepts it (Q2). Stop here if it does not.
@@ -319,7 +311,112 @@ Each step is independent of the frozen release pointer and needs no reseal.
     a second device, revocation drill and the kill switch drill.
 11. Update STATUS.md, LAN.md and DECISIONS.md with the actual results.
 
-## 15. Open questions
+## 15. Zero Trust Networking (NIST SP 800-207)
+
+This section maps the design to the seven zero-trust tenets in
+[NIST SP 800-207, *Zero Trust Architecture*, section 2.1](https://doi.org/10.6028/NIST.SP.800-207)
+([CSRC page](https://csrc.nist.gov/pubs/sp/800/207/final)). SP 800-207's premise is
+that no implicit trust is granted based on network location or ownership, and that
+subject and device authentication happen before any session to a resource. In this design,
+being on the tailnet, on the LAN or on the owner's own phone is **never** enough on its own.
+
+### Controls
+
+1. **Per-node WireGuard key identity.** Every node has its own WireGuard key pair, plus a node
+   key registered in Headscale. Packets are accepted only from a peer whose public
+   key the control plane has distributed. Identity is the key, not the IP or the network.
+2. **Tailnet membership grants no implicit trust.** Joining the tailnet gives a node
+   an address, not access. The policy is default-deny. A node that matches no grant
+   reaches nothing, and LARPUS still requires its password.
+3. **Default-deny Headscale policy.** Headscale with no policy, or with a policy lacking
+   `grants`/`acls`, allows everything ([Headscale policy docs](https://headscale.net/stable/ref/acls/)),
+   so this file is mandatory and checked after every reload:
+
+   ```jsonc
+   // /etc/headscale/policy.json  (policy.path in config.yaml)
+   {
+     "tagOwners": {
+       "tag:pixel":  ["owner@"],   // the owner's Google Pixel, the only client
+       "tag:larpus": ["owner@"]    // the PC node that fronts the LARPUS gateway
+     },
+     "grants": [
+       {
+         "src": ["tag:pixel"],
+         "dst": ["tag:larpus"],
+         "ip":  ["tcp:<GATEWAY_TAILNET_PORT>"]   // the gateway port only, e.g. tcp:8080
+       }
+     ],
+     // No "ssh" section: Tailscale SSH denied.
+     // No "autoApprovers": no subnet routes and no exit node can be approved automatically,
+     //   and none are approved manually. The PC node does not advertise any.
+     // No grant to autogroup:internet: no exit-node use.
+     // No grant from tag:larpus: LARPUS cannot initiate connections to the phone.
+   }
+   ```
+
+   Also: the PC node runs without `--advertise-routes` or `--advertise-exit-node`, and
+   without `--ssh`. `headscale nodes list-routes` should show nothing. Policy tests
+   (`"tests"` in the policy file, supported by Headscale) should assert that the Pixel can reach the gateway
+   port and nothing else, and that any other node is denied. Exact syntax is confirmed against
+   the pinned version (Q11).
+4. **Per-request authentication at the gateway.** Every LARPUS page and API request on the
+   authenticated listener checks a session cookie, plus Host/Origin, the password login and rate limits
+   ([AUTH.md](AUTH.md)). **Short session lifetime:** the current fixed lifetime is 8 hours.
+   For tailnet access this design proposes something shorter, for example 1 hour idle / 4 hours absolute.
+   That is a **code change** for a separate PR (D4); it is not in effect today.
+5. **Optional self-hosted OIDC re-authentication.** With Authelia (section 7) and a
+   finite `node.expiry`, the Pixel must periodically re-authenticate to the IdP with a second
+   factor before its node key is renewed. This adds to the gateway password; it does not replace it.
+6. **Node approval and single-use, short-lived pre-auth keys.** No open registration:
+   each node is registered by explicit owner action (`headscale nodes register`) or
+   with a pre-auth key that is single-use, non-reusable, non-ephemeral, expires in 1 hour or less
+   and carries the right tag. Unused keys are expired right after enrollment.
+7. **Key expiry and instant revocation.** Use a finite `node.expiry` (30 days proposed).
+   Lost phone: `headscale nodes expire -i <id>` cuts it off immediately, then
+   `headscale nodes delete`. Then rotate the LARPUS password and restart the gateway to kill
+   sessions (section 11). Revocation needs the control server to be up and reachable by
+   the PC node. Peers enforce the updated netmap.
+8. **Local-only access logs.** The gateway's access and auth events and Headscale's
+   registration and policy logs stay on owner storage: the PC, or in R-A the off-site host, which is
+   then copied home over the tailnet with no third-party log service. Client log upload
+   to Tailscale Inc. is disabled (`logtail.enabled: false`, Q3).
+9. **Gateway bound only to the tailnet interface.** The tailnet-facing listener binds
+   only to the PC node's tailnet IP (100.64.0.0/10), never 0.0.0.0 and never a WAN address.
+   The password-free loopback listener is never reachable over the tailnet. *Caveat:* the
+   gateway runs on Windows, so this binding is direct only with PC option C (the Windows client). With A or B it is
+   done by the tailnet container listening on its tailnet IP and forwarding to the
+   authenticated listener (sections 3 and 4, Q7).
+
+### Mapping to the SP 800-207 tenets
+
+| # | Tenet (SP 800-207 section 2.1, paraphrased) | How this design meets it |
+|---|---|---|
+| 1 | All data sources and computing services are resources | The LARPUS gateway is the protected resource. Headscale and the PC node are infrastructure, not trusted zones |
+| 2 | All communication is secured regardless of network location | WireGuard end to end on the tailnet, and TLS at the gateway even inside the tunnel. LAN and tailnet are treated alike |
+| 3 | Access is granted per session | Gateway sessions are per login, with a short lifetime (proposed), Lock Station, and invalidation on restart |
+| 4 | Access is determined by dynamic policy, including client identity, application and observable state | Node key + tag (Headscale grant) and password session (gateway). Device state is limited (see gaps) |
+| 5 | The integrity and security posture of all owned assets is monitored | Partial: Headscale node list/last-seen, pinned versions and local logs. No device posture (gap) |
+| 6 | Authentication and authorization are dynamic and strictly enforced before access | Node approval, expiring node keys, revocation, the password gate per session, optional OIDC with a second factor |
+| 7 | Collect information to improve security posture | Local-only Headscale and gateway logs, periodic review of the node list and ACL (manual) |
+
+### Remaining gaps (stated honestly)
+
+- **Device posture:** stock Android with no MDM provides no attestable posture signal
+  (OS patch level, root/bootloader state, screen-lock policy) to Headscale or LARPUS.
+  Headscale does not support `postures`/`srcPosture`
+  ([Headscale policy limitations](https://headscale.net/stable/ref/acls/#limitations)).
+  Posture is therefore owner discipline: current updates, a locked bootloader and a strong screen lock.
+- **No continuous evaluation / PDP:** policy is static (file reload). There is no
+  risk-adaptive engine that re-scores a session mid-flight (tenet 4/5 only partly met).
+- **Single administrator, single control plane:** whoever controls Headscale, the owner or, in R-A,
+  the VPS host operator, can add nodes or rewrite policy. The gateway password is the backstop.
+- **Session lifetime** is still 8 hours until the D4 code change lands.
+- **Shared upstream IP:** with a forwarding container (PC options A/B), the gateway sees one
+  source IP for all tailnet requests, so per-client rate limiting collapses to one bucket.
+- **The trusted PC itself** is out of scope (same boundary as [AUTH.md](AUTH.md)).
+- **Logs** are reviewed manually; there is no alerting.
+
+## 16. Open questions
 
 - **Q1** NAT plus portproxy (no UDP/STUN) versus mirrored networking (affects all distros).
   Is mirrored mode acceptable alongside docker-desktop on this machine?
@@ -339,3 +436,7 @@ Each step is independent of the frozen release pointer and needs no reseal.
   or a high-port forward. Choose one.
 - **Q9** Embedded DERP limits: no `/generate_204` captive-portal support, and it is the single
   relay ([DERP docs](https://headscale.net/stable/ref/derp/)). Is that acceptable on cellular?
+- **Q10** Tagged nodes and the Android app: confirm that a pre-auth key carrying `tag:pixel` works
+  with the stock Android client, and that a tagged phone keeps full client function
+  (the demo noted that tagged devices lack user identity for Serve; Serve is not used here).
+- **Q11** Exact Headscale v0.29.x grant/`tests` syntax for the policy in section 15.
