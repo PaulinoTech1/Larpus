@@ -10,6 +10,21 @@ Owner decision (2026-10-15, 11:54 PM ET): use the **Tailscale coordination servi
 [Tailnet Lock](https://tailscale.com/kb/1226/tailnet-lock)** instead of self-hosted Headscale.
 The Headscale design is kept briefly in section 14 as the documented alternative and exit path.
 
+## Approved owner decisions (2026-10-16, 12:14 AM ET)
+
+| ID | Decision | Status |
+|---|---|---|
+| D2 | Dedicated Google account in **Advanced Protection** with **two FIDO2 keys** (primary plus backup), no phone recovery | **Approved** |
+| D3 | **Raspberry Pi 5** as the second Tailnet Lock signer | **Approved** |
+| D4 | Gateway sessions **15 min idle / 4 h absolute** | **Approved** (implemented in H1) |
+| D5 | **LAN HTTPS listener turned OFF**; LARPUS is reachable only on localhost plus the tailnet | **Approved** (implemented in H5; see the impact note in section 15) |
+| D6 | **Hardware FIDO2 key** as LARPUS's second factor, **TOTP** as backup | **Approved** (implemented in H4) |
+| D7 | **Local CA** for the gateway's MagicDNS hostname (no `tailscale cert`, no CT disclosure) | **Approved** |
+| D8 | **Do not** share a Tailnet Lock disablement secret with Tailscale support | **Approved** (via "all recommendations") |
+
+Still pending owner approval: the code PRs H1-H6 (each separately), all proposed thresholds, and the open
+questions in section 16. Approving a decision is not approval to implement it.
+
 ## 1. Scope of the cloud exception
 
 This is an **explicit, scoped owner exception** to the project's no-cloud principle. It covers only:
@@ -536,7 +551,8 @@ on your own infrastructure.
 
 ## 15. Implementation plan (NOT executed, requires owner approval per step)
 
-0. The owner decides D2 (Advanced Protection), D3 (Pi as second signer), D4, D5, D6, D7, D8 and the thresholds.
+0. **Done 2026-10-16:** D2-D8 approved (table at top). Still open: thresholds, Q1-Q19, and each of H1-H6.
+   Owner prerequisites: the hardware and setup list below.
 1. Create the dedicated Google account. Enroll two FIDO2 keys, enroll in Advanced Protection, add no phone. Create the tailnet. Choose the random tailnet DNS
    name. Paste the section 4 policy **before** adding devices.
 2. PC: install the Windows client, set `TS_NO_LOGS_NO_SUPPORT=true`, log in, and tag `tag:larpus`.
@@ -558,9 +574,18 @@ before merge and before activation as a release:**
   persistent exponential bans, and the CSRF token plus mandatory Origin.
 - **H4 MFA:** TOTP, hashed recovery codes and lockout first, then WebAuthn once the MagicDNS hostname and
   trusted TLS exist (Q5, D6, D7). Step-up for sensitive actions. Local-only enrollment.
-- **H5 Tailnet listener:** bind only to the PC's Tailscale IP (lifting the RFC1918-only startup check for
-  that one 100.64.0.0/10 address), the Pixel-IP allowlist, and the remote kill switch.
-- **H6 Infrastructure (no repo code):** the Windows Firewall Pixel-only rule (elevated). It runs only after explicit approval.
+- **H5 Tailnet listener and LAN-off (D5):** bind only to the PC's Tailscale IP (lifting the RFC1918-only startup check for
+  that one 100.64.0.0/10 address), **remove/disable the LAN HTTPS listener**, the Pixel-IP allowlist, and the remote kill switch.
+**D5 impact (LAN listener off):** every existing LAN client of `https://192.168.1.2:8080` stops working
+and must use the tailnet (installing Tailscale and needing its own grant) or the PC itself. `scripts/start-lan.ps1`,
+`scripts/enable-lan-firewall.ps1` and the TCP 8080 home-subnet firewall rule become obsolete; remove the rule in H6.
+[HTTPS.md](HTTPS.md), [AUTH.md](AUTH.md) and [LAN.md](LAN.md) (and README/DEPLOYMENT/STATUS mentions of the LAN URL)
+must be rewritten in the H5 PR: the "LAN HTTPS requires a password" text becomes "the tailnet HTTPS listener requires
+password plus MFA", and the certificate SAN changes from the 192.168.1.2 IP to the MagicDNS hostname (local CA, D7).
+The at-home fallback while away from the PC becomes the tailnet itself. The Pixel at home also uses the tailnet.
+[TAILSCALE_DEMO.md](TAILSCALE_DEMO.md)'s bridge targets the LAN listener and stops working; retire it in the same PR.
+
+- **H6 Infrastructure (no repo code):** the Windows Firewall Pixel-only rule, and removal of the old home-subnet 8080 rule (elevated). It runs only after explicit approval.
 
 ## 16. Open questions
 
@@ -596,8 +621,16 @@ Authelia/Authentik outbound calls for Headscale, and Headscale policy syntax and
   Personal plan.
 - **Q19** Tailscale re-authentication with an APP Google account on the Pixel: confirm the FIDO2 key works over NFC in the Tailscale app's login browser flow.
 
-Decisions needed from the owner: **D2** enroll the dedicated Google account in Advanced Protection (recommended) and buy two FIDO2 keys; **D3** Pi 5 as second signer;
-**D4** session lifetime (15 min idle / 4 h, proposed); **D5** disable the LAN HTTPS listener and use only loopback
-plus tailnet; **D6** hardware FIDO2 key (recommended) versus a device-bound passkey, with TOTP as fallback;
-**D7** local CA (recommended) versus `tailscale cert` with CT disclosure; **D8** do not escrow a disablement
-secret with Tailscale support (recommended); plus all thresholds and approval of H1-H6.
+Owner decisions D2-D8 were **approved 2026-10-16, 12:14 AM ET** (table at top). Still needing approval:
+the thresholds, the questions above, and each of H1-H6.
+
+**Owner hardware and setup prerequisites, in order:**
+
+1. Two FIDO2 security keys, each with **NFC and USB-C**, supporting **FIDO2/WebAuthn (CTAP2)** with a PIN.
+   One is the primary and one is the backup; both are used for Google and both are enrolled as LARPUS second factors (D6).
+2. A dedicated Google account (new, used only for this tailnet). Enroll both keys, then Advanced Protection, with no phone number.
+3. Offline storage in two physical places for the backup key, the Tailnet Lock disablement secrets and any Google backup codes.
+4. Raspberry Pi 5 on the home network with a fresh, minimal, updated OS (signer only).
+5. An offline open-source TOTP app on the Pixel with cloud backup off (Q10).
+6. Windows: administrator access for the elevated Tailscale install and firewall rule changes.
+7. The Pixel: updated, locked bootloader, strong screen lock, Tailscale app from Play/F-Droid.

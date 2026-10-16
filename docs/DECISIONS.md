@@ -635,3 +635,19 @@ single owner, and **Tailnet Lock limits trust in both Google and Tailscale**: ne
 without a PC or Pi signature. Self-hosted Authelia through Tailscale custom OIDC is only a documented alternative.
 Tailscale requires custom-OIDC IdPs to be publicly reachable with a custom-domain WebFinger, which conflicts
 with no-port-forwarding unless a second cloud tunnel is accepted. Design only; see MOBILE-ACCESS.md.
+
+## Mobile access decisions approved (2026-10-16, 12:14 AM ET)
+
+The owner approved the recommendations in MOBILE-ACCESS.md:
+- D2: a dedicated Google account in Advanced Protection with two FIDO2 keys and no phone recovery.
+- D3: the Raspberry Pi 5 as the second Tailnet Lock signer.
+- D4: gateway sessions of 15 minutes idle and 4 hours absolute.
+- D5: the LAN HTTPS listener turned off, so LARPUS is reachable on localhost and the tailnet only.
+- D6: a hardware FIDO2 key as LARPUS's second factor, with TOTP as backup.
+- D7: the local CA for the gateway's MagicDNS hostname.
+- D8: no disablement secret shared with Tailscale support (approved as part of "all recommendations").
+
+D5 retires LAN clients, the start-lan and LAN firewall scripts, and the Tailscale demo bridge, and requires
+rewriting HTTPS.md, AUTH.md and LAN.md in the implementing PR. None of this is implemented yet. The code PRs
+H1-H6, the thresholds and the open questions each still need separate approval.
+
