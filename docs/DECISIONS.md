@@ -627,12 +627,11 @@ independent of Tailscale. All zero-trust and hardening controls stay unchanged. 
 client so the gateway can bind only to its tailnet IP. Self-hosted Headscale remains the documented
 alternative and exit path.
 
-The owner also asked for a self-hosted OIDC IdP (Authelia) as the Tailscale identity provider.
-This is **blocked under the current constraints**. Tailscale's custom OIDC requires a custom domain
-with a public WebFinger endpoint, and states that self-hosted IdPs "must be publicly accessible on the
-internet". Tailscale's servers fetch discovery and JWKS and exchange the token server-side, so a
-browser-only redirect is not enough. Funnel is circular (the tailnet must exist first, and the IdP host
-would depend on itself) and cannot serve the custom domain. Cloudflare Tunnel works, but it would be a second
-cloud exception: it terminates TLS on IdP traffic and needs cloud DNS. Recommendation: a dedicated
-mainstream SSO account with hardware-key-only MFA, relying on Tailnet Lock to stop any IdP-side node
-injection. Custom OIDC remains an open owner decision (D9). Design only; see MOBILE-ACCESS.md.
+Identity provider (owner decision, same night, superseding a brief self-hosted OIDC idea): **Google**,
+with a dedicated Google account used only for this tailnet. It has two hardware FIDO2 security keys (primary and backup),
+Google's Advanced Protection Program (its "two security keys" configuration), and no SMS or phone recovery.
+Rationale: Google's account-attack detection and patching beat a self-maintained IdP's upkeep for a
+single owner, and **Tailnet Lock limits trust in both Google and Tailscale**: neither can add a node
+without a PC or Pi signature. Self-hosted Authelia through Tailscale custom OIDC is only a documented alternative.
+Tailscale requires custom-OIDC IdPs to be publicly reachable with a custom-domain WebFinger, which conflicts
+with no-port-forwarding unless a second cloud tunnel is accepted. Design only; see MOBILE-ACCESS.md.

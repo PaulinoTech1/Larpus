@@ -16,7 +16,7 @@ This is an **explicit, scoped owner exception** to the project's no-cloud princi
 
 - the Tailscale **coordination plane** (node registration, key and policy distribution, and the admin console);
 - Tailscale-operated **DERP relays** (which relay WireGuard ciphertext when no direct path exists);
-- the SSO identity provider login that Tailscale requires for the tailnet admin account (section 5).
+- **Google** as the identity provider for a dedicated tailnet-only account (section 5).
 
 It does **not** cover anything else. No inference, prompts, conversations, notes, corpus, model files,
 passwords or keys go to any cloud service. Traffic between the Pixel and the PC is WireGuard end to
@@ -53,14 +53,14 @@ local CA key, the Tailnet Lock keys and disablement secrets, the SSO account, an
 | Tailscale **widening the ACL** or changing DNS among already-signed nodes | yes | Not covered by lock. The Windows Firewall Pixel-only rule and the gateway allowlist, password and MFA (sections 10, 11) do not depend on Tailscale |
 | Tailscale **observing metadata** | accepted (exception) | Minimised: client logs off, random tailnet DNS name, non-identifying machine names (sections 7, 9). See section 6 |
 | Tailscale **outage / account suspension** | accepted | LAN access is the fallback; the Headscale exit path (section 14) |
-| SSO account takeover | yes | Dedicated account, hardware-key-only MFA, offline recovery codes (section 5). Lock still blocks new unsigned nodes |
+| SSO (Google) account takeover | yes | Dedicated account, two FIDO2 keys, APP, no phone recovery (section 5). Lock still blocks new unsigned nodes |
 | Stolen/lost Pixel | yes | Remove the node, rotate the LARPUS password, MFA required (section 12) |
 | Signing-node compromise (PC or Pi) | yes | `tailscale lock revoke-keys` co-signed by the other signer (section 3). Gateway MFA is still required |
 | Password guessing / credential stuffing via the phone path | yes | MFA (11.1), per-identity and per-IP login buckets, exponential temporary bans (11.2, 11.3) |
 | Stolen session cookie | yes | Secure/HttpOnly/SameSite=Strict `__Host-` cookie, short sessions, MFA step-up for sensitive actions (11.1, 11.4) |
 | GPU exhaustion by a valid but abusive client | yes | Global inference concurrency of 1 and per-session chat buckets (11.3) |
 | Certificate Transparency leak of hostnames | yes | Local CA by default; if `tailscale cert` is chosen, use non-identifying names (section 7) |
-| A public self-hosted IdP (only if custom OIDC is chosen) | conditional | Not recommended (5.1). If chosen: Authelia hardening, an on-demand tunnel and a second recorded exception |
+| Google account compromise or Google acting against the owner | yes | Dedicated account, two hardware keys, Advanced Protection; Tailnet Lock blocks node injection anyway |
 | Owner's PC compromised | no | Same trusted-machine boundary as [AUTH.md](AUTH.md) |
 | Nation-state / targeted Android exploit | no | Out of scope |
 
@@ -161,12 +161,23 @@ Notes:
 
 ## 5. Identity, enrollment and keys
 
-- **SSO account (recommended):** create a **dedicated** account used only as the tailnet admin, not the owner's
-  everyday email. A tailnet must be created through an SSO provider; Tailscale's passkey users cannot create a
-  tailnet ([passkeys KB](https://tailscale.com/kb/1269/passkeys)). On that provider, enable **hardware security key
-  (FIDO2) as the only second factor** where it allows that. Disable SMS and push fallbacks, keep recovery codes
-  offline with the disablement secrets, and use a unique password. Which provider is D2 (Q16). A self-hosted custom
-  OIDC IdP was evaluated and is **blocked** under the current constraints (5.1).
+- **Identity provider: Google** (owner decision 2026-10-15, superseding the self-hosted OIDC idea).
+  Use a **dedicated Google account used only for this tailnet**, not the owner's everyday account and not used for
+  Gmail, Drive or anything else. Tailscale's Google sign-in is the IdP; a tailnet must be created through an SSO
+  provider, and passkey-only Tailscale users cannot create one ([passkeys KB](https://tailscale.com/kb/1269/passkeys)).
+  - **Two hardware FIDO2 security keys** (primary plus backup, for example Titan or YubiKey with NFC/USB-C), both enrolled.
+    The backup is stored offline with the Tailnet Lock disablement secrets. **No Android or Google Password Manager passkey**
+    on this account, because GPM passkeys sync through Google's cloud and are tied to the everyday phone.
+  - **Google Advanced Protection Program** (recommended, D2): free. Per Google's
+    [APP FAQ](https://landing.google.com/advancedprotection/faq/) it needs at least one passkey or FIDO key and offers a
+    configuration of **"2 passkeys or security keys"** as primary and secondary factors. That allows enrolling with the two hardware keys and
+    **no recovery phone**. Sign-in then always needs a key, and lost-key recovery goes through Google's slow
+    manual process ("may take a few days"). That trade-off is accepted, because Tailnet Lock and LAN access cover the gap.
+    APP's FAQ also suggests adding recovery email and phone; **do not add a phone number** (no SMS or phone recovery).
+    A recovery email only if it is itself hardware-key protected (Q16).
+  - No SMS 2-step verification, no Google prompts on a phone, no backup codes stored online (if generated, print them offline).
+  - **Tailnet Lock on top:** even a fully compromised Google account (or Tailscale) cannot add a node without a
+    PC or Pi signature (section 3). Trust in both Google and Tailscale is limited to metadata and availability.
 - **Admin console:** sessions last 30 days. Log out after each use and use a dedicated browser profile.
   No API keys, OAuth clients, webhooks or log streaming.
 - **Enrollment:**
@@ -181,71 +192,15 @@ Notes:
   it is tagged. On re-authentication, lock re-signs the new node key automatically.
 - Device approval is not available alongside lock; the lock signature is the approval (section 3).
 
-### 5.1 Custom OIDC with a self-hosted IdP (Authelia): evaluated, **blocked under current constraints**
+### 5.1 Alternative (not chosen): self-hosted Authelia via Tailscale custom OIDC
 
-The owner asked for a self-hosted OIDC SSO (Authelia recommended) as the Tailscale identity provider.
-Findings from [Tailscale's custom OIDC KB](https://tailscale.com/kb/1240/sso-custom-oidc) and
-[Authelia's Tailscale integration guide](https://www.authelia.com/integration/openid-connect/clients/tailscale/):
-
-- **A custom domain is required.** The admin email must be at a domain the owner controls, and
-  `https://<domain>/.well-known/webfinger` must return a JRD whose issuer exactly matches the IdP's
-  `/.well-known/openid-configuration` issuer. Authelia does not serve WebFinger, so a separate web server at the
-  domain root must. Tailscale fetches it server-side during setup ("Get OIDC Issuer").
-- **The IdP must be publicly reachable. This is a BLOCKER.** The KB says verbatim: *"Self-hosted identity
-  providers must be publicly accessible on the internet. IP block listing may interfere with the ability to sign
-  up or authenticate to your tailnet."*
-- **Is only the browser redirect needed? No.** In the OIDC authorization-code flow the phone or PC
-  *browser* visits the authorization endpoint, but **Tailscale's servers** fetch WebFinger and the discovery
-  document, **exchange the code at the token endpoint** (server to server, with the client secret,
-  `client_secret_basic` in Authelia's guide) and fetch **JWKS** to verify the ID token. So WebFinger, discovery,
-  token and JWKS must be reachable from Tailscale's servers on the public internet. Only the
-  authorization page could in theory be browser-only. That split is undocumented and untested (Q19), and it would
-  still need public token/JWKS endpoints.
-- **Login is needed after setup too:** every node-key re-authentication (30-day expiry, section 5) and every
-  admin-console login goes through the IdP. If it is unreachable when the PC's or Pixel's key expires, that
-  node drops off the tailnet. Tailnet Lock's automatic re-signing still needs the login to succeed.
-- **Other requirements:** scopes `openid profile email`; ES256 or RSA ≥ 2048 signatures; no JWE ID tokens;
-  callback `https://login.tailscale.com/a/oauth_response`. Migrating an existing tailnet to custom OIDC
-  works only for custom-domain tailnets, so decide **before** creating the tailnet.
-- **Plan:** a custom-domain sign-up is treated as business use and starts a 14-day trial. Personal use can
-  then choose the free Personal plan ([pricing FAQ](https://tailscale.com/pricing)). The KB does not state a
-  plan requirement for custom OIDC, so confirm it is usable on Personal (Q20).
-
-**No-port-forward reachability options for the IdP (honest assessment):**
-
-| Option | How | Verdict |
-|---|---|---|
-| **A. Tailscale Funnel** on the Pi | Funnel publishes a node's local service through Tailscale's ingress to `https://<node>.<tailnet>.ts.net` | **Not viable as the IdP path.** (1) **Bootstrap circularity:** the tailnet must be created *with* the IdP, but Funnel only exists once a tailnet and node exist. (2) **Self-dependency:** if the Pi's own key expires or it is logged out, Funnel stops and the IdP needed to log it back in vanishes; the Pi would need key expiry disabled, which defeats re-authentication. (3) **WebFinger is on the custom domain**, and Funnel serves only `ts.net` names, so it cannot answer there. (4) The Funnel name gets a public Let's Encrypt cert, a CT disclosure. (5) It puts the IdP on the public internet anyway |
-| **B. Cloudflare Tunnel (or similar outbound tunnel)** | `cloudflared` on the Pi dials out. Cloudflare serves the custom domain (WebFinger plus issuer) publicly | **Technically viable, but a second cloud exception:** Cloudflare **terminates TLS** and sees IdP traffic in plaintext (the login page, password, session cookies and tokens; WebAuthn assertions remain origin-bound). It **requires the domain's DNS on Cloudflare**, contradicting the no-cloud-DNS rule. The IdP becomes internet-exposed (mitigated by Cloudflare Access rules, which are themselves cloud). Run on demand only (tunnel up just for sign-up or re-auth) to cut exposure, accepting failed re-auth if forgotten |
-| **C. Authelia on the Pi 5, LAN-only** | An isolated IdP box at home | **Not usable by Tailscale:** its servers cannot reach it, so sign-up fails. Useful only as a LAN SSO for LARPUS itself (not proposed) |
-| **D. Owner-controlled public host** | Authelia on a VPS or off-site hardware | No such hardware (owner statement); a VPS is a third cloud dependency |
-
-**Recommendation:** **do not adopt custom OIDC now.** Every working path needs either a second cloud
-exception (Cloudflare, which also sees plaintext IdP traffic and needs cloud DNS) or public inbound exposure
-that the no-port-forwarding rule forbids. The Tailscale exception is already scoped to the coordination plane
-and DERP. Instead, use the dedicated mainstream-SSO account with **hardware-key-only MFA** (above). Note that
-the IdP is not the main safeguard here: **Tailnet Lock** blocks any IdP or Tailscale-side login from adding an
-unsigned node, so a self-hosted IdP adds less than it would without lock. If the owner still wants it, the least-bad
-path is **B with an on-demand tunnel**, recorded as a second explicit exception (D9).
-
-**Authelia hardening (applies if D9 is chosen, or to any later self-hosted IdP use):**
-
-- **Placement:** the Pi 5 as a dedicated IdP box (nothing else on it besides the Tailscale signer role; Q3),
-  or its own rootless Podman pod. **Never** in or beside the offline larpus pod.
-- **Second factor:** `authorization_policy: two_factor` on the Tailscale client. WebAuthn with a **hardware
-  FIDO2 key** is required (user verification required); TOTP is a fallback only. No SMS, no push, no Duo.
-- **Backends:** `authentication_backend.file` (argon2id hashes) and `storage.local` (SQLite) on an encrypted
-  volume. `notifier.filesystem` (no SMTP relay), so identity-verification codes go to a local file read at the box.
-- **Regulation** ([docs](https://www.authelia.com/configuration/security/regulation/)): `modes: [user, ip]`.
-  Proposal: `max_retries: 3`, `find_time: 15m`, `ban_time: 1h` (defaults are 3, 2 m and 5 m). Bans are
-  manageable with `authelia storage bans`. Note that regulation covers the username/password endpoint.
-- **Client config:** a hashed client secret (pbkdf2/argon2), only the Tailscale callback as redirect URI, a
-  single user, short sessions and `remember_me` disabled. Confirm PKCE support (Authelia's tested Tailscale guide sets `require_pkce: false`; Q19).
-- **Outbound calls:** Authelia's **NTP startup check defaults to `udp://time.cloudflare.com:123`**
-  ([NTP docs](https://www.authelia.com/configuration/miscellaneous/ntp/)). Point it at a local NTP source
-  (the router or the Pi's chrony). Disabling the check is unsupported. No SMTP. Firewall the box outbound to only
-  the tunnel and NTP. Check the release notes for any update or telemetry callbacks (Q21).
-- **Logs:** local file only. Back up the SQLite DB and the file backend offline. Pin the image by digest.
+Kept only as a documented alternative. Tailscale's [custom OIDC KB](https://tailscale.com/kb/1240/sso-custom-oidc)
+requires a **custom domain** serving `/.well-known/webfinger`, and states that *"self-hosted identity providers must be
+publicly accessible on the internet."* Tailscale's servers fetch WebFinger and discovery, exchange the code at the token
+endpoint and verify against JWKS, so a browser-only redirect is not enough. With no port forwarding, that would need an
+outbound tunnel such as Cloudflare Tunnel, which is a second cloud dependency that terminates TLS on IdP traffic and needs
+cloud DNS. Tailscale Funnel is circular for an IdP: the tailnet must exist first, the IdP host would depend on its own
+login, and Funnel cannot serve the custom domain. Authelia fits without public exposure only with the Headscale exit path (section 14).
 
 ## 6. What Tailscale sees (metadata)
 
@@ -333,7 +288,7 @@ Controls:
 3. **Default-deny policy:** only `tag:pixel` (with Android posture) can reach `tag:larpus` on the gateway port.
    There are no routes, exit nodes or SSH, and `tests` guard it (section 4).
 4. **Per-request authentication at the gateway** with short sessions: 15 min idle / 4 h absolute, proposed (D4, 11.4).
-5. **Re-authentication:** node key expiry every 30 days through the dedicated SSO account with hardware-key MFA, plus
+5. **Re-authentication:** node key expiry every 30 days through the dedicated Google account (two FIDO2 keys, APP), plus
    gateway MFA step-up for sensitive actions (11.1).
 6. **Enrollment control:** one-off, short-lived, tagged auth keys that must be **pre-signed by a lock signer**.
 7. **Expiry and revocation:** see section 12.
@@ -359,7 +314,7 @@ Remaining gaps (stated honestly):
 - **The policy is not lock-protected:** the coordination server delivers filters and DNS (section 3). Layers 2
   and 3 of 11.2 compensate.
 - **The metadata exception** (section 6) and **availability** depend on Tailscale.
-- **The identity provider is a mainstream cloud SSO** (custom OIDC is blocked, 5.1). Tailnet Lock limits what an IdP compromise can do.
+- **The identity provider is Google** (cloud). Tailnet Lock limits what an IdP compromise can do.
 - **No continuous evaluation engine:** static policy, manual review.
 - **Signer keys** are stored in software on the PC and Pi.
 - **Session lifetime** stays 8 hours until H1/D4 land. **Alerts** are PC-local only.
@@ -438,7 +393,7 @@ The password check is unchanged (scrypt, constant-time compare).
   applies to every non-loopback listener (LAN and tailnet).
 
 **MFA on the Tailscale admin and enrollment path:** see section 5 (a dedicated SSO account with
-hardware-key-only MFA; self-hosted custom OIDC was evaluated in 5.1). Enrolling the Pixel also needs a
+two FIDO2 keys and Advanced Protection). Enrolling the Pixel also needs a
 **Tailnet Lock signature from the PC**, which acts as physical presence (section 3). No Tailscale API keys or OAuth
 clients are created.
 
@@ -565,8 +520,7 @@ Everything this design needs is on the free **Personal** plan, which is for **no
 expiry, MagicDNS/HTTPS, basic posture attributes and passkeys. **Tailnet Lock** is listed for "Personal and
 Enterprise" plans ([Tailnet Lock KB](https://tailscale.com/kb/1226/tailnet-lock)). Paid-only and **not used**:
 MDM/EDR posture integrations, network flow logs, log streaming, custom SSH check periods, advanced roles.
-Device approval exists but conflicts with lock. A custom-domain sign-up (needed only for custom OIDC, 5.1)
-starts a business trial, after which the free plan can be chosen for personal use. If LARPUS use ever became
+Device approval exists but conflicts with lock. Google sign-in keeps the tailnet on the Personal plan. If LARPUS use ever became
 commercial, the plan would need review (Q18).
 
 ## 14. Alternative and exit path: self-hosted Headscale (brief)
@@ -578,13 +532,12 @@ inbound reachability**: an off-site owner host, or home forwarding, which is pro
 LAN-only. It is the exit path if Tailscale becomes unacceptable or unavailable, or if owner-controlled off-site
 hardware appears. The policy file, the hardening (section 11) and the gateway changes carry over unchanged;
 only the control plane and DERP move. Tailscale's own KB notes Headscale as the way to keep the control plane
-on your own infrastructure. Headscale can also use a self-hosted OIDC IdP reachable only by the phone and the
-Headscale host, which is the one setup where Authelia fits without public exposure.
+on your own infrastructure.
 
 ## 15. Implementation plan (NOT executed, requires owner approval per step)
 
-0. The owner decides D2 (SSO provider), D3 (Pi as second signer), D4, D5, D6, D7, D8, D9 and the thresholds.
-1. Create the dedicated SSO account with hardware-key-only MFA. Create the tailnet. Choose the random tailnet DNS
+0. The owner decides D2 (Advanced Protection), D3 (Pi as second signer), D4, D5, D6, D7, D8 and the thresholds.
+1. Create the dedicated Google account. Enroll two FIDO2 keys, enroll in Advanced Protection, add no phone. Create the tailnet. Choose the random tailnet DNS
    name. Paste the section 4 policy **before** adding devices.
 2. PC: install the Windows client, set `TS_NO_LOGS_NO_SUPPORT=true`, log in, and tag `tag:larpus`.
 3. Pi 5: install the Linux client, set `TS_NO_LOGS_NO_SUPPORT=true`, and tag `tag:signer`.
@@ -619,7 +572,7 @@ Authelia/Authentik outbound calls for Headscale, and Headscale policy syntax and
   hidden setting or managed config), or is this an accepted residual?
 - **Q2** Confirm from the [Tailnet Lock white paper](https://tailscale.com/kb/1230/tailnet-lock-whitepaper)
   that lock signs node keys and the TLK set only, not policy, DNS or filters.
-- **Q3** Pi 5 as a signer (and, only under D9, as the IdP box): OS hardening level, and what else runs on it (proposal: nothing).
+- **Q3** Pi 5 as a signer: OS hardening level, and what else runs on it (proposal: nothing).
 - **Q4** Where exactly the offline disablement secrets and SSO recovery codes are kept (two physical locations).
 - **Q5** Does Chrome on the Pixel treat a site whose certificate chains to a **user-installed** CA as a secure
   context for WebAuthn without warnings? If not, use `tailscale cert` (D7).
@@ -637,19 +590,14 @@ Authelia/Authentik outbound calls for Headscale, and Headscale policy syntax and
 - **Q13** Only if the container PC option is ever chosen: accept a narrowly scoped trusted-proxy header?
 - **Q14** Is a hash-chained audit log worth the complexity?
 - **Q15** Show local alerts in the HUD after login, or keep them PC-only?
-- **Q16** Which SSO provider for the dedicated admin account allows hardware-key-only MFA with SMS and push fully disabled?
+- **Q16** Google account recovery: whether to add a recovery email (which must itself be hardware-key protected) or none, and how APP lost-key recovery behaves with no phone on file.
 - **Q17** Exact `tests` syntax for the posture-gated grant (`srcPostureAttrs`), and the minimum Android client version.
 - **Q18** Confirm that LARPUS use is non-commercial (Personal plan terms) and that Tailnet Lock remains on the
   Personal plan.
-- **Q19** Custom OIDC: would Tailscale accept a discovery document whose authorization endpoint is LAN-only
-  while token/JWKS are public (undocumented)? Does Tailscale send PKCE (Authelia's guide disables `require_pkce`)?
-- **Q20** Is custom OIDC usable on the free Personal plan after the custom-domain business trial?
-- **Q21** Authelia outbound calls beyond NTP (update checks, telemetry) in the pinned version.
+- **Q19** Tailscale re-authentication with an APP Google account on the Pixel: confirm the FIDO2 key works over NFC in the Tailscale app's login browser flow.
 
-Decisions needed from the owner: **D2** SSO provider and dedicated account; **D3** Pi 5 as second signer;
+Decisions needed from the owner: **D2** enroll the dedicated Google account in Advanced Protection (recommended) and buy two FIDO2 keys; **D3** Pi 5 as second signer;
 **D4** session lifetime (15 min idle / 4 h, proposed); **D5** disable the LAN HTTPS listener and use only loopback
 plus tailnet; **D6** hardware FIDO2 key (recommended) versus a device-bound passkey, with TOTP as fallback;
 **D7** local CA (recommended) versus `tailscale cert` with CT disclosure; **D8** do not escrow a disablement
-secret with Tailscale support (recommended); **D9** custom OIDC with Authelia: **not recommended**. It needs a
-custom domain, public DNS and a public IdP, so a second cloud exception (Cloudflare Tunnel plus cloud DNS) or
-abandoning no-port-forwarding; plus all thresholds and approval of H1-H6.
+secret with Tailscale support (recommended); plus all thresholds and approval of H1-H6.
