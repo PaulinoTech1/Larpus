@@ -609,3 +609,30 @@ audit log, Windows toast alerts and a remote kill switch that can only be re-ope
 or hosted threat feeds. WebAuthn requires a stable hostname and phone-trusted TLS, so it waits
 on the CA questions. Implemented later as phased code PRs H1-H6, each needing approval.
 
+
+## Remote access through Tailscale SaaS with Tailnet Lock (2026-10-15, 11:54 PM ET)
+
+The owner replaced the Headscale design with the Tailscale coordination service plus
+Tailnet Lock. This is an **explicit, scoped owner exception** to the no-cloud principle. It covers
+only the coordination plane and Tailscale DERP relays for remote access (plus the SSO login
+Tailscale requires). No inference, data or telemetry goes to the cloud: client logging is opted
+out with `TS_NO_LOGS_NO_SUPPORT` where supported, and the offline larpus pod stays network-less.
+
+Rationale: home port forwarding is prohibited, no off-site owner hardware is available, and
+the Raspberry Pi 5 at home sits behind the same router, so it cannot provide reachability. Tailnet
+Lock keeps trust over which nodes may join on owner devices: the PC and the Pi 5 as signers, with
+disablement secrets stored offline. It does not hide metadata, guarantee availability or sign the
+policy, so the Pixel-only Windows Firewall rule, gateway allowlist, password and MFA remain
+independent of Tailscale. All zero-trust and hardening controls stay unchanged. The PC uses the official Windows
+client so the gateway can bind only to its tailnet IP. Self-hosted Headscale remains the documented
+alternative and exit path.
+
+The owner also asked for a self-hosted OIDC IdP (Authelia) as the Tailscale identity provider.
+This is **blocked under the current constraints**. Tailscale's custom OIDC requires a custom domain
+with a public WebFinger endpoint, and states that self-hosted IdPs "must be publicly accessible on the
+internet". Tailscale's servers fetch discovery and JWKS and exchange the token server-side, so a
+browser-only redirect is not enough. Funnel is circular (the tailnet must exist first, and the IdP host
+would depend on itself) and cannot serve the custom domain. Cloudflare Tunnel works, but it would be a second
+cloud exception: it terminates TLS on IdP traffic and needs cloud DNS. Recommendation: a dedicated
+mainstream SSO account with hardware-key-only MFA, relying on Tailnet Lock to stop any IdP-side node
+injection. Custom OIDC remains an open owner decision (D9). Design only; see MOBILE-ACCESS.md.

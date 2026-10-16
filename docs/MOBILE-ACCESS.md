@@ -1,450 +1,380 @@
-# Mobile access through self-hosted Headscale (design, not implemented)
+# Mobile access through Tailscale with Tailnet Lock (design, not implemented)
 
-Status: **design only, 2026-10-15. Nothing in this document has been executed.**
-Every step in the implementation plan needs explicit owner approval first. No
-code, script, firewall rule, router setting or container in this repo changes
-with this document. See the [decision record](DECISIONS.md) entry of the same date.
+Status: **design only. Revised 2026-10-15, 11:54 PM ET.** Nothing in this document has been executed.
+Every implementation step needs explicit owner approval first. No code, script, firewall
+rule, router setting or account changes with this document. See the [decision record](DECISIONS.md).
 
-Goal: the owner reaches LARPUS from his Google Pixel, from anywhere, through a
-self-hosted [Headscale](https://github.com/juanfont/headscale) control server and the
-stock open-source Tailscale Android client. Nothing in the path may rely on a
-cloud service, account, telemetry or remote asset.
+Goal: the owner reaches LARPUS from his Google Pixel while away from home.
 
-Hard constraints (owner decision 2026-10-15):
+Owner decision (2026-10-15, 11:54 PM ET): use the **Tailscale coordination service (SaaS) plus
+[Tailnet Lock](https://tailscale.com/kb/1226/tailnet-lock)** instead of self-hosted Headscale.
+The Headscale design is kept briefly in section 14 as the documented alternative and exit path.
 
-- No Tailscale SaaS control plane and no Tailscale account.
-- No Tailscale-hosted DERP relays. Headscale's embedded DERP is enabled, and the
-  default DERP map is removed (`derp.urls: []`).
-- No third-party IdP (Google, Microsoft, GitHub and others). Optional OIDC is self-hosted only.
-- No cloud DNS, no cloud certificate service and no public tunnel service.
-- **No port forwarding on the home router of any kind** (no 443, no 3478, no UPnP/NAT-PMP).
-  The home PC makes **outbound connections only**. Inbound IPv6 to the home is
-  excluded for the same reason: an IPv6 firewall pinhole exposes a port just as a forward does.
-- The existing LARPUS password, sessions and rate limits stay in force. The
-  tailnet is an extra layer, not a replacement.
+## 1. Scope of the cloud exception
 
-Relation to [TAILSCALE_DEMO.md](TAILSCALE_DEMO.md): that demo used the Tailscale
-coordination service and Tailscale Serve. This design is meant to replace it
-for ongoing phone access. It does not delete the demo document or its bridge.
+This is an **explicit, scoped owner exception** to the project's no-cloud principle. It covers only:
 
-## 1. Threat model
+- the Tailscale **coordination plane** (node registration, key and policy distribution, and the admin console);
+- Tailscale-operated **DERP relays** (which relay WireGuard ciphertext when no direct path exists);
+- the SSO identity provider login that Tailscale requires for the tailnet admin account (section 5).
 
-Assets: conversations, notes, the quarantine volume and corpus, the LARPUS
-password hash, the TLS CA key, the Headscale private keys and node database, and the owner's
-location/usage metadata.
+It does **not** cover anything else. No inference, prompts, conversations, notes, corpus, model files,
+passwords or keys go to any cloud service. Traffic between the Pixel and the PC is WireGuard end to
+end. **The offline larpus pod stays network-less** (`network=none`), and nothing in
+[WINDOWS-HOME-ISOLATION.md](WINDOWS-HOME-ISOLATION.md) changes. Client telemetry is turned off where
+the client allows it (section 9). LARPUS's own MFA, bans, limits and audit stay self-hosted (section 11).
+
+Rationale: home port forwarding is prohibited (below), no off-site owner hardware is available, and the
+Raspberry Pi 5 at home is behind the same router, so it cannot provide inbound reachability.
+A coordination service plus relays is the only way to give an outbound-only home PC remote reachability.
+Tailnet Lock moves trust over *which nodes may join* back onto owner devices.
+
+Constraints that stay:
+
+- **No port forwarding on the home router of any kind** (no 443, no 3478, no UPnP/NAT-PMP), and no
+  inbound IPv6 pinholes. The home PC makes **outbound connections only**.
+- The gateway never binds to 0.0.0.0 or any WAN address. The password-free loopback listener is never
+  reachable over the tailnet.
+- All zero-trust (section 10) and hardening (section 11) controls stay, including the hardware FIDO2 key as the
+  recommended second factor, the TOTP fallback, the three-layer Pixel-only allowlist, bans, rate limits,
+  short sessions, CSP/HSTS/TLS 1.3, local audit and the kill switch.
+- This supersedes [TAILSCALE_DEMO.md](TAILSCALE_DEMO.md)'s Serve-based route for ongoing access. Serve
+  and Funnel are not used.
+
+## 2. Threat model
+
+Assets: conversations, notes, the corpus and quarantine volume, the LARPUS password and MFA secrets, the
+local CA key, the Tailnet Lock keys and disablement secrets, the SSO account, and the owner's metadata.
 
 | Adversary / failure | In scope | Mitigation |
 |---|---|---|
-| Internet scanners | yes | Nothing at home listens on WAN (no forwards, no IPv6 pinholes). In option R-A, only the off-site Headscale/DERP host is exposed. It holds no LARPUS data and is kept patched and pinned. |
-| Off-site host operator (VPS provider) | yes (R-A) | It is third-party infrastructure. It can see metadata (node IPs, timing, the tailnet map) and could tamper with control (add nodes, change ACLs), but not read WireGuard payloads. Mitigations: full-disk encryption where the provider allows, no LARPUS data or CA keys stored there, the LARPUS password still required, and the ACL/node list audited from the owner side. |
-| Stolen or lost Pixel | yes | Revoke the node in Headscale (section 10). The LARPUS password and 8-hour sessions still apply. The Android screen lock is required. |
-| Rogue node joining the tailnet | yes | No open registration. Single-use, short-lived pre-auth keys or explicit `headscale nodes register` approval. The ACL admits only the Pixel. |
-| Compromised Headscale container | yes | The container runs in its own rootless pod, has no LARPUS volumes, and lives in a different namespace from the offline pod. Traffic is end-to-end WireGuard, so the control server cannot read it. It *can* add nodes and rewrite ACLs, so the LARPUS password remains a required second gate. |
-| Malicious relay / on-path ISP | yes | WireGuard encrypts traffic end to end. DERP relays only ciphertext, and the relay is our own. |
-| Metadata leak to Tailscale Inc. (logtail, DERP map, control) | yes | Custom control URL, `derp.urls: []`, and client log upload disabled where possible (open question Q3). |
-| Password guessing / credential stuffing via the phone path | yes | MFA (section 16.1), per-identity and per-IP login buckets, exponential temporary bans (16.2, 16.3) |
-| Stolen session cookie | yes | Secure/HttpOnly/SameSite=Strict, short sessions, MFA step-up for sensitive actions, binding the session to the node identity (16.3, 16.4) |
-| GPU exhaustion / inference DoS by a valid but abusive client | yes | Global inference concurrency cap and per-session chat buckets (16.3) |
-| Off-site host brute force (R-A) | yes | Host firewall allows only Headscale/DERP, key-only SSH from the tailnet, auto-ban (16.2) |
-| Owner's own PC compromised | no | Same trusted-machine boundary as [AUTH.md](AUTH.md). |
-| Nation-state / targeted Android exploit | no | Out of scope for a single-owner home station. |
-| Availability (home power, ISP, off-site host) | accepted risk | Single DERP and single control server are single points of failure ([Headscale DERP docs](https://headscale.net/stable/ref/derp/)). LAN access remains the fallback. |
+| Internet scanners | yes | Nothing at home listens on WAN (no forwards or pinholes). The PC only dials out |
+| Tailscale (malicious, compelled or breached) **injecting a node** | yes | **Tailnet Lock:** peers reject node keys not signed by a trusted lock key (section 3) |
+| Tailscale **widening the ACL** or changing DNS among already-signed nodes | yes | Not covered by lock. The Windows Firewall Pixel-only rule and the gateway allowlist, password and MFA (sections 10, 11) do not depend on Tailscale |
+| Tailscale **observing metadata** | accepted (exception) | Minimised: client logs off, random tailnet DNS name, non-identifying machine names (sections 7, 9). See section 6 |
+| Tailscale **outage / account suspension** | accepted | LAN access is the fallback; the Headscale exit path (section 14) |
+| SSO account takeover | yes | Dedicated account, hardware-key-only MFA, offline recovery codes (section 5). Lock still blocks new unsigned nodes |
+| Stolen/lost Pixel | yes | Remove the node, rotate the LARPUS password, MFA required (section 12) |
+| Signing-node compromise (PC or Pi) | yes | `tailscale lock revoke-keys` co-signed by the other signer (section 3). Gateway MFA is still required |
+| Password guessing / credential stuffing via the phone path | yes | MFA (11.1), per-identity and per-IP login buckets, exponential temporary bans (11.2, 11.3) |
+| Stolen session cookie | yes | Secure/HttpOnly/SameSite=Strict `__Host-` cookie, short sessions, MFA step-up for sensitive actions (11.1, 11.4) |
+| GPU exhaustion by a valid but abusive client | yes | Global inference concurrency of 1 and per-session chat buckets (11.3) |
+| Certificate Transparency leak of hostnames | yes | Local CA by default; if `tailscale cert` is chosen, use non-identifying names (section 7) |
+| A public self-hosted IdP (only if custom OIDC is chosen) | conditional | Not recommended (5.1). If chosen: Authelia hardening, an on-demand tunnel and a second recorded exception |
+| Owner's PC compromised | no | Same trusted-machine boundary as [AUTH.md](AUTH.md) |
+| Nation-state / targeted Android exploit | no | Out of scope |
 
-## 2. Architecture
+## 3. Tailnet Lock
 
-Placement depends on the reachability choice (section 8). In both cases the home PC
-only dials out.
+How it works ([Tailnet Lock KB](https://tailscale.com/kb/1226/tailnet-lock)):
 
-```text
-R-A (off-site):
-Pixel (Tailscale app) --HTTPS/Noise, STUN, DERP--> off-site host: headscale + embedded DERP
-                                                         ^ outbound only
-PC tailnet node (tailscaled) -----------------------------+
-Pixel <== WireGuard (direct via NAT traversal, or relayed as ciphertext by DERP) ==> PC node
-PC node --tailnet only--> LARPUS gateway (password, TLS) -> larpus-offline pod (unchanged)
+- Every node has a WireGuard **node key** and a **Tailnet Lock key (TLK)**. With lock enabled, a node key
+  must be **signed by a trusted TLK**, and peers verify the signature before allowing a connection. The
+  trusted TLK set lives in the **tailnet key authority** (TKA), a signed chain that the coordination
+  server distributes but cannot forge.
+- The model is trust on first use. After `tailscale lock init`, run `tailscale lock status` on every node and
+  check that they all list the same signing keys, matching the intended signers.
+- Lock and **device approval are mutually exclusive**. Here the lock signature *is* the approval step.
+- Lock requires clients v1.46.1 or later. Admin-console enablement requires **at least two signing nodes**.
+  A maximum of 20 signers. Rotate TLKs at most once a year.
 
-R-B (LAN-only):
-Pixel on home Wi-Fi --LAN--> larpus-headscale pod on the PC (no WAN exposure)
-Pixel <== WireGuard over LAN ==> PC node --> LARPUS gateway
+Signing nodes:
+
+- **The PC** (Windows client; the `tailscale lock` CLI works on Windows).
+- **A second trusted signer: the Raspberry Pi 5** at home, running the Linux client (recommended, D3). It
+  only dials out like the PC, so no forwarding is needed. It can co-sign key revocation and sign new nodes if
+  the PC is down. Tailnet Lock keys sit on device storage ("if the device is compromised, the key can be
+  obtained"), so keep the Pi minimal, updated and physically secure.
+- **The Pixel cannot be a signer:** Android cannot sign, and signing-link/QR flows exist only on macOS,
+  Windows and iOS. The Pixel is added with a **pre-signed, tagged, one-off auth key** produced on the PC
+  (`tailscale lock sign <auth-key>`; see section 5).
+- **Set a state directory on every node:** the Windows client does this automatically, and the Pi's packaged
+  systemd unit sets `--state`. Without one, lock state is held in memory and re-fetched from the coordination server at startup.
+
+**Disablement secrets:** `tailscale lock init` prints ten; any one disables lock. Store them **offline**:
+printed, in two physically separate places, never in a cloud password manager. Recommendation: **do not**
+send a disablement secret to Tailscale support (D8). That means if all are lost the tailnet cannot be recovered;
+it would have to be recreated, which is acceptable for a two-node personal tailnet. A used secret is distributed to all nodes and must be
+treated as public.
+
+What lock **protects against**: the coordination server (malicious, compromised or compelled) **adding a node**
+or **swapping a node key** so it can send or receive traffic in the tailnet. It also protects against an SSO
+takeover adding devices without a signer's cooperation.
+
+What lock **does not protect against**:
+
+- **Metadata:** Tailscale still sees who, what, where and when (section 6).
+- **Availability:** Tailscale can stop coordinating, drop relays or suspend the account.
+- **Policy and configuration:** the policy file, DNS settings and the packet filters derived from them are
+  delivered by the coordination server. As far as the official docs describe, lock signs node keys and the
+  TLK set only, not the policy (Q2). So a hostile control plane could widen access **among already-signed nodes**
+  (the Pixel, the PC and the Pi). The Windows Firewall rule and the gateway checks (section 11.2) are the
+  defence that does not depend on Tailscale.
+- **A compromised signer:** it can sign new nodes until revoked.
+- **The endpoints themselves** (a compromised PC or phone).
+
+## 4. Tailscale policy file (default-deny)
+
+Tailscale access rules **deny by default**; each grant is an implicit accept
+([policy syntax](https://tailscale.com/kb/1337/policy-syntax)). A tailnet that never edits its policy
+gets an allow-all default plus a default SSH check rule, so the file below **replaces** the default
+entirely. Proposal:
+
+```jsonc
+{
+  "tagOwners": {
+    "tag:pixel":  ["autogroup:admin"],
+    "tag:larpus": ["autogroup:admin"],
+    "tag:signer": ["autogroup:admin"]      // the Pi 5: signs only, reaches nothing
+  },
+  "postures": {
+    // Basic posture attributes are on all plans, but they are self-reported by the client
+    "posture:pixel": { "assertions": ["node:os == 'android'", "node:tsReleaseTrack == 'stable'", "node:tsVersion >= '<MIN_VERSION>'"] }
+  },
+  "grants": [
+    { "src": ["tag:pixel"], "srcPosture": ["posture:pixel"],
+      "dst": ["tag:larpus"], "ip": ["tcp:<GATEWAY_TAILNET_PORT>"] }
+  ],
+  // No "ssh" section, so no Tailscale SSH (this also removes the default SSH check rule).
+  // No "autoApprovers"; the PC and Pi never advertise routes or exit nodes; nothing grants autogroup:internet.
+  // No grant from tag:larpus or tag:signer: neither can initiate anything.
+  "tests": [
+    { "src": "tag:pixel",  "proto": "tcp", "accept": ["tag:larpus:<GATEWAY_TAILNET_PORT>"],
+      "deny": ["tag:larpus:22", "tag:larpus:8080", "tag:larpus:3389", "tag:signer:22"] },
+    { "src": "tag:signer", "proto": "tcp", "deny": ["tag:larpus:<GATEWAY_TAILNET_PORT>", "tag:pixel:443"] },
+    { "src": "tag:larpus", "proto": "tcp", "deny": ["tag:pixel:443", "tag:signer:22"] }
+  ]
+}
 ```
 
-Rules:
+Notes:
 
-- Wherever Headscale runs, it runs as a separate rootless Podman pod
-  (`larpus-headscale`) with its own network namespace. It never joins `larpus-offline`, and it mounts no
-  LARPUS data, quarantine, `data/tls` CA key or Podman socket. It runs with a read-only root,
-  a tmpfs at `/var/run/headscale`, dropped capabilities and no-new-privileges, following
-  [WINDOWS-HOME-ISOLATION.md](WINDOWS-HOME-ISOLATION.md) and the upstream
-  [container guide](https://headscale.net/stable/setup/install/container/).
-- Its only persistent state is `config/` (read-only) and `lib/` (the SQLite DB,
-  Noise private key and DERP private key) in a dedicated volume.
-- Port clash, which applies on the PC in R-B: Headscale's default `listen_addr` is `:8080`,
-  the same port as the LARPUS gateway. Use a different port. The metrics (`:9090`) and gRPC
-  listeners stay on loopback and are never published.
-- The offline LARPUS pod and the `runtime.isolation` checks are untouched.
+- `tests` run on every policy change, and a failing assertion rejects the edit. Tests take a single port
+  per destination and no wildcards. Set `<GATEWAY_TAILNET_PORT>` and `<MIN_VERSION>` at implementation; also
+  check whether `tests` need `srcPostureAttrs` to exercise the posture condition (Q17).
+- **Is the ACL still enforced client-side under lock?** Yes. Packet filters are applied by each node's own
+  client, and lock does not change that. But the filters come from the coordination server, and lock does not
+  sign them (section 3). So "enforced on the device" does not mean "independent of Tailscale". Hence the
+  Windows Firewall and gateway layers.
+- **Tagged devices have key expiry disabled by default** ([auth keys KB](https://tailscale.com/kb/1085/auth-keys)).
+  Re-enable expiry on `tag:pixel` after enrollment (section 5), and decide deliberately for `tag:larpus`/`tag:signer` (Q8).
 
-## 3. PC node: how the PC joins the tailnet
+## 5. Identity, enrollment and keys
 
-The LARPUS gateway (`python -m runtime.gateway`) runs on **Windows**, not
-inside WSL ([DEPLOYMENT.md](DEPLOYMENT.md), `scripts/run-isolated.ps1`). That is the
-main design constraint, because a tailnet IP that lives inside WSL is not a
-Windows interface the gateway can bind to.
+- **SSO account (recommended):** create a **dedicated** account used only as the tailnet admin, not the owner's
+  everyday email. A tailnet must be created through an SSO provider; Tailscale's passkey users cannot create a
+  tailnet ([passkeys KB](https://tailscale.com/kb/1269/passkeys)). On that provider, enable **hardware security key
+  (FIDO2) as the only second factor** where it allows that. Disable SMS and push fallbacks, keep recovery codes
+  offline with the disablement secrets, and use a unique password. Which provider is D2 (Q16). A self-hosted custom
+  OIDC IdP was evaluated and is **blocked** under the current constraints (5.1).
+- **Admin console:** sessions last 30 days. Log out after each use and use a dedicated browser profile.
+  No API keys, OAuth clients, webhooks or log streaming.
+- **Enrollment:**
+  - The PC joins first (interactive SSO login, tag `tag:larpus`), then the Pi (`tag:signer`).
+  - Then `tailscale lock init` with both as signers.
+  - Then the Pixel: on the admin console, generate a **one-off** (non-reusable), non-ephemeral auth key that
+    expires in 1 day (the minimum) and is tagged `tag:pixel`. Sign it on the PC with
+    `tailscale lock sign <auth-key>`, enter it in the Android app under **Use an auth key**, and then revoke any
+    leftover keys. Tailscale revokes a one-off key automatically once used.
+- **Key expiry** ([key expiry KB](https://tailscale.com/kb/1028/key-expiry)): the custom authentication period
+  is 1-180 days on all plans. Proposal: **30 days** for the Pixel, with expiry explicitly re-enabled because
+  it is tagged. On re-authentication, lock re-signs the new node key automatically.
+- Device approval is not available alongside lock; the lock signature is the approval (section 3).
 
-Options:
+### 5.1 Custom OIDC with a self-hosted IdP (Authelia): evaluated, **blocked under current constraints**
 
-A. **tailscaled in a dedicated rootless container** in its own pod (for example
-   `larpus-tailnode`), using userspace networking (`--tun=userspace-networking`).
-   This needs no `/dev/net/tun` and no root, and stays separate from Headscale and
-   the offline pod. It forwards one tailnet port to the gateway. Caveat: traffic arrives at
-   the Windows gateway from the WSL virtual NIC, not from 192.168.1.0/24, so the
-   gateway's LAN-subnet check would reject it. Making it work requires either a
-   code change, so the gateway gets a third, tailnet-scoped listener (out of scope here),
-   or forwarding to a loopback bridge like the demo's `tailscale_bridge.py`.
-   This needs a WSL networking decision (Q1).
-B. **tailscaled directly in the Larpus WSL distro.** The same Windows-vs-WSL
-   interface problem applies, and it adds a root daemon to the isolation distro,
-   which this design does not recommend.
-C. **Tailscale Windows client with `tailscale login --login-server=<URL>`**
-   ([custom control server KB](https://tailscale.com/kb/1507/custom-control-server)).
-   The tailnet IP becomes a real Windows interface, so the gateway could bind to it.
-   This deviates from "tailscaled in WSL or a container" and is listed for the owner's consideration only.
+The owner asked for a self-hosted OIDC SSO (Authelia recommended) as the Tailscale identity provider.
+Findings from [Tailscale's custom OIDC KB](https://tailscale.com/kb/1240/sso-custom-oidc) and
+[Authelia's Tailscale integration guide](https://www.authelia.com/integration/openid-connect/clients/tailscale/):
 
-WSL2 caveats on Windows 11 Home:
+- **A custom domain is required.** The admin email must be at a domain the owner controls, and
+  `https://<domain>/.well-known/webfinger` must return a JRD whose issuer exactly matches the IdP's
+  `/.well-known/openid-configuration` issuer. Authelia does not serve WebFinger, so a separate web server at the
+  domain root must. Tailscale fetches it server-side during setup ("Get OIDC Issuer").
+- **The IdP must be publicly reachable. This is a BLOCKER.** The KB says verbatim: *"Self-hosted identity
+  providers must be publicly accessible on the internet. IP block listing may interfere with the ability to sign
+  up or authenticate to your tailnet."*
+- **Is only the browser redirect needed? No.** In the OIDC authorization-code flow the phone or PC
+  *browser* visits the authorization endpoint, but **Tailscale's servers** fetch WebFinger and the discovery
+  document, **exchange the code at the token endpoint** (server to server, with the client secret,
+  `client_secret_basic` in Authelia's guide) and fetch **JWKS** to verify the ID token. So WebFinger, discovery,
+  token and JWKS must be reachable from Tailscale's servers on the public internet. Only the
+  authorization page could in theory be browser-only. That split is undocumented and untested (Q19), and it would
+  still need public token/JWKS endpoints.
+- **Login is needed after setup too:** every node-key re-authentication (30-day expiry, section 5) and every
+  admin-console login goes through the IdP. If it is unreachable when the PC's or Pixel's key expires, that
+  node drops off the tailnet. Tailnet Lock's automatic re-signing still needs the login to succeed.
+- **Other requirements:** scopes `openid profile email`; ES256 or RSA ≥ 2048 signatures; no JWE ID tokens;
+  callback `https://login.tailscale.com/a/oauth_response`. Migrating an existing tailnet to custom OIDC
+  works only for custom-domain tailnets, so decide **before** creating the tailnet.
+- **Plan:** a custom-domain sign-up is treated as business use and starts a 14-day trial. Personal use can
+  then choose the free Personal plan ([pricing FAQ](https://tailscale.com/pricing)). The KB does not state a
+  plan requirement for custom OIDC, so confirm it is usable on Personal (Q20).
 
-- The PC node only makes outbound connections (to the off-site control/DERP in R-A),
-  so in R-A it works in default NAT mode with no inbound rules.
-- In R-B, Headscale on the PC must be reachable from the LAN. In NAT mode that needs a
-  Windows `netsh interface portproxy` rule, which is TCP only, so it cannot carry STUN on UDP 3478.
-  STUN/DERP are largely unnecessary on a single LAN, but direct WireGuard
-  between the phone and a node inside NAT-mode WSL may still fail and fall back to relay.
-- Mirrored networking mode (`networkingMode=mirrored` in `.wslconfig`) shares the host's
-  interfaces with WSL and supports UDP. It is a per-user WSL setting, not a
-  Pro-only feature, but it changes networking for **every** WSL distro on the
-  machine, including docker-desktop. It also needs the Hyper-V firewall rules for WSL to allow
-  the ports. See the [WSL networking docs](https://learn.microsoft.com/en-us/windows/wsl/networking).
-  This is an owner decision (Q1).
-- WSL shuts down idle distros. Headscale only runs while the Larpus distro is
-  running. No autostart is installed today, and this design does not add one.
-- The Windows firewall is configured per port and per profile. Any new rule must be scoped
-  as tightly as the existing [LAN.md](LAN.md) rule, and needs an elevated prompt.
+**No-port-forward reachability options for the IdP (honest assessment):**
 
-## 4. Gateway binding
-
-- The gateway **never** binds to `0.0.0.0` and is **never** reachable from WAN.
-  No router forward ever points at port 8080.
-- Allowed: (a) bind an additional listener only to the PC's tailnet IP
-  (100.64.0.0/10 range, IP assigned by Headscale), *or* (b) keep the gateway on
-  loopback/LAN and have the tailnet node forward into it, the same pattern as
-  the demo bridge, which never targets the password-free `127.0.0.1:8080` listener.
-- The password-free local HTTP listener must stay reachable only from loopback. A
-  forwarder must target the authenticated HTTPS listener, so tailnet requests
-  always hit the password gate.
-- Any listener change is a code change and needs its own PR and tests.
-
-## 5. Headscale policy (ACL) for the Pixel only
-
-Headscale with no policy file **allows all traffic**, and a policy without
-`acls`/`grants` also allows all ([policy docs](https://headscale.net/stable/ref/acls/)).
-So a policy file is mandatory. Grants are the recommended form. Sketch, with
-users and tags to be fixed at implementation:
-
-The authoritative policy file is in [section 15](#15-zero-trust-networking-nist-sp-800-207).
-In short: the Pixel is tagged `tag:pixel`, the PC node is tagged `tag:larpus`, and one
-grant allows `tag:pixel` to reach `tag:larpus` on the gateway port only.
-
-- The PC node is tagged `tag:larpus` and the Pixel `tag:pixel`. Any other node, including
-  an untagged owner device, matches no grant and reaches nothing.
-- No exit nodes, subnet routes, Tailscale SSH or Taildrive.
-- After each reload, check that `headscale` logs a successful policy load. A
-  rejected policy must not leave a stale filter. This was fixed in v0.29.5
-  ([release notes](https://github.com/juanfont/headscale/releases/tag/v0.29.5)).
-
-## 6. TLS for Headscale
-
-The phone must reach Headscale over HTTPS. Headscale accepts a supplied
-`tls_cert_path`/`tls_key_path`. **The certificate must include the full chain or
-the Tailscale Android client rejects it** ([TLS docs](https://headscale.net/stable/ref/tls/)).
-Headscale's built-in Let's Encrypt/ACME is **not** used, because it relies on an external CA service.
-
-Plan: issue a Headscale server certificate from the project's existing local CA
-(`scripts/create-local-tls.py` pattern, [HTTPS.md](HTTPS.md)), or from a separate
-dedicated CA. The SAN must match `server_url` (a hostname from section 8 or a raw IP).
-Serve the full chain (leaf plus CA). The CA private key never enters the Headscale pod.
-Only the leaf key and chain go in.
-
-Android CA-trust caveats:
-
-- A CA imported by the user goes in the *user* store. Since Android 7, apps
-  trust user CAs only if their Network Security Config opts in
-  ([Android docs](https://developer.android.com/privacy-and-security/security-config)).
-  Chrome trusts user CAs, so the LARPUS web UI should work. Whether the
-  **Tailscale Android app** trusts user-added CAs for its control connection is
-  **not confirmed** (Q2). If it does not, the options are a CA it trusts (none without a public
-  CA) or an IP-pinned approach, and this could block the design. This must be tested on the Pixel before any WAN exposure.
-- Reusing the LARPUS CA means a Headscale-key compromise can't mint certs. But
-  the CA is broadly trusted on the owner's devices, so a separate, name-constrained CA
-  limits blast radius (Q6).
-- Track leaf expiry. Use one year to match HTTPS.md.
-
-## 7. Optional self-hosted OIDC (extra layer)
-
-Headscale supports OIDC with PKCE and `allowed_users` filtering, and lists both
-Authelia and Authentik as fully supported
-([Headscale OIDC docs](https://headscale.net/stable/ref/oidc/)).
-
-| | Authelia | Authentik |
+| Option | How | Verdict |
 |---|---|---|
-| Footprint | Single Go binary/container; file or SQLite backends | Server and worker plus PostgreSQL; at least 2 CPU / 2 GB RAM ([install docs](https://docs.goauthentik.io/install-config/install/docker-compose/)) |
-| Headscale guide | [Official integration page](https://www.authelia.com/integration/openid-connect/clients/headscale/) (tested Authelia v4.39.28 / Headscale v0.29.1) | [Authentik's Headscale integration](https://integrations.goauthentik.io/networking/headscale/) |
-| Attack surface | Small; config-as-file | Large admin UI; the default compose mounts the Docker socket into the worker (must be removed) |
-| Telemetry | Verify and disable (Q5) | Error reporting is opt-in; verify other phone-home (Q5) |
+| **A. Tailscale Funnel** on the Pi | Funnel publishes a node's local service through Tailscale's ingress to `https://<node>.<tailnet>.ts.net` | **Not viable as the IdP path.** (1) **Bootstrap circularity:** the tailnet must be created *with* the IdP, but Funnel only exists once a tailnet and node exist. (2) **Self-dependency:** if the Pi's own key expires or it is logged out, Funnel stops and the IdP needed to log it back in vanishes; the Pi would need key expiry disabled, which defeats re-authentication. (3) **WebFinger is on the custom domain**, and Funnel serves only `ts.net` names, so it cannot answer there. (4) The Funnel name gets a public Let's Encrypt cert, a CT disclosure. (5) It puts the IdP on the public internet anyway |
+| **B. Cloudflare Tunnel (or similar outbound tunnel)** | `cloudflared` on the Pi dials out. Cloudflare serves the custom domain (WebFinger plus issuer) publicly | **Technically viable, but a second cloud exception:** Cloudflare **terminates TLS** and sees IdP traffic in plaintext (the login page, password, session cookies and tokens; WebAuthn assertions remain origin-bound). It **requires the domain's DNS on Cloudflare**, contradicting the no-cloud-DNS rule. The IdP becomes internet-exposed (mitigated by Cloudflare Access rules, which are themselves cloud). Run on demand only (tunnel up just for sign-up or re-auth) to cut exposure, accepting failed re-auth if forgotten |
+| **C. Authelia on the Pi 5, LAN-only** | An isolated IdP box at home | **Not usable by Tailscale:** its servers cannot reach it, so sign-up fails. Useful only as a LAN SSO for LARPUS itself (not proposed) |
+| **D. Owner-controlled public host** | Authelia on a VPS or off-site hardware | No such hardware (owner statement); a VPS is a third cloud dependency |
 
-**Recommendation: Authelia**, if OIDC is wanted at all. It is the smaller and
-file-configured option, and it needs no database server. Use a file user backend, TOTP or
-WebAuthn second factor, `require_pkce: true`, S256, and `allowed_users` set to the owner only.
-Note that Authelia also needs its own HTTPS endpoint reachable by the phone during login,
-which adds exposure. Headscale also offers `only_start_if_oidc_is_available`.
-Weigh this against the default: single-use pre-auth keys with no IdP at
-all, which is simpler and has less exposed surface. The owner decides (D2).
+**Recommendation:** **do not adopt custom OIDC now.** Every working path needs either a second cloud
+exception (Cloudflare, which also sees plaintext IdP traffic and needs cloud DNS) or public inbound exposure
+that the no-port-forwarding rule forbids. The Tailscale exception is already scoped to the coordination plane
+and DERP. Instead, use the dedicated mainstream-SSO account with **hardware-key-only MFA** (above). Note that
+the IdP is not the main safeguard here: **Tailnet Lock** blocks any IdP or Tailscale-side login from adding an
+unsigned node, so a self-hosted IdP adds less than it would without lock. If the owner still wants it, the least-bad
+path is **B with an on-demand tunnel**, recorded as a second explicit exception (D9).
 
-## 8. Reachability options (no home port forwarding)
+**Authelia hardening (applies if D9 is chosen, or to any later self-hosted IdP use):**
 
-Owner constraint (2026-10-15): **no port forwarding on the home router of any kind**
-(no 443, no 3478, no UPnP), and the home PC makes outbound connections only. Inbound
-IPv6 to the home is excluded too, because opening an IPv6 firewall pinhole is the same
-port exposure. The earlier "home router forward" option is **dropped**.
+- **Placement:** the Pi 5 as a dedicated IdP box (nothing else on it besides the Tailscale signer role; Q3),
+  or its own rootless Podman pod. **Never** in or beside the offline larpus pod.
+- **Second factor:** `authorization_policy: two_factor` on the Tailscale client. WebAuthn with a **hardware
+  FIDO2 key** is required (user verification required); TOTP is a fallback only. No SMS, no push, no Duo.
+- **Backends:** `authentication_backend.file` (argon2id hashes) and `storage.local` (SQLite) on an encrypted
+  volume. `notifier.filesystem` (no SMTP relay), so identity-verification codes go to a local file read at the box.
+- **Regulation** ([docs](https://www.authelia.com/configuration/security/regulation/)): `modes: [user, ip]`.
+  Proposal: `max_retries: 3`, `find_time: 15m`, `ban_time: 1h` (defaults are 3, 2 m and 5 m). Bans are
+  manageable with `authelia storage bans`. Note that regulation covers the username/password endpoint.
+- **Client config:** a hashed client secret (pbkdf2/argon2), only the Tailscale callback as redirect URI, a
+  single user, short sessions and `remember_me` disabled. Confirm PKCE support (Authelia's tested Tailscale guide sets `require_pkce: false`; Q19).
+- **Outbound calls:** Authelia's **NTP startup check defaults to `udp://time.cloudflare.com:123`**
+  ([NTP docs](https://www.authelia.com/configuration/miscellaneous/ntp/)). Point it at a local NTP source
+  (the router or the Pi's chrony). Disabling the check is unsupported. No SMTP. Firewall the box outbound to only
+  the tunnel and NTP. Check the release notes for any update or telemetry callbacks (Q21).
+- **Logs:** local file only. Back up the SQLite DB and the file backend offline. Pin the image by digest.
 
-| Option | What | Pros | Cons |
-|---|---|---|---|
-| **R-A. Off-site owner-controlled host** | Headscale and embedded DERP on a small host the owner controls off-site: a rented VPS, or owner hardware at a trusted location (for example a family member's home). It exposes 443/tcp and 3478/udp on *that* host only. The PC and phone dial out to it | Works on cellular from anywhere; nothing at home listens on WAN; DERP gives a relay path through any NAT/CGNAT | **A rented VPS is third-party infrastructure**, a cloud provider in practice, which bends the "no cloud" principle. The provider sees metadata (IPs, timing, node list) and controls the hypervisor, so it could tamper with the control plane. Mitigations: WireGuard encryption end to end (the relay forwards only ciphertext), full-disk encryption where possible, no LARPUS data, password or CA key stored there, pinned images, and the LARPUS password still required. Costs money and upkeep. Hardware at a trusted location avoids the provider but relies on that site's network, which would itself need a forward there |
-| **R-B. LAN-only** | Headscale on the PC (or tailnet not used at all); the phone connects only on home Wi-Fi | **Zero external infrastructure**; fully consistent with local-first; nothing exposed beyond the LAN; simplest | No access away from home. Adds little over the existing LAN HTTPS + password ([LAN.md](LAN.md)) beyond WireGuard encryption and an ACL |
+## 6. What Tailscale sees (metadata)
 
-**Recommendation: R-B (LAN-only) now**, because it is the only option that satisfies every
-principle without third-party infrastructure. Treat R-A as a later, explicit owner
-opt-in if away-from-home access is worth a third-party host. If chosen, prefer
-owner hardware at a trusted location over a rented VPS. This is owner decision D1.
+Even with logs off and traffic encrypted end to end, the coordination service necessarily learns:
 
-DNS for R-A (no cloud DNS): use the host's raw IP in `server_url` with an IP SAN, which
-is simplest. A VPS usually has a static IP, so the dynamic-IP problem mostly
-disappears. For hardware at a trusted site with a dynamic IP, run self-managed DDNS
-on owner hardware, meaning an owner-run authoritative server for a registered domain.
-Hosted DNS/DDNS providers are not recommended.
+- the SSO identity and email of the admin account, and the tailnet name;
+- each device's name, OS, Tailscale version, tags, node and lock public keys, and tailnet IPs;
+- each device's **public IP addresses and ports** (endpoints, reported for NAT traversal) and when it is online;
+- the full **policy file** and DNS settings;
+- **DERP relays** see the source and destination node, timing and volume of relayed **ciphertext** (not content);
+- configuration audit logs of admin actions, retained by Tailscale for 90 days
+  ([logging KB](https://tailscale.com/kb/1011/log-mesh-traffic));
+- if client logging is *not* disabled, client operational logs, including connection open/close events,
+  are streamed to `log.tailscale.com` (same KB).
 
-## 9. Pinned versions (fill in at implementation)
+It does **not** see traffic contents, the LARPUS password, MFA secrets, gateway cookies or anything inside
+the offline pod. Network flow logs are a Premium feature and stay off.
 
-| Component | Version | Image digest / checksum |
+## 7. HTTPS, MagicDNS and the WebAuthn origin
+
+WebAuthn needs a **hostname** (not an IP) and TLS "established without errors" (section 11.1). The
+stable name is the PC's MagicDNS name, `larpus.<tailnet-name>.ts.net`. Before enabling anything, switch
+the tailnet to a **randomized tailnet DNS name** and give machines non-identifying names
+([HTTPS KB](https://tailscale.com/kb/1153/enabling-https)). The tailnet name cannot be changed later except
+between the default and random forms, and any change breaks enrolled passkeys.
+
+| | Local CA (recommended, D7) | `tailscale cert` (Let's Encrypt) |
 |---|---|---|
-| Headscale | `v0.29.5` latest at writing ([release](https://github.com/juanfont/headscale/releases/tag/v0.29.5)); re-check | `ghcr.io/juanfont/headscale@sha256:<TBD>` |
-| Tailscale Android (Play or [F-Droid](https://f-droid.org/packages/com.tailscale.ipn/)) | `<TBD>` | APK signature `<TBD>` |
-| tailscaled for the PC node | `<TBD>` | `<TBD>` |
-| Authelia (if approved) | `<TBD>` | `<TBD>` |
+| Phone trust | Import the CA into Android's user store; Chrome must then treat the site as a secure context (Q5) | Publicly trusted; works with no CA install |
+| Privacy | Nothing published | **Machine name and tailnet DNS name are published permanently to the Certificate Transparency public ledger** (KB: "acknowledge … will be published on a public ledger") |
+| Cloud | None | Another external dependency (Let's Encrypt, plus Tailscale-hosted DNS-01 TXT records); outside the scoped exception |
+| Operations | One-year leaf; reuse the [HTTPS.md](HTTPS.md) tooling | 90-day certs, **owner-run renewal** with file-based `tailscale cert`, and rate-limit lockouts |
 
-The same rule as deploy.sh applies: floating tags are refused, images are cached and exported, and
-digests are recorded in the deployment manifest.
+The **Android CA question gets simpler:** the Tailscale app talks to Tailscale's control plane over public
+TLS, so the earlier open question (would the app trust a self-hosted control server's CA) **no longer applies**.
+Only Chrome-to-gateway trust remains (Q5). If Q5 fails, `tailscale cert` is the fallback, accepting the CT
+disclosure of one non-identifying name.
 
-## 10. Phone side
+## 8. PC node: the Windows client (now viable and simplest)
 
-Install the official Tailscale app (Play or F-Droid). Go to Settings, then Accounts, then the
-menu, then **Use an alternate server**, and enter the Headscale URL
-([Headscale Android guide](https://headscale.net/stable/usage/connect/android/),
-[Tailscale KB 1507](https://tailscale.com/kb/1507/custom-control-server)).
-Register either through web auth (an owner approves it in Headscale, or through OIDC) or with
-**Use an auth key** and a single-use pre-auth key. Then open the LARPUS URL in
-Chrome and log in with the existing password. Import the CA as described in section 6.
+Recommended: the **official Tailscale Windows client** on the PC. It gives Windows a real tailnet interface
+and IP, so:
 
-## 11. Key expiry and revocation
+- the gateway can bind **only** to that tailnet IP (a code change: today startup refuses non-RFC1918
+  addresses; see 11.0 and phase H5);
+- the gateway sees each peer's real tailnet IP, so per-IP limits and the Pixel-only allowlist work, and the
+  forwarding-container "one IP" problem disappears;
+- the Windows Firewall rule (11.2) can scope to the Tailscale interface and the Pixel's IP;
+- no WSL networking change (NAT/mirrored) is needed, and the Larpus WSL distro and pods are untouched.
 
-- `node.expiry`: set to a finite value (proposal: 30d). Re-auth is then needed periodically.
-- Pre-auth keys: single-use, expiring within one hour, never reusable or ephemeral for the phone.
-- Lost phone: `headscale nodes expire -i <id>`, then `headscale nodes delete -i <id>`.
-  Rotate the LARPUS password with `python -m runtime.auth` and restart the gateway to
-  invalidate sessions.
-- Compromised Headscale: stop the pod (section 13), rotate the Noise and DERP private keys
-  by deleting them from `lib/`, which forces every node to re-register, then reissue the TLS leaf.
-- Clients may keep a working peer path after the control server goes down.
-  Expiry and ACL changes need the control server to be up.
+Settings: no `--advertise-routes`, no `--advertise-exit-node`, no `--ssh`, no Serve or Funnel. Client
+logging is off (section 9). Run in unattended mode only if the owner wants remote access without being signed in to Windows (Q6).
 
-## 12. Logging, local only
+The alternatives (tailscaled in a userspace-networking container, or in the Larpus distro) are not recommended.
+They bring back the WSL interface problem and the trusted-proxy header need (Q13).
 
-- Headscale logs go to the container's stdout, kept in local journald/podman storage with
-  bounded size, or are disabled like the other pods. No log drain or remote collector.
-- Set `logtail.enabled: false` in Headscale. Release v0.29.5 fixed clients uploading logs
-  to Tailscale Inc. despite this setting
-  ([release notes](https://github.com/juanfont/headscale/releases/tag/v0.29.5)). That is one reason to pin v0.29.5 or later.
-  Whether the Android app sends any other telemetry is Q3.
-- Do not enable DNS options that refer to external resolvers (NextDNS and similar). Keep MagicDNS/DNS
-  config minimal or off. The phone uses the tailnet IP or a hostname in the cert.
-- Metrics stay on loopback inside the pod.
+## 9. Client telemetry and logs
 
-## 13. Rollback / kill switch
+Each Tailscale client streams operational logs, including connection events, to `log.tailscale.com` unless
+opted out ([logging KB](https://tailscale.com/kb/1011/log-mesh-traffic)). The opt-out is the
+`--no-logs-no-support` flag or the `TS_NO_LOGS_NO_SUPPORT` environment variable. It "disables telemetry and
+opts the device out of any support that would require that telemetry". The side effect is that **Tailscale may
+be unable to provide technical support.**
 
-In increasing severity:
+- **Windows (PC):** only the environment variable works. Put `TS_NO_LOGS_NO_SUPPORT=true` in
+  `%ProgramData%\Tailscale\tailscaled-env.txt` and restart the service.
+- **Linux (Pi):** `TS_NO_LOGS_NO_SUPPORT=true` in `/etc/default/tailscaled`, or `--no-logs-no-support`.
+- **Android (Pixel):** the KB documents **no opt-out** for the Android app. This is an accepted residual
+  until resolved (Q1).
+- Local logs stay local: the Windows client logs to `C:\ProgramData\Tailscale`, the Pi to journald.
+  Network flow logs and log streaming are not enabled.
 
-1. Phone: toggle Tailscale off, or log out.
-2. `podman pod stop larpus-headscale`. Remote access ends immediately, and
-   LAN/local LARPUS keep working.
-3. Remove the Windows firewall/portproxy rules (R-B), or stop/destroy the off-site host (R-A). Revert
-   `.wslconfig` if mirrored mode was enabled, followed by `wsl --shutdown`, which affects all distros.
-4. Stop or remove the PC tailnet node or container. Delete the tailnet-only gateway
-   listener if one was added.
-5. Delete the pod and volume. Nothing in `larpus-offline` depends on it.
+## 10. Zero Trust Networking (NIST SP 800-207)
 
-Each step is independent of the frozen release pointer and needs no reseal.
-
-## 14. Implementation plan (NOT executed, requires owner approval per step)
-
-0. The owner decides D1 (reachability: R-B LAN-only recommended, or R-A off-site), D4 (shorter session lifetime), D2 (OIDC yes/no, Authelia), Q1 (WSL
-   networking) and Option A/B/C for the PC node (section 3).
-1. **Phone CA test first (offline)**: a throwaway Headscale on the LAN only, with a cert from
-   the chosen CA. Check whether the Tailscale Android app accepts it (Q2). Stop here if it does not.
-2. Online preparation window: pull the Headscale (and Authelia) images by digest,
-   verify checksums, export OCI archives, and record them in the manifest.
-3. Create the `larpus-headscale` rootless pod: hardened flags, its own volume, config
-   on the chosen host (`server_url`, `listen_addr` not 8080 on the PC, `derp.server.enabled: true`,
-   `derp.urls: []`, `logtail.enabled: false`, a finite `node.expiry`, `policy.path`).
-4. Write the deny-by-default policy (section 5). Reload and confirm it loaded.
-5. Issue the Headscale TLS leaf with its full chain.
-6. Join the PC node (chosen option) using a single-use key, and tag it `tag:larpus`.
-7. Gateway exposure through the chosen section 4 approach. This needs a separate code PR with tests if a listener changes.
-8. LAN-only test from the Pixel on home Wi-Fi: register, apply the ACL, and confirm that
-   `tailscale debug derp-map` shows only the embedded region.
-9. R-A only, if approved: provision the off-site host (FDE where possible), open 443/tcp
-   and 3478/udp on that host only, and migrate or re-register nodes. **No home router forward
-   and no home IPv6 pinhole, at any step.**
-10. Acceptance (cellular for R-A; Wi-Fi for R-B): direct and DERP paths, password gate, ACL denial from
-    a second device, revocation drill and the kill switch drill.
-11. Update STATUS.md, LAN.md and DECISIONS.md with the actual results.
-
-**Hardening code PRs (section 16), each a separate PR with tests, each needing owner approval
-before merge and before activation as a release:**
-
-- **H1 Transport and headers:** TLS 1.3 only, HSTS (hostname origin), CSP tightening,
-  extra security headers and the `__Host-` cookie. Short idle/absolute sessions (D4).
-- **H2 Audit log and local alerts:** append-only auth audit log, Windows toast watcher.
-- **H3 Rate limits and bans:** separate login/MFA/chat buckets, per-session keys,
-  persistent exponential bans, and the CSRF token plus mandatory Origin.
-- **H4 MFA:** TOTP, hashed recovery codes and lockout first (works on the existing origin),
-  then WebAuthn once the hostname and trusted TLS exist (blocked on Q2/Q6/Q12). Step-up
-  for sensitive actions. Local-only enrollment.
-- **H5 Tailnet listener and identity:** a tailnet-only bind (lifting the RFC1918-only startup check
-  for the 100.64.0.0/10 address only), the Pixel-IP allowlist, and either option C or the trusted-forwarder
-  identity header. Remote kill switch.
-- **H6 Infrastructure (no repo code):** Windows Firewall rule and nftables in the forwarder pod;
-  for R-A, off-site host firewall, SSH and fail2ban. Each runs only after explicit approval.
-
-## 15. Zero Trust Networking (NIST SP 800-207)
-
-This section maps the design to the seven zero-trust tenets in
+This section maps the design to the seven tenets in
 [NIST SP 800-207, *Zero Trust Architecture*, section 2.1](https://doi.org/10.6028/NIST.SP.800-207)
-([CSRC page](https://csrc.nist.gov/pubs/sp/800/207/final)). SP 800-207's premise is
-that no implicit trust is granted based on network location or ownership, and that
-subject and device authentication happen before any session to a resource. In this design,
-being on the tailnet, on the LAN or on the owner's own phone is **never** enough on its own.
+([CSRC page](https://csrc.nist.gov/pubs/sp/800/207/final)). No implicit trust is given for being on the
+tailnet, on the LAN or on the owner's own phone.
 
-### Controls
+Controls:
 
-1. **Per-node WireGuard key identity.** Every node has its own WireGuard key pair, plus a node
-   key registered in Headscale. Packets are accepted only from a peer whose public
-   key the control plane has distributed. Identity is the key, not the IP or the network.
-2. **Tailnet membership grants no implicit trust.** Joining the tailnet gives a node
-   an address, not access. The policy is default-deny. A node that matches no grant
-   reaches nothing, and LARPUS still requires its password.
-3. **Default-deny Headscale policy.** Headscale with no policy, or with a policy lacking
-   `grants`/`acls`, allows everything ([Headscale policy docs](https://headscale.net/stable/ref/acls/)),
-   so this file is mandatory and checked after every reload:
-
-   ```jsonc
-   // /etc/headscale/policy.json  (policy.path in config.yaml)
-   {
-     "tagOwners": {
-       "tag:pixel":  ["owner@"],   // the owner's Google Pixel, the only client
-       "tag:larpus": ["owner@"]    // the PC node that fronts the LARPUS gateway
-     },
-     "grants": [
-       {
-         "src": ["tag:pixel"],
-         "dst": ["tag:larpus"],
-         "ip":  ["tcp:<GATEWAY_TAILNET_PORT>"]   // the gateway port only, e.g. tcp:8080
-       }
-     ],
-     // No "ssh" section: Tailscale SSH denied.
-     // No "autoApprovers": no subnet routes and no exit node can be approved automatically,
-     //   and none are approved manually. The PC node does not advertise any.
-     // No grant to autogroup:internet: no exit-node use.
-     // No grant from tag:larpus: LARPUS cannot initiate connections to the phone.
-   }
-   ```
-
-   Also: the PC node runs without `--advertise-routes` or `--advertise-exit-node`, and
-   without `--ssh`. `headscale nodes list-routes` should show nothing. Policy tests
-   (`"tests"` in the policy file, supported by Headscale) should assert that the Pixel can reach the gateway
-   port and nothing else, and that any other node is denied. Exact syntax is confirmed against
-   the pinned version (Q11).
-4. **Per-request authentication at the gateway.** Every LARPUS page and API request on the
-   authenticated listener checks a session cookie, plus Host/Origin, the password login and rate limits
-   ([AUTH.md](AUTH.md)). **Short session lifetime:** the current fixed lifetime is 8 hours.
-   For tailnet access this design proposes something shorter, for example 1 hour idle / 4 hours absolute.
-   That is a **code change** for a separate PR (D4); it is not in effect today.
-5. **Optional self-hosted OIDC re-authentication.** With Authelia (section 7) and a
-   finite `node.expiry`, the Pixel must periodically re-authenticate to the IdP with a second
-   factor before its node key is renewed. This adds to the gateway password; it does not replace it.
-6. **Node approval and single-use, short-lived pre-auth keys.** No open registration:
-   each node is registered by explicit owner action (`headscale nodes register`) or
-   with a pre-auth key that is single-use, non-reusable, non-ephemeral, expires in 1 hour or less
-   and carries the right tag. Unused keys are expired right after enrollment.
-7. **Key expiry and instant revocation.** Use a finite `node.expiry` (30 days proposed).
-   Lost phone: `headscale nodes expire -i <id>` cuts it off immediately, then
-   `headscale nodes delete`. Then rotate the LARPUS password and restart the gateway to kill
-   sessions (section 11). Revocation needs the control server to be up and reachable by
-   the PC node. Peers enforce the updated netmap.
-8. **Local-only access logs.** The gateway's access and auth events and Headscale's
-   registration and policy logs stay on owner storage: the PC, or in R-A the off-site host, which is
-   then copied home over the tailnet with no third-party log service. Client log upload
-   to Tailscale Inc. is disabled (`logtail.enabled: false`, Q3).
-9. **Gateway bound only to the tailnet interface.** The tailnet-facing listener binds
-   only to the PC node's tailnet IP (100.64.0.0/10), never 0.0.0.0 and never a WAN address.
-   The password-free loopback listener is never reachable over the tailnet. *Caveat:* the
-   gateway runs on Windows, so this binding is direct only with PC option C (the Windows client). With A or B it is
-   done by the tailnet container listening on its tailnet IP and forwarding to the
-   authenticated listener (sections 3 and 4, Q7).
-
-### Mapping to the SP 800-207 tenets
+1. **Per-node key identity:** WireGuard node keys, **each signed by a Tailnet Lock key** held on owner devices.
+2. **Tailnet membership grants no implicit trust:** the policy is default-deny (section 4), and the gateway still
+   requires password plus MFA.
+3. **Default-deny policy:** only `tag:pixel` (with Android posture) can reach `tag:larpus` on the gateway port.
+   There are no routes, exit nodes or SSH, and `tests` guard it (section 4).
+4. **Per-request authentication at the gateway** with short sessions: 15 min idle / 4 h absolute, proposed (D4, 11.4).
+5. **Re-authentication:** node key expiry every 30 days through the dedicated SSO account with hardware-key MFA, plus
+   gateway MFA step-up for sensitive actions (11.1).
+6. **Enrollment control:** one-off, short-lived, tagged auth keys that must be **pre-signed by a lock signer**.
+7. **Expiry and revocation:** see section 12.
+8. **Local-only access logs:** the gateway audit (11.4). Client logs are opted out (section 9).
+9. **Gateway bound only to the tailnet interface**, never 0.0.0.0 or WAN (section 8, phase H5).
 
 | # | Tenet (SP 800-207 section 2.1, paraphrased) | How this design meets it |
 |---|---|---|
-| 1 | All data sources and computing services are resources | The LARPUS gateway is the protected resource. Headscale and the PC node are infrastructure, not trusted zones |
-| 2 | All communication is secured regardless of network location | WireGuard end to end on the tailnet, and TLS at the gateway even inside the tunnel. LAN and tailnet are treated alike |
-| 3 | Access is granted per session | Gateway sessions are per login, with a short lifetime (proposed), Lock Station, invalidation on restart, and MFA step-up for sensitive actions (16.1) |
-| 4 | Access is determined by dynamic policy, including client identity, application and observable state | Node key + tag (Headscale grant) and password session (gateway). Device state is limited (see gaps) |
-| 5 | The integrity and security posture of all owned assets is monitored | Partial: Headscale node list/last-seen, pinned versions and local logs. No device posture (gap) |
-| 6 | Authentication and authorization are dynamic and strictly enforced before access | Node approval, expiring node keys, revocation, password plus WebAuthn/TOTP MFA per session (16.1), optional OIDC with a second factor, and allowlists at three layers (16.2) |
-| 7 | Collect information to improve security posture | Local-only auth audit log, ban log and PC notifications on lockout (16.4), plus periodic manual review of the node list and ACL |
+| 1 | All data sources and computing services are resources | The gateway is the protected resource. Tailscale, the PC node and the Pi are infrastructure, not trusted zones |
+| 2 | All communication is secured regardless of network location | WireGuard end to end (DERP relays ciphertext only) plus TLS 1.3 at the gateway inside the tunnel |
+| 3 | Access is granted per session | Gateway sessions per login, short lifetime, MFA step-up, invalidated on restart |
+| 4 | Access is determined by dynamic policy | Signed node key, tag and basic posture (Tailscale grant), then the Pixel-IP firewall rule, then password plus MFA session |
+| 5 | Integrity and security posture of assets is monitored | Partial: basic self-reported posture, `tailscale lock status`, local audit. No MDM-grade posture (gap) |
+| 6 | Authentication and authorization are dynamic and strictly enforced before access | Lock signatures, expiring node keys, password plus WebAuthn/TOTP, allowlists at three layers (11.2) |
+| 7 | Collect information to improve security posture | Local auth audit, ban log and PC notifications (11.4). Periodic manual review of devices, lock status and the policy |
 
-### Remaining gaps (stated honestly)
+Remaining gaps (stated honestly):
 
-- **Device posture:** stock Android with no MDM provides no attestable posture signal
-  (OS patch level, root/bootloader state, screen-lock policy) to Headscale or LARPUS.
-  Headscale does not support `postures`/`srcPosture`
-  ([Headscale policy limitations](https://headscale.net/stable/ref/acls/#limitations)).
-  Posture is therefore owner discipline: current updates, a locked bootloader and a strong screen lock.
-- **No continuous evaluation / PDP:** policy is static (file reload). There is no
-  risk-adaptive engine that re-scores a session mid-flight (tenet 4/5 only partly met).
-- **Single administrator, single control plane:** whoever controls Headscale, the owner or, in R-A,
-  the VPS host operator, can add nodes or rewrite policy. The gateway password is the backstop.
-- **Session lifetime** is still 8 hours until the D4 code change lands.
-- **Shared upstream IP:** with a forwarding container (PC options A/B), the gateway sees one
-  source IP for all tailnet requests, so per-client rate limiting collapses to one bucket.
-- **The trusted PC itself** is out of scope (same boundary as [AUTH.md](AUTH.md)).
-- **Logs:** alerting is local only (16.4). There is no off-box alerting when the PC itself is down.
+- **Device posture:** stock Android with no MDM gives no attested posture. Tailscale's basic attributes (OS,
+  client version) are **self-reported**; MDM and EDR integrations need a paid plan and an MDM
+  ([device posture KB](https://tailscale.com/kb/1288/device-posture)). Root, bootloader and screen-lock state
+  are owner discipline.
+- **The policy is not lock-protected:** the coordination server delivers filters and DNS (section 3). Layers 2
+  and 3 of 11.2 compensate.
+- **The metadata exception** (section 6) and **availability** depend on Tailscale.
+- **The identity provider is a mainstream cloud SSO** (custom OIDC is blocked, 5.1). Tailnet Lock limits what an IdP compromise can do.
+- **No continuous evaluation engine:** static policy, manual review.
+- **Signer keys** are stored in software on the PC and Pi.
+- **Session lifetime** stays 8 hours until H1/D4 land. **Alerts** are PC-local only.
+- **No per-node signature revocation** is documented short of deleting the node. Revoking a TLK invalidates every
+  node it signed (Q7).
 
-## 16. Hardening ("extremely secure" profile)
+## 11. Hardening ("extremely secure" profile)
 
 Design only. Every item here is a **proposal**, including every threshold. Nothing is
-implemented, and each code change ships as a separate PR needing approval (section 14,
+implemented, and each code change ships as a separate PR needing approval (section 15,
 phases H1-H6). Everything is self-hosted: **no cloud MFA push services, no SMS, no email
-OTP via third parties, no hosted threat or IP-reputation feeds.**
+OTP via third parties, no hosted threat or IP-reputation feeds.** (The Tailscale exception in section 1
+covers the coordination plane and DERP only, not any of these controls.)
 
-### 16.0 What the gateway does today (read from `runtime/auth.py`, `runtime/gateway.py`, AUTH.md)
+### 11.0 What the gateway does today (read from `runtime/auth.py`, `runtime/gateway.py`, AUTH.md)
 
 | Area | Today | Gap for remote/mobile |
 |---|---|---|
@@ -459,7 +389,7 @@ OTP via third parties, no hosted threat or IP-reputation feeds.**
 | Headers | CSP `default-src 'self'` (+ `style-src 'unsafe-inline'`, `media-src blob:`), `frame-ancestors 'none'`, `base-uri 'none'`, `nosniff`, `Cache-Control: no-store` | No HSTS, Referrer-Policy, Permissions-Policy, COOP/CORP; `'unsafe-inline'` styles |
 | Audit | No persistent auth audit log | Needs to be added |
 
-### 16.1 MFA at the LARPUS gateway (layered on the existing password)
+### 11.1 MFA at the LARPUS gateway (layered on the existing password)
 
 Flow: **password, then a second factor**, then a session. Neither alone grants a session.
 The password check is unchanged (scrypt, constant-time compare).
@@ -474,30 +404,29 @@ The password check is unchanged (scrypt, constant-time compare).
     Google Password Manager, which **syncs passkeys through Google's cloud**. That violates
     the no-cloud rule. Options: (a) a **hardware FIDO2 security key** over NFC/USB-C
     (device-bound, `backupEligible=false`), recommended; or (b) a device-bound
-    credential, if the Pixel and Chrome version offer one without sync (Q12). The gateway should
+    credential, if the Pixel and Chrome version offer one without sync (Q9). The gateway should
     **reject credentials with `backupEligible=true`** so a synced passkey cannot be enrolled
     by accident. That makes it policy, not hope.
   - **Origin and TLS prerequisites:** WebAuthn only works in a secure context whose TLS was
     "established without errors", and the RP ID must be a **domain, never an IP address**
     (spec section 5.1.3 step 7). The current `https://192.168.1.2:8080` origin **cannot** use WebAuthn.
-    It needs a stable hostname such as `larpus.<tailnet-base-domain>`, served to the phone
-    over MagicDNS through Headscale `dns.extra_records` ([Headscale DNS docs](https://headscale.net/stable/ref/dns/)),
-    so no cloud DNS is involved. It also needs a gateway certificate for that name, chained to a CA
-    **the phone's Chrome trusts without warnings**. This ties to Q2 and Q6. The hostname must
-    stay fixed: changing it invalidates every enrolled credential.
+    It needs a stable hostname: the PC's MagicDNS name `larpus.<tailnet-name>.ts.net`
+    (section 7). It also needs a gateway certificate for that name that **the phone's Chrome trusts without
+    warnings**, from either the local CA or `tailscale cert` (D7, Q5). The hostname and the tailnet
+    DNS name must stay fixed: changing either invalidates every enrolled credential.
 - **Fallback: TOTP** (RFC 6238; SHA-1, 6 digits, 30 s, ±1 step). The secret is stored encrypted
   at rest, or at minimum in the owner-only `data/` like the password file. Each time-step is
   accepted once (replay cache). Enrollment shows the secret or QR **on the PC only** (local
-  listener), never over the network. Use an offline authenticator app with cloud backup off (Q13).
+  listener), never over the network. Use an offline authenticator app with cloud backup off (Q10).
 - **Recovery codes:** 10 single-use codes of 10 or more random characters, shown once at enrollment on the PC,
   stored only as scrypt hashes (same parameters as the password) and deleted on use.
-  Using a code raises a local alert (16.4) and forces re-enrollment of a second factor.
+  Using a code raises a local alert (11.4) and forces re-enrollment of a second factor.
 - **Enrollment and reset are local-only:** adding or removing factors and regenerating codes is
   allowed only from the loopback listener on the PC, plus a fresh password entry.
   A remote attacker who has the password still cannot enroll their own authenticator.
 - **Step-up re-authentication** (a fresh WebAuthn/TOTP check within the last 5 minutes, proposed) for
   sensitive actions: changing auth settings, exporting conversations, memory or teaching data, bulk
-  delete, any future remote-admin action, and the remote kill switch (16.4). The
+  delete, any future remote-admin action, and the remote kill switch (11.4). The
   implementation PR lists the exact endpoints.
 - **Lockout behaviour (proposal):** 5 failed second-factor attempts per session-in-progress
   void the pending login. 10 failed MFA attempts across all sources in 15 minutes trigger an
@@ -508,37 +437,26 @@ The password check is unchanged (scrypt, constant-time compare).
 - **Local listener:** the password-free loopback listener stays as documented in AUTH.md. MFA
   applies to every non-loopback listener (LAN and tailnet).
 
-**MFA on the Headscale admin and enrollment path**
+**MFA on the Tailscale admin and enrollment path:** see section 5 (a dedicated SSO account with
+hardware-key-only MFA; self-hosted custom OIDC was evaluated in 5.1). Enrolling the Pixel also needs a
+**Tailnet Lock signature from the PC**, which acts as physical presence (section 3). No Tailscale API keys or OAuth
+clients are created.
 
-- Headscale has no web admin UI here. Administration is the `headscale` CLI inside the
-  pod, reachable only through `podman exec` by the owner's account. No gRPC or remote CLI API key
-  is created, and the gRPC listener stays on the pod's loopback.
-- Phone enrollment: with OIDC (D2), Authelia enforces `authorization_policy: two_factor` with
-  WebAuthn or TOTP ([Authelia Headscale integration](https://www.authelia.com/integration/openid-connect/clients/headscale/)),
-  so every node registration and expiry renewal needs a second factor. The same
-  backup-eligible passkey caveat applies (Q12). Without OIDC, enrollment is a single-use
-  pre-auth key created by the owner at the PC console, which is physical presence used as the factor.
-- R-A off-site host: SSH key-only plus a hardware-backed key (`sk-ssh-ed25519`, FIDO2) for
-  admin login (Q14).
-
-### 16.2 Allowlisting and blocking (default deny at three layers)
+### 11.2 Allowlisting and blocking (default deny at three layers)
 
 Allowed principal: **the Pixel's node** (`tag:pixel`, its specific node key and its tailnet IP).
 Everything else is denied at every layer independently, so one misconfiguration is not enough.
 
-1. **Headscale policy:** the section 15 grant (`tag:pixel` to `tag:larpus` on the gateway port only).
-   In addition, pin the Pixel's tailnet IP with `headscale nodes` (static assignment, Q15) so lower
-   layers can match it.
+1. **Tailscale policy:** the section 4 grant (`tag:pixel` to `tag:larpus` on the gateway port only).
+   This layer is delivered by the coordination server, so it is **not** protected by Tailnet Lock
+   (section 3). That is why layers 2 and 3 exist and do not depend on Tailscale. The Pixel's tailnet IP
+   is stable for the life of the node (Q11), so lower layers can match it.
 2. **Host firewall:**
-   - *Windows Firewall* (if the tailnet interface is on Windows, option C): an inbound allow rule for
-     the gateway program on the tailnet port, **RemoteAddress = the Pixel's tailnet IP only**, scoped to the
-     tailnet interface. The default inbound action stays block. Created with an elevated prompt at implementation.
-   - *nftables in the tailnet-forwarder pod* (options A/B): `policy drop` on input. Accept only
-     from the Pixel's tailnet IP to the forward port. Drop and log everything else to the local log.
-     With userspace networking the filter is in the forwarder itself (16.3), so the
-     WireGuard source is checked there (Q16).
+   - *Windows Firewall* (the chosen PC option, section 8): an inbound allow rule for the gateway
+     program on the tailnet port, **RemoteAddress = the Pixel's tailnet IP only**, scoped to the
+     Tailscale interface. The default inbound action stays block. Created with an elevated prompt at implementation.
 3. **Gateway:** a tailnet listener accepts a peer only if its address equals the configured Pixel
-   address, *and* (with a trusted forwarder) only if the forwarder asserts the Pixel's node identity (16.3).
+   address (the Windows client gives the gateway the real tailnet source IP).
    Otherwise it returns 403 before any auth processing.
 
 **The LAN path is rejected for mobile.** The Pixel uses only the tailnet URL, even at home.
@@ -551,24 +469,14 @@ later decide (D5) to disable the LAN HTTPS listener entirely and use only loopba
 - Proposal: a ban after 5 failed logins **or** 5 failed MFA checks within 15 minutes. Ban durations
   double: 15 min, 30 min, 1 h, 2 h ... capped at 24 h. The strike counter decays after 24 h clean.
 - A banned key gets 429 with `Retry-After` and a generic body. Every ban and unban goes into the audit log
-  and triggers a local alert (16.4).
+  and triggers a local alert (11.4).
 - State lives in memory plus a small owner-only file, so bans survive a gateway restart (unlike
   today's limits). The owner can clear a ban only from the local listener or CLI.
 - No hosted blocklists or reputation feeds.
 
-**R-A off-site host hardening:**
+There is no off-site host in this design, so the earlier off-site hardening is dropped.
 
-- Host firewall (nftables) `policy drop` inbound. Allow only 443/tcp (Headscale/DERP over
-  HTTPS) and 3478/udp (STUN) from anywhere, plus SSH **only on the tailnet interface**.
-  Outbound is limited to what Headscale needs; no update-check callbacks (Q5).
-- SSH: `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`,
-  `AllowUsers <owner>`, FIDO2-backed keys, and listening only on the tailnet IP. The provider's web
-  console is break-glass access (Q14).
-- Auto-ban: fail2ban (or the equivalent nftables meter sets) on SSH and on Headscale's
-  log for repeated failed registrations and TLS handshake floods. Local jails only.
-- Full-disk encryption where the provider allows; unattended security updates; no LARPUS data.
-
-### 16.3 Rate limiting
+### 11.3 Rate limiting
 
 Separate buckets so chat traffic cannot starve login and brute force cannot hide in chat
 traffic. All numbers are **proposals**:
@@ -576,37 +484,22 @@ traffic. All numbers are **proposals**:
 | Bucket | Key | Proposed limit |
 |---|---|---|
 | Password attempts | node identity / IP, plus global | 5 / 15 min per key; 20 / 15 min global (today 5/60 s and 20/60 s) |
-| MFA attempts | pending-login ID, plus node identity / IP, plus global | 5 per pending login; 10 / 15 min global (and the lockout in 16.1) |
+| MFA attempts | pending-login ID, plus node identity / IP, plus global | 5 per pending login; 10 / 15 min global (and the lockout in 11.1) |
 | Authenticated API (non-chat) | session **and** node identity | 30 / min (as today) |
 | Chat / inference requests | session and node identity | 6 / min, 60 / hour |
-| Inference concurrency | global | **1** (keep the existing `LOCK`; a busy gateway returns 409), plus at most 1 queued request per session (Q17) |
+| Inference concurrency | global | **1** (keep the existing `LOCK`; a busy gateway returns 409), plus at most 1 queued request per session (Q12) |
 | Request size / stream time | per request | Existing input limits; proposed 10 min max stream |
 
-**Fixing the "one IP for everyone" gap** (section 15): with a forwarding container, every
-tailnet request reaches the gateway from one upstream address. Fix, in order of preference:
+**The "one IP for everyone" gap is resolved** by the Windows client (section 8): the gateway sees
+the real tailnet source IP, so per-IP keys work unchanged, and limits are also keyed by the authenticated
+session. The trusted-proxy header idea is needed only if the container option is ever chosen (Q10).
 
-1. **PC option C (Windows client):** the gateway sees the real tailnet source IP directly, and per-IP
-   keys work unchanged.
-2. **Trusted-proxy identity header** (options A/B): the forwarder, which terminates the
-   tailnet connection and knows the WireGuard peer, adds `X-Larpus-Tailnet-Node: <node key or ID>`.
-   The gateway honours it **only** when the TCP peer is the forwarder's fixed loopback/WSL address
-   *and* a shared secret header matches (or a Unix socket/mTLS link is used). On every request it
-   **strips and rejects** any client-supplied copy. This changes AUTH.md's "never forwarded headers"
-   rule only for this authenticated, single-hop case, and needs its own review (Q18).
-3. In all cases, also key limits on the **authenticated session**, which a proxy cannot collapse.
+**Coordination/DERP front:** operated by Tailscale; nothing at home listens on WAN, so there is no
+front for us to rate-limit. Availability is accepted as Tailscale's (section 2).
 
-**Headscale/DERP front:**
+### 11.4 Additional controls
 
-- In R-B, Headscale is LAN-only. Pod-level nftables limits new connections to the Headscale port
-  (for example 30/min per source), and its connection rate is capped.
-- In R-A, the host's nftables `limit`/`meter` rules on 443/tcp (new connections per source)
-  and 3478/udp (packets per source), plus fail2ban (16.2). The embedded DERP has no built-in
-  throttling ([DERP docs, limitations](https://headscale.net/stable/ref/derp/#limitations)), so
-  limits are set conservatively for a single phone (Q9).
-
-### 16.4 Additional controls
-
-- **TLS:** on every non-loopback listener and on Headscale, **TLS 1.3 only**
+- **TLS:** on every non-loopback gateway listener, **TLS 1.3 only**
   (`minimum_version = TLSv1_3`). Check that the Pixel's Chrome and the Tailscale app negotiate it
   (they should). Today the gateway allows 1.2. The leaf cert is ECDSA P-256 with a one-year life, and the
   hostname SAN required by WebAuthn.
@@ -615,7 +508,7 @@ tailnet request reaches the gateway from one upstream address. Fix, in order of 
   list). HSTS on an IP origin is ignored by browsers.
 - **Cookies:** rename to `__Host-larpus_session` (forces `Secure`, `Path=/` and no `Domain`). Keep
   `HttpOnly` and `SameSite=Strict`. Proposed lifetime: 15 min idle and 4 h absolute (supersedes the
-  1 h idle proposal in section 15, D4). Rotate the token on login and on step-up.
+  earlier 1 h idle proposal, D4). Rotate the token on login and on step-up.
 - **CSRF:** keep the Host/Origin checks, and **require** an `Origin` (or `Sec-Fetch-Site: same-origin`)
   on every state-changing request. Add a per-session synchronizer token in a custom header for
   POSTs. SameSite=Strict stays as defence in depth.
@@ -631,56 +524,132 @@ tailnet request reaches the gateway from one upstream address. Fix, in order of 
   bans/unbans, lockouts, step-ups, session creation/expiry/logout and kill-switch use. Each entry holds
   a timestamp, event, node identity, source IP and session-hash prefix, and **never** passwords, codes,
   tokens or chat content. Rotation is size-based, with local retention of 90 days (proposal). Optionally,
-  hash-chain each line to make tampering evident (Q19). Never shipped off the box, except in R-A where
-  Headscale's own log is pulled home over the tailnet.
+  hash-chain each line to make tampering evident (Q14). Never shipped off the box.
 - **Local alerting:** a small local watcher (or the gateway itself) raises a **Windows toast
-  notification on the PC** for: a lockout, a ban, recovery-code use, a new node registration in Headscale,
-  a policy reload failure or a kill-switch use. No push service, SMS or email relay. The owner sees
+  notification on the PC** for: a lockout, a ban, recovery-code use, a new or locked-out node (seen with `tailscale lock status`/`tailscale status`),
+  or a kill-switch use. No push service, SMS or email relay. The owner sees
   alerts the next time he is at the PC. Accepted gap: no alert reaches the phone while the
-  owner is away. It may also show on the phone via the LARPUS HUD after login (Q20).
+  owner is away. It may also show on the phone via the LARPUS HUD after login (Q15).
 - **Remote kill switch:** an authenticated, **MFA step-up**-protected HUD action ("Close remote
   access") that immediately (1) invalidates all non-loopback sessions, (2) makes the gateway
   refuse all non-loopback requests until re-enabled **from the local listener only**, and (3)
   writes an audit entry and a local alert. It deliberately cannot be re-opened remotely.
-  Network-level kill (section 13) remains: expire the node in Headscale, stop the pod, and, in
-  R-A, stop the off-site host.
+  Network-level kill (section 12) remains: remove the Pixel in the admin console and run `tailscale down` on the PC.
 
-## 17. Open questions
+## 12. Revocation, lost phone and kill switch
 
-- **Q1** NAT plus portproxy (no UDP/STUN) versus mirrored networking (affects all distros).
-  Is mirrored mode acceptable alongside docker-desktop on this machine?
-- **Q2** Does the Tailscale Android app trust a user-installed CA for the control
-  server? This was not found in official docs. It must be tested on the Pixel and could block the design.
-- **Q3** Remaining Tailscale client telemetry and log upload to Tailscale Inc. with a custom
-  control server (Android and tailscaled). Is `logtail.enabled: false` sufficient?
-  Does the client still contact `log.tailscale.com` or `controlplane.tailscale.com`?
-- **Q4** For R-A: VPS versus trusted-site hardware, provider FDE support, and whether the
-  provider's metadata visibility is acceptable to the owner.
-- **Q5** Authelia/Authentik outbound calls (update checks, NTP, telemetry) and
-  how to disable them.
-- **Q6** Reuse the LARPUS CA, or create a dedicated name-constrained CA for Headscale?
-- **Q7** How the Windows gateway accepts tailnet traffic (section 3/4): a code change
-  for a tailnet listener versus a bridge. Its LAN-subnet check currently rejects WSL-originated traffic.
-- **Q8** Rootless Podman binding to 443 needs `net.ipv4.ip_unprivileged_port_start`
-  or a high-port forward. Choose one.
-- **Q9** Embedded DERP limits: no `/generate_204` captive-portal support, and it is the single
-  relay ([DERP docs](https://headscale.net/stable/ref/derp/)). Is that acceptable on cellular?
-- **Q10** Tagged nodes and the Android app: confirm that a pre-auth key carrying `tag:pixel` works
-  with the stock Android client, and that a tagged phone keeps full client function
-  (the demo noted that tagged devices lack user identity for Serve; Serve is not used here).
-- **Q11** Exact Headscale v0.29.x grant/`tests` syntax for the policy in section 15.
-- **Q12** Can the Pixel hold a **device-bound, non-synced** WebAuthn credential in Chrome,
-  or does it always go to Google Password Manager sync? If unclear, require a hardware FIDO2
-  key (D6).
-- **Q13** Which offline TOTP app (open source, no cloud backup) the owner will use.
-- **Q14** R-A only: SSH with FIDO2 `sk-` keys, and the break-glass path when the tailnet is down
-  (the provider console is third-party).
-- **Q15** Static tailnet IP assignment for the Pixel in Headscale v0.29.x (rename/IP pinning
-  options), so firewall rules can match it.
-- **Q16** With userspace-networking tailscaled, where the source-IP allowlist is enforced
-  (forwarder code versus nftables, which never sees the tailnet packets).
-- **Q17** Should a second chat request wait in a short queue, or get the existing immediate 409?
-- **Q18** Accept a narrowly scoped trusted-proxy header (reverses AUTH.md's "never forwarded
-  headers" for one authenticated hop), or require option C?
-- **Q19** Is a hash-chained audit log worth the complexity?
-- **Q20** Show local alerts in the HUD after login (so the phone sees them), or keep them PC-only?
+Lost or stolen Pixel, in order:
+
+1. In the admin console, **remove the Pixel** (Machines, then Remove). This deauthorizes it; revoking an auth key
+   alone does not ([auth keys KB](https://tailscale.com/kb/1085/auth-keys)).
+2. Rotate the LARPUS password (`python -m runtime.auth`) and restart the gateway, which kills all sessions.
+3. Remove the lost phone's WebAuthn/TOTP enrollment locally (11.1).
+4. Check `tailscale lock status` and `tailscale status` on the PC for unexpected nodes.
+
+Signer compromise: run `tailscale lock revoke-keys` on the healthy signer, then co-sign as the KB describes.
+Nodes signed only by the revoked key need re-signing.
+
+Kill switch, in increasing severity:
+
+1. The HUD remote kill switch (11.4): non-loopback access closes and can only be re-opened locally.
+2. `tailscale down` on the PC (outbound-only, so remote reachability ends at once).
+3. Disable or uninstall the Windows Tailscale client. Remove the firewall rule and the tailnet gateway listener.
+4. Delete the tailnet. Keep the disablement secrets until this is done.
+
+LAN and local LARPUS keep working at every step. Nothing touches the frozen release or the offline pod.
+
+## 13. Plans and paid tiers
+
+Everything this design needs is on the free **Personal** plan, which is for **non-commercial** use
+([pricing](https://tailscale.com/pricing)). That covers grants/ACLs, tests, tags, auth keys, custom key
+expiry, MagicDNS/HTTPS, basic posture attributes and passkeys. **Tailnet Lock** is listed for "Personal and
+Enterprise" plans ([Tailnet Lock KB](https://tailscale.com/kb/1226/tailnet-lock)). Paid-only and **not used**:
+MDM/EDR posture integrations, network flow logs, log streaming, custom SSH check periods, advanced roles.
+Device approval exists but conflicts with lock. A custom-domain sign-up (needed only for custom OIDC, 5.1)
+starts a business trial, after which the free plan can be chosen for personal use. If LARPUS use ever became
+commercial, the plan would need review (Q18).
+
+## 14. Alternative and exit path: self-hosted Headscale (brief)
+
+The earlier design (in git history on this branch, commits 596001f to c0fc4b5) used
+[Headscale](https://github.com/juanfont/headscale) with an embedded DERP in an isolated rootless pod, with the
+stock Android app pointed at a custom control URL. It removes the coordination-plane exception, but it **needs
+inbound reachability**: an off-site owner host, or home forwarding, which is prohibited. Without that it is
+LAN-only. It is the exit path if Tailscale becomes unacceptable or unavailable, or if owner-controlled off-site
+hardware appears. The policy file, the hardening (section 11) and the gateway changes carry over unchanged;
+only the control plane and DERP move. Tailscale's own KB notes Headscale as the way to keep the control plane
+on your own infrastructure. Headscale can also use a self-hosted OIDC IdP reachable only by the phone and the
+Headscale host, which is the one setup where Authelia fits without public exposure.
+
+## 15. Implementation plan (NOT executed, requires owner approval per step)
+
+0. The owner decides D2 (SSO provider), D3 (Pi as second signer), D4, D5, D6, D7, D8, D9 and the thresholds.
+1. Create the dedicated SSO account with hardware-key-only MFA. Create the tailnet. Choose the random tailnet DNS
+   name. Paste the section 4 policy **before** adding devices.
+2. PC: install the Windows client, set `TS_NO_LOGS_NO_SUPPORT=true`, log in, and tag `tag:larpus`.
+3. Pi 5: install the Linux client, set `TS_NO_LOGS_NO_SUPPORT=true`, and tag `tag:signer`.
+4. `tailscale lock init` with the PC and Pi as signers. Store the disablement secrets offline. Verify
+   `tailscale lock status` on both.
+5. Pixel: create a pre-signed one-off tagged auth key, enroll it, re-enable key expiry (30 d), and verify `tailscale lock status`.
+6. Acceptance on cellular: the Pixel reaches only the gateway port; the policy `tests` pass; the PC and Pi cannot reach
+   the Pixel; a direct versus DERP path is observed; nothing at home is reachable from WAN.
+7. Then the gateway code PRs below. Update STATUS.md, LAN.md and DECISIONS.md with the actual results.
+
+**Hardening code PRs (section 11), each a separate PR with tests, each needing owner approval
+before merge and before activation as a release:**
+
+- **H1 Transport and headers:** TLS 1.3 only, HSTS on the hostname origin, CSP tightening,
+  extra security headers and the `__Host-` cookie. Short idle/absolute sessions (D4).
+- **H2 Audit log and local alerts:** append-only auth audit log, Windows toast watcher.
+- **H3 Rate limits and bans:** separate login/MFA/chat buckets, per-session keys,
+  persistent exponential bans, and the CSRF token plus mandatory Origin.
+- **H4 MFA:** TOTP, hashed recovery codes and lockout first, then WebAuthn once the MagicDNS hostname and
+  trusted TLS exist (Q5, D6, D7). Step-up for sensitive actions. Local-only enrollment.
+- **H5 Tailnet listener:** bind only to the PC's Tailscale IP (lifting the RFC1918-only startup check for
+  that one 100.64.0.0/10 address), the Pixel-IP allowlist, and the remote kill switch.
+- **H6 Infrastructure (no repo code):** the Windows Firewall Pixel-only rule (elevated). It runs only after explicit approval.
+
+## 16. Open questions
+
+Resolved by this revision: the self-hosted control-server CA question (the Tailscale app uses public TLS), WSL
+networking mode (the Windows client needs none), rootless port 443, embedded DERP limits, off-site host choices,
+Authelia/Authentik outbound calls for Headscale, and Headscale policy syntax and IP pinning.
+
+- **Q1** The Android Tailscale app has no documented telemetry or log opt-out. Is there one (for example a
+  hidden setting or managed config), or is this an accepted residual?
+- **Q2** Confirm from the [Tailnet Lock white paper](https://tailscale.com/kb/1230/tailnet-lock-whitepaper)
+  that lock signs node keys and the TLK set only, not policy, DNS or filters.
+- **Q3** Pi 5 as a signer (and, only under D9, as the IdP box): OS hardening level, and what else runs on it (proposal: nothing).
+- **Q4** Where exactly the offline disablement secrets and SSO recovery codes are kept (two physical locations).
+- **Q5** Does Chrome on the Pixel treat a site whose certificate chains to a **user-installed** CA as a secure
+  context for WebAuthn without warnings? If not, use `tailscale cert` (D7).
+- **Q6** Windows client: should it run unattended (before Windows sign-in), and does that change who can
+  control it locally?
+- **Q7** Under lock, is there a way to revoke one non-signer node's signature other than deleting it in the
+  admin console?
+- **Q8** Key expiry for `tag:larpus` and `tag:signer` (tagged default: off). Proposal: enabled, with a calendar reminder.
+- **Q9** Can the Pixel hold a **device-bound, non-synced** WebAuthn credential in Chrome, or does it always go
+  to Google Password Manager sync? If unclear, require a hardware FIDO2 key (D6).
+- **Q10** Which offline, open-source TOTP app with cloud backup off the owner will use.
+- **Q11** Confirm the Pixel's tailnet IP stays stable across re-authentication and key expiry, so the
+  firewall rule can match it.
+- **Q12** Should a second chat request wait in a short queue, or get the existing immediate 409?
+- **Q13** Only if the container PC option is ever chosen: accept a narrowly scoped trusted-proxy header?
+- **Q14** Is a hash-chained audit log worth the complexity?
+- **Q15** Show local alerts in the HUD after login, or keep them PC-only?
+- **Q16** Which SSO provider for the dedicated admin account allows hardware-key-only MFA with SMS and push fully disabled?
+- **Q17** Exact `tests` syntax for the posture-gated grant (`srcPostureAttrs`), and the minimum Android client version.
+- **Q18** Confirm that LARPUS use is non-commercial (Personal plan terms) and that Tailnet Lock remains on the
+  Personal plan.
+- **Q19** Custom OIDC: would Tailscale accept a discovery document whose authorization endpoint is LAN-only
+  while token/JWKS are public (undocumented)? Does Tailscale send PKCE (Authelia's guide disables `require_pkce`)?
+- **Q20** Is custom OIDC usable on the free Personal plan after the custom-domain business trial?
+- **Q21** Authelia outbound calls beyond NTP (update checks, telemetry) in the pinned version.
+
+Decisions needed from the owner: **D2** SSO provider and dedicated account; **D3** Pi 5 as second signer;
+**D4** session lifetime (15 min idle / 4 h, proposed); **D5** disable the LAN HTTPS listener and use only loopback
+plus tailnet; **D6** hardware FIDO2 key (recommended) versus a device-bound passkey, with TOTP as fallback;
+**D7** local CA (recommended) versus `tailscale cert` with CT disclosure; **D8** do not escrow a disablement
+secret with Tailscale support (recommended); **D9** custom OIDC with Authelia: **not recommended**. It needs a
+custom domain, public DNS and a public IdP, so a second cloud exception (Cloudflare Tunnel plus cloud DNS) or
+abandoning no-port-forwarding; plus all thresholds and approval of H1-H6.
