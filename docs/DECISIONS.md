@@ -596,3 +596,16 @@ membership, a default-deny Headscale policy allowing only the tagged Pixel to re
 (no routes, exit node or SSH), single-use pre-auth keys, expiring and revocable node keys,
 per-request gateway authentication and local-only logs. Device posture on stock Android
 remains an acknowledged gap.
+
+Hardening profile (proposal, same date; the owner asked for "extremely secure"): add MFA at
+the gateway on top of the password, with WebAuthn preferred. This means a hardware FIDO2 key, or another device-bound
+credential, rejecting cloud-synced passkeys. TOTP is the fallback, with hashed one-time recovery codes,
+local-only enrollment, step-up for sensitive actions and a lockout that never blocks the local console.
+Default-deny allowlists for the Pixel's node identity apply at the Headscale, host-firewall and gateway layers,
+and the LAN path is rejected for mobile. Local exponential bans and separate login, MFA and chat
+rate buckets keyed by session and node identity, rather than by the forwarder's single IP. TLS 1.3
+only, HSTS, `__Host-` cookies, mandatory Origin plus a CSRF token, and a stricter CSP. A local
+audit log, Windows toast alerts and a remote kill switch that can only be re-opened locally. No cloud MFA push, SMS
+or hosted threat feeds. WebAuthn requires a stable hostname and phone-trusted TLS, so it waits
+on the CA questions. Implemented later as phased code PRs H1-H6, each needing approval.
+

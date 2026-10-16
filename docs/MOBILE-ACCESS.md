@@ -42,6 +42,10 @@ location/usage metadata.
 | Compromised Headscale container | yes | The container runs in its own rootless pod, has no LARPUS volumes, and lives in a different namespace from the offline pod. Traffic is end-to-end WireGuard, so the control server cannot read it. It *can* add nodes and rewrite ACLs, so the LARPUS password remains a required second gate. |
 | Malicious relay / on-path ISP | yes | WireGuard encrypts traffic end to end. DERP relays only ciphertext, and the relay is our own. |
 | Metadata leak to Tailscale Inc. (logtail, DERP map, control) | yes | Custom control URL, `derp.urls: []`, and client log upload disabled where possible (open question Q3). |
+| Password guessing / credential stuffing via the phone path | yes | MFA (section 16.1), per-identity and per-IP login buckets, exponential temporary bans (16.2, 16.3) |
+| Stolen session cookie | yes | Secure/HttpOnly/SameSite=Strict, short sessions, MFA step-up for sensitive actions, binding the session to the node identity (16.3, 16.4) |
+| GPU exhaustion / inference DoS by a valid but abusive client | yes | Global inference concurrency cap and per-session chat buckets (16.3) |
+| Off-site host brute force (R-A) | yes | Host firewall allows only Headscale/DERP, key-only SSH from the tailnet, auto-ban (16.2) |
 | Owner's own PC compromised | no | Same trusted-machine boundary as [AUTH.md](AUTH.md). |
 | Nation-state / targeted Android exploit | no | Out of scope for a single-owner home station. |
 | Availability (home power, ISP, off-site host) | accepted risk | Single DERP and single control server are single points of failure ([Headscale DERP docs](https://headscale.net/stable/ref/derp/)). LAN access remains the fallback. |
@@ -311,6 +315,23 @@ Each step is independent of the frozen release pointer and needs no reseal.
     a second device, revocation drill and the kill switch drill.
 11. Update STATUS.md, LAN.md and DECISIONS.md with the actual results.
 
+**Hardening code PRs (section 16), each a separate PR with tests, each needing owner approval
+before merge and before activation as a release:**
+
+- **H1 Transport and headers:** TLS 1.3 only, HSTS (hostname origin), CSP tightening,
+  extra security headers and the `__Host-` cookie. Short idle/absolute sessions (D4).
+- **H2 Audit log and local alerts:** append-only auth audit log, Windows toast watcher.
+- **H3 Rate limits and bans:** separate login/MFA/chat buckets, per-session keys,
+  persistent exponential bans, and the CSRF token plus mandatory Origin.
+- **H4 MFA:** TOTP, hashed recovery codes and lockout first (works on the existing origin),
+  then WebAuthn once the hostname and trusted TLS exist (blocked on Q2/Q6/Q12). Step-up
+  for sensitive actions. Local-only enrollment.
+- **H5 Tailnet listener and identity:** a tailnet-only bind (lifting the RFC1918-only startup check
+  for the 100.64.0.0/10 address only), the Pixel-IP allowlist, and either option C or the trusted-forwarder
+  identity header. Remote kill switch.
+- **H6 Infrastructure (no repo code):** Windows Firewall rule and nftables in the forwarder pod;
+  for R-A, off-site host firewall, SSH and fail2ban. Each runs only after explicit approval.
+
 ## 15. Zero Trust Networking (NIST SP 800-207)
 
 This section maps the design to the seven zero-trust tenets in
@@ -393,11 +414,11 @@ being on the tailnet, on the LAN or on the owner's own phone is **never** enough
 |---|---|---|
 | 1 | All data sources and computing services are resources | The LARPUS gateway is the protected resource. Headscale and the PC node are infrastructure, not trusted zones |
 | 2 | All communication is secured regardless of network location | WireGuard end to end on the tailnet, and TLS at the gateway even inside the tunnel. LAN and tailnet are treated alike |
-| 3 | Access is granted per session | Gateway sessions are per login, with a short lifetime (proposed), Lock Station, and invalidation on restart |
+| 3 | Access is granted per session | Gateway sessions are per login, with a short lifetime (proposed), Lock Station, invalidation on restart, and MFA step-up for sensitive actions (16.1) |
 | 4 | Access is determined by dynamic policy, including client identity, application and observable state | Node key + tag (Headscale grant) and password session (gateway). Device state is limited (see gaps) |
 | 5 | The integrity and security posture of all owned assets is monitored | Partial: Headscale node list/last-seen, pinned versions and local logs. No device posture (gap) |
-| 6 | Authentication and authorization are dynamic and strictly enforced before access | Node approval, expiring node keys, revocation, the password gate per session, optional OIDC with a second factor |
-| 7 | Collect information to improve security posture | Local-only Headscale and gateway logs, periodic review of the node list and ACL (manual) |
+| 6 | Authentication and authorization are dynamic and strictly enforced before access | Node approval, expiring node keys, revocation, password plus WebAuthn/TOTP MFA per session (16.1), optional OIDC with a second factor, and allowlists at three layers (16.2) |
+| 7 | Collect information to improve security posture | Local-only auth audit log, ban log and PC notifications on lockout (16.4), plus periodic manual review of the node list and ACL |
 
 ### Remaining gaps (stated honestly)
 
@@ -414,9 +435,217 @@ being on the tailnet, on the LAN or on the owner's own phone is **never** enough
 - **Shared upstream IP:** with a forwarding container (PC options A/B), the gateway sees one
   source IP for all tailnet requests, so per-client rate limiting collapses to one bucket.
 - **The trusted PC itself** is out of scope (same boundary as [AUTH.md](AUTH.md)).
-- **Logs** are reviewed manually; there is no alerting.
+- **Logs:** alerting is local only (16.4). There is no off-box alerting when the PC itself is down.
 
-## 16. Open questions
+## 16. Hardening ("extremely secure" profile)
+
+Design only. Every item here is a **proposal**, including every threshold. Nothing is
+implemented, and each code change ships as a separate PR needing approval (section 14,
+phases H1-H6). Everything is self-hosted: **no cloud MFA push services, no SMS, no email
+OTP via third parties, no hosted threat or IP-reputation feeds.**
+
+### 16.0 What the gateway does today (read from `runtime/auth.py`, `runtime/gateway.py`, AUTH.md)
+
+| Area | Today | Gap for remote/mobile |
+|---|---|---|
+| Authentication | Single password, scrypt (N=16384, r=8, p=1), salt and hash in `data/password.json` | No second factor |
+| Sessions | 256-bit random token, only its SHA-256 kept in memory, fixed 8 h (`Max-Age=28800`), cap of 128 sessions, Lock Station logout, all lost on restart | No idle timeout, no step-up, not bound to a device or node |
+| Cookies | `HttpOnly; SameSite=Strict; Path=/`, plus `Secure` on the TLS listener | No `__Host-` prefix |
+| CSRF | Exact Host check plus Origin check (when present) plus SameSite=Strict | No token; POSTs without an `Origin` header are accepted |
+| Rate limits | Fixed 60 s windows: login 5/IP and 20 global; authenticated POST 30/IP; returns 429 with `Retry-After: 60`; the limiter table fails closed at 2048 keys | No escalating ban, no per-identity bucket, no separate MFA bucket |
+| Inference | One global non-blocking lock (`LOCK`); a busy gateway returns 409 | Already a global cap of 1. Keep it |
+| Network gate | The LAN listener rejects peers outside `LARPUS_LAN_CIDR`. **Startup refuses non-RFC1918 binds**, so the 100.64.0.0/10 tailnet range is refused today | A tailnet listener needs a code change |
+| TLS | `minimum_version = TLSv1_2` | Not TLS 1.3 only; no HSTS |
+| Headers | CSP `default-src 'self'` (+ `style-src 'unsafe-inline'`, `media-src blob:`), `frame-ancestors 'none'`, `base-uri 'none'`, `nosniff`, `Cache-Control: no-store` | No HSTS, Referrer-Policy, Permissions-Policy, COOP/CORP; `'unsafe-inline'` styles |
+| Audit | No persistent auth audit log | Needs to be added |
+
+### 16.1 MFA at the LARPUS gateway (layered on the existing password)
+
+Flow: **password, then a second factor**, then a session. Neither alone grants a session.
+The password check is unchanged (scrypt, constant-time compare).
+
+- **Primary second factor: WebAuthn.** It is phishing-resistant because the credential is
+  bound to the origin and RP ID ([W3C WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/#rp-id)).
+  Use `userVerification: "required"`, `attestation: "none"` and ES256 (-7)
+  ([spec section 5.1.3](https://www.w3.org/TR/webauthn-3/#sctn-createCredential)). Store per credential
+  the credential ID, public key, `signCount`, `backupEligible` and `backupState` in a new ignored,
+  owner-only `data/mfa.json`. Reject assertions whose sign count goes backwards (when it is non-zero).
+  - **No-cloud caveat (important):** on a Pixel, Chrome's default passkey provider is
+    Google Password Manager, which **syncs passkeys through Google's cloud**. That violates
+    the no-cloud rule. Options: (a) a **hardware FIDO2 security key** over NFC/USB-C
+    (device-bound, `backupEligible=false`), recommended; or (b) a device-bound
+    credential, if the Pixel and Chrome version offer one without sync (Q12). The gateway should
+    **reject credentials with `backupEligible=true`** so a synced passkey cannot be enrolled
+    by accident. That makes it policy, not hope.
+  - **Origin and TLS prerequisites:** WebAuthn only works in a secure context whose TLS was
+    "established without errors", and the RP ID must be a **domain, never an IP address**
+    (spec section 5.1.3 step 7). The current `https://192.168.1.2:8080` origin **cannot** use WebAuthn.
+    It needs a stable hostname such as `larpus.<tailnet-base-domain>`, served to the phone
+    over MagicDNS through Headscale `dns.extra_records` ([Headscale DNS docs](https://headscale.net/stable/ref/dns/)),
+    so no cloud DNS is involved. It also needs a gateway certificate for that name, chained to a CA
+    **the phone's Chrome trusts without warnings**. This ties to Q2 and Q6. The hostname must
+    stay fixed: changing it invalidates every enrolled credential.
+- **Fallback: TOTP** (RFC 6238; SHA-1, 6 digits, 30 s, ±1 step). The secret is stored encrypted
+  at rest, or at minimum in the owner-only `data/` like the password file. Each time-step is
+  accepted once (replay cache). Enrollment shows the secret or QR **on the PC only** (local
+  listener), never over the network. Use an offline authenticator app with cloud backup off (Q13).
+- **Recovery codes:** 10 single-use codes of 10 or more random characters, shown once at enrollment on the PC,
+  stored only as scrypt hashes (same parameters as the password) and deleted on use.
+  Using a code raises a local alert (16.4) and forces re-enrollment of a second factor.
+- **Enrollment and reset are local-only:** adding or removing factors and regenerating codes is
+  allowed only from the loopback listener on the PC, plus a fresh password entry.
+  A remote attacker who has the password still cannot enroll their own authenticator.
+- **Step-up re-authentication** (a fresh WebAuthn/TOTP check within the last 5 minutes, proposed) for
+  sensitive actions: changing auth settings, exporting conversations, memory or teaching data, bulk
+  delete, any future remote-admin action, and the remote kill switch (16.4). The
+  implementation PR lists the exact endpoints.
+- **Lockout behaviour (proposal):** 5 failed second-factor attempts per session-in-progress
+  void the pending login. 10 failed MFA attempts across all sources in 15 minutes trigger an
+  **MFA lockout** of the remote listener for 15 minutes, raise a local alert, and leave local
+  loopback login unaffected so the owner can never be locked out of his own PC. The failure
+  message stays generic ("You're Larping already"), and timing is uniform across password failure
+  and MFA failure.
+- **Local listener:** the password-free loopback listener stays as documented in AUTH.md. MFA
+  applies to every non-loopback listener (LAN and tailnet).
+
+**MFA on the Headscale admin and enrollment path**
+
+- Headscale has no web admin UI here. Administration is the `headscale` CLI inside the
+  pod, reachable only through `podman exec` by the owner's account. No gRPC or remote CLI API key
+  is created, and the gRPC listener stays on the pod's loopback.
+- Phone enrollment: with OIDC (D2), Authelia enforces `authorization_policy: two_factor` with
+  WebAuthn or TOTP ([Authelia Headscale integration](https://www.authelia.com/integration/openid-connect/clients/headscale/)),
+  so every node registration and expiry renewal needs a second factor. The same
+  backup-eligible passkey caveat applies (Q12). Without OIDC, enrollment is a single-use
+  pre-auth key created by the owner at the PC console, which is physical presence used as the factor.
+- R-A off-site host: SSH key-only plus a hardware-backed key (`sk-ssh-ed25519`, FIDO2) for
+  admin login (Q14).
+
+### 16.2 Allowlisting and blocking (default deny at three layers)
+
+Allowed principal: **the Pixel's node** (`tag:pixel`, its specific node key and its tailnet IP).
+Everything else is denied at every layer independently, so one misconfiguration is not enough.
+
+1. **Headscale policy:** the section 15 grant (`tag:pixel` to `tag:larpus` on the gateway port only).
+   In addition, pin the Pixel's tailnet IP with `headscale nodes` (static assignment, Q15) so lower
+   layers can match it.
+2. **Host firewall:**
+   - *Windows Firewall* (if the tailnet interface is on Windows, option C): an inbound allow rule for
+     the gateway program on the tailnet port, **RemoteAddress = the Pixel's tailnet IP only**, scoped to the
+     tailnet interface. The default inbound action stays block. Created with an elevated prompt at implementation.
+   - *nftables in the tailnet-forwarder pod* (options A/B): `policy drop` on input. Accept only
+     from the Pixel's tailnet IP to the forward port. Drop and log everything else to the local log.
+     With userspace networking the filter is in the forwarder itself (16.3), so the
+     WireGuard source is checked there (Q16).
+3. **Gateway:** a tailnet listener accepts a peer only if its address equals the configured Pixel
+   address, *and* (with a trusted forwarder) only if the forwarder asserts the Pixel's node identity (16.3).
+   Otherwise it returns 403 before any auth processing.
+
+**The LAN path is rejected for mobile.** The Pixel uses only the tailnet URL, even at home.
+The phone is not given the LAN URL or LAN cookies, and the LAN listener keeps its subnet rule. The owner may
+later decide (D5) to disable the LAN HTTPS listener entirely and use only loopback plus tailnet.
+
+**Automatic temporary bans (local, built into the gateway; fail2ban-style):**
+
+- Key: tailnet node identity when known, otherwise the source IP.
+- Proposal: a ban after 5 failed logins **or** 5 failed MFA checks within 15 minutes. Ban durations
+  double: 15 min, 30 min, 1 h, 2 h ... capped at 24 h. The strike counter decays after 24 h clean.
+- A banned key gets 429 with `Retry-After` and a generic body. Every ban and unban goes into the audit log
+  and triggers a local alert (16.4).
+- State lives in memory plus a small owner-only file, so bans survive a gateway restart (unlike
+  today's limits). The owner can clear a ban only from the local listener or CLI.
+- No hosted blocklists or reputation feeds.
+
+**R-A off-site host hardening:**
+
+- Host firewall (nftables) `policy drop` inbound. Allow only 443/tcp (Headscale/DERP over
+  HTTPS) and 3478/udp (STUN) from anywhere, plus SSH **only on the tailnet interface**.
+  Outbound is limited to what Headscale needs; no update-check callbacks (Q5).
+- SSH: `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`,
+  `AllowUsers <owner>`, FIDO2-backed keys, and listening only on the tailnet IP. The provider's web
+  console is break-glass access (Q14).
+- Auto-ban: fail2ban (or the equivalent nftables meter sets) on SSH and on Headscale's
+  log for repeated failed registrations and TLS handshake floods. Local jails only.
+- Full-disk encryption where the provider allows; unattended security updates; no LARPUS data.
+
+### 16.3 Rate limiting
+
+Separate buckets so chat traffic cannot starve login and brute force cannot hide in chat
+traffic. All numbers are **proposals**:
+
+| Bucket | Key | Proposed limit |
+|---|---|---|
+| Password attempts | node identity / IP, plus global | 5 / 15 min per key; 20 / 15 min global (today 5/60 s and 20/60 s) |
+| MFA attempts | pending-login ID, plus node identity / IP, plus global | 5 per pending login; 10 / 15 min global (and the lockout in 16.1) |
+| Authenticated API (non-chat) | session **and** node identity | 30 / min (as today) |
+| Chat / inference requests | session and node identity | 6 / min, 60 / hour |
+| Inference concurrency | global | **1** (keep the existing `LOCK`; a busy gateway returns 409), plus at most 1 queued request per session (Q17) |
+| Request size / stream time | per request | Existing input limits; proposed 10 min max stream |
+
+**Fixing the "one IP for everyone" gap** (section 15): with a forwarding container, every
+tailnet request reaches the gateway from one upstream address. Fix, in order of preference:
+
+1. **PC option C (Windows client):** the gateway sees the real tailnet source IP directly, and per-IP
+   keys work unchanged.
+2. **Trusted-proxy identity header** (options A/B): the forwarder, which terminates the
+   tailnet connection and knows the WireGuard peer, adds `X-Larpus-Tailnet-Node: <node key or ID>`.
+   The gateway honours it **only** when the TCP peer is the forwarder's fixed loopback/WSL address
+   *and* a shared secret header matches (or a Unix socket/mTLS link is used). On every request it
+   **strips and rejects** any client-supplied copy. This changes AUTH.md's "never forwarded headers"
+   rule only for this authenticated, single-hop case, and needs its own review (Q18).
+3. In all cases, also key limits on the **authenticated session**, which a proxy cannot collapse.
+
+**Headscale/DERP front:**
+
+- In R-B, Headscale is LAN-only. Pod-level nftables limits new connections to the Headscale port
+  (for example 30/min per source), and its connection rate is capped.
+- In R-A, the host's nftables `limit`/`meter` rules on 443/tcp (new connections per source)
+  and 3478/udp (packets per source), plus fail2ban (16.2). The embedded DERP has no built-in
+  throttling ([DERP docs, limitations](https://headscale.net/stable/ref/derp/#limitations)), so
+  limits are set conservatively for a single phone (Q9).
+
+### 16.4 Additional controls
+
+- **TLS:** on every non-loopback listener and on Headscale, **TLS 1.3 only**
+  (`minimum_version = TLSv1_3`). Check that the Pixel's Chrome and the Tailscale app negotiate it
+  (they should). Today the gateway allows 1.2. The leaf cert is ECDSA P-256 with a one-year life, and the
+  hostname SAN required by WebAuthn.
+- **HSTS:** `Strict-Transport-Security: max-age=31536000` on the hostname-based tailnet
+  origin, without `includeSubDomains`/`preload` (a private name; never submitted to any preload
+  list). HSTS on an IP origin is ignored by browsers.
+- **Cookies:** rename to `__Host-larpus_session` (forces `Secure`, `Path=/` and no `Domain`). Keep
+  `HttpOnly` and `SameSite=Strict`. Proposed lifetime: 15 min idle and 4 h absolute (supersedes the
+  1 h idle proposal in section 15, D4). Rotate the token on login and on step-up.
+- **CSRF:** keep the Host/Origin checks, and **require** an `Origin` (or `Sec-Fetch-Site: same-origin`)
+  on every state-changing request. Add a per-session synchronizer token in a custom header for
+  POSTs. SameSite=Strict stays as defence in depth.
+- **Security headers / CSP (no remote assets):** keep `default-src 'self'`; drop
+  `'unsafe-inline'` from `style-src` (move inline styles to `style.css`, or use hashes); add
+  `form-action 'self'`, `object-src 'none'`, `upgrade-insecure-requests` (TLS listeners),
+  `Referrer-Policy: no-referrer`, `Permissions-Policy` that denies everything except
+  `microphone=(self)` and `publickey-credentials-get=(self)`, `Cross-Origin-Opener-Policy: same-origin`,
+  `Cross-Origin-Resource-Policy: same-origin` and `X-Frame-Options: DENY` (legacy). Keep `no-store`.
+  All assets stay vendored, with no CDNs.
+- **Auth audit log (local only):** an append-only JSON-lines file in owner-only `data/audit/`.
+  It records login success/failure, MFA success/failure, factor enrollment/removal, recovery-code use,
+  bans/unbans, lockouts, step-ups, session creation/expiry/logout and kill-switch use. Each entry holds
+  a timestamp, event, node identity, source IP and session-hash prefix, and **never** passwords, codes,
+  tokens or chat content. Rotation is size-based, with local retention of 90 days (proposal). Optionally,
+  hash-chain each line to make tampering evident (Q19). Never shipped off the box, except in R-A where
+  Headscale's own log is pulled home over the tailnet.
+- **Local alerting:** a small local watcher (or the gateway itself) raises a **Windows toast
+  notification on the PC** for: a lockout, a ban, recovery-code use, a new node registration in Headscale,
+  a policy reload failure or a kill-switch use. No push service, SMS or email relay. The owner sees
+  alerts the next time he is at the PC. Accepted gap: no alert reaches the phone while the
+  owner is away. It may also show on the phone via the LARPUS HUD after login (Q20).
+- **Remote kill switch:** an authenticated, **MFA step-up**-protected HUD action ("Close remote
+  access") that immediately (1) invalidates all non-loopback sessions, (2) makes the gateway
+  refuse all non-loopback requests until re-enabled **from the local listener only**, and (3)
+  writes an audit entry and a local alert. It deliberately cannot be re-opened remotely.
+  Network-level kill (section 13) remains: expire the node in Headscale, stop the pod, and, in
+  R-A, stop the off-site host.
+
+## 17. Open questions
 
 - **Q1** NAT plus portproxy (no UDP/STUN) versus mirrored networking (affects all distros).
   Is mirrored mode acceptable alongside docker-desktop on this machine?
@@ -440,3 +669,18 @@ being on the tailnet, on the LAN or on the owner's own phone is **never** enough
   with the stock Android client, and that a tagged phone keeps full client function
   (the demo noted that tagged devices lack user identity for Serve; Serve is not used here).
 - **Q11** Exact Headscale v0.29.x grant/`tests` syntax for the policy in section 15.
+- **Q12** Can the Pixel hold a **device-bound, non-synced** WebAuthn credential in Chrome,
+  or does it always go to Google Password Manager sync? If unclear, require a hardware FIDO2
+  key (D6).
+- **Q13** Which offline TOTP app (open source, no cloud backup) the owner will use.
+- **Q14** R-A only: SSH with FIDO2 `sk-` keys, and the break-glass path when the tailnet is down
+  (the provider console is third-party).
+- **Q15** Static tailnet IP assignment for the Pixel in Headscale v0.29.x (rename/IP pinning
+  options), so firewall rules can match it.
+- **Q16** With userspace-networking tailscaled, where the source-IP allowlist is enforced
+  (forwarder code versus nftables, which never sees the tailnet packets).
+- **Q17** Should a second chat request wait in a short queue, or get the existing immediate 409?
+- **Q18** Accept a narrowly scoped trusted-proxy header (reverses AUTH.md's "never forwarded
+  headers" for one authenticated hop), or require option C?
+- **Q19** Is a hash-chained audit log worth the complexity?
+- **Q20** Show local alerts in the HUD after login (so the phone sees them), or keep them PC-only?
