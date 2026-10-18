@@ -1,10 +1,10 @@
 {
   "version": 1,
   "prepared_at": "2026-10-10T14:04:17.270773+00:00",
-  "database_sha256": "404b29400d731b88345956a476af971c959e1846ad2e660d6d05704768f16360",
-  "database_bytes": 135307264,
-  "documents": 404,
-  "passages": 76660,
+  "database_sha256": "091904c0b66b3b1a846974c390ffa0867b8a483ef97f198a029b0503bc1b5040",
+  "database_bytes": 137220096,
+  "documents": 406,
+  "passages": 79497,
   "metadata_only_documents": 16,
   "rejected_passages": 8392,
   "role_counts": {
@@ -12,7 +12,7 @@
     "home-assistant": 112,
     "it-larp-coach": 13847,
     "linux-kernel-expert": 11504,
-    "mathematician": 21634,
+    "mathematician": 24471,
     "psychologist": 1811,
     "quantum-mechanics-professor": 6038,
     "statistician": 6707,
@@ -2316,6 +2316,18 @@
       "sha256": "563ecf1de8a40b9519fa34b2b9f0799f0a49a20c734314824780beda2e3d9a3b",
       "publication": null,
       "snapshot": "2026-10-09"
+    },
+    {
+      "id": "chicone-ordinary-differential-equations",
+      "sha256": "268a56ac0f66c1d7bd21f3c07cdf52a485029366c3520966f84d2976b060fbae",
+      "publication": null,
+      "snapshot": "2026-10-14"
+    },
+    {
+      "id": "salsa-partial-differential-equations",
+      "sha256": "79f22464e18550aa6d3092d45902e23663a0bfec640061234e557df77129a254",
+      "publication": "2008",
+      "snapshot": "2026-10-14"
     }
   ],
   "github": {

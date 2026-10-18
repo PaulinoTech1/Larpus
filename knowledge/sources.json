@@ -2114,6 +2114,297 @@
       "status": "prepared-brief",
       "indexed_passages": 1,
       "snapshot": "2026-10-09"
+    },
+    {
+      "id": "chicone-ordinary-differential-equations",
+      "title": "Ordinary Differential Equations with Applications",
+      "url": "owner-supplied:chicone-ordinary-differential-equations",
+      "roles": [
+        "mathematician"
+      ],
+      "authors": [
+        "Carmen Chicone"
+      ],
+      "sha256": "268a56ac0f66c1d7bd21f3c07cdf52a485029366c3520966f84d2976b060fbae",
+      "snapshot": "2026-10-14",
+      "status": "owner-reviewed-local-reference"
+    },
+    {
+      "id": "salsa-partial-differential-equations",
+      "title": "Partial Differential Equations in Action: From Modelling to Theory",
+      "url": "https://doi.org/10.1007/978-88-470-0752-9",
+      "roles": [
+        "mathematician"
+      ],
+      "authors": [
+        "Sandro Salsa"
+      ],
+      "sha256": "79f22464e18550aa6d3092d45902e23663a0bfec640061234e557df77129a254",
+      "published_on": "2008",
+      "revised_on": "2009",
+      "snapshot": "2026-10-14",
+      "status": "owner-reviewed-local-reference"
+    },
+    {
+      "id": "cyber-20261015-snyk-evo",
+      "title": "Snyk launches Evo Agentic AppSec",
+      "url": "https://snyk.io/news/snyk-launches-evo-agentic-appsec/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Evo",
+        "AI tools",
+        "AI workflows",
+        "application security",
+        "throughput",
+        "remediation backlog"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-15",
+      "publication": "2026-10-15",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "Snyk"
+      ],
+      "source_kind": "vendor announcement",
+      "version_scope": "Published this week (2026-10-12 through 2026-10-16). Vendor assertions are not independent benchmarks. Session descriptions are not transcripts.",
+      "rights": "Publisher retains copyright; private local reference only; no training or redistribution clearance.",
+      "sha256": "04bf93a3234fb3949904442a9c8ea1bcfd5d656e6e3ad4975881bdf66566582c",
+      "bytes": 90536,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-17T03:11:26.025446+00:00",
+      "status": "downloaded",
+      "indexed_passages": 11
+    },
+    {
+      "id": "cyber-20261015-soc-prime",
+      "title": "Understand threat reports with Prime Architect",
+      "url": "https://socprime.com/blog/understand-any-threat-report-in-minutes-ai-summaries-and-attack-flow-in-prime-architect/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "SOC",
+        "AI detection",
+        "Prime Architect",
+        "ATTACK flow",
+        "detection engineering",
+        "threat intelligence"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-15",
+      "publication": "2026-10-15",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "SOC Prime Team"
+      ],
+      "source_kind": "vendor workflow",
+      "version_scope": "Published this week (2026-10-12 through 2026-10-16). Vendor assertions are not independent benchmarks. Session descriptions are not transcripts.",
+      "rights": "Publisher retains copyright; private local reference only; no training or redistribution clearance.",
+      "sha256": "164b4e19b9572e53e290447d57fff0e60c4948f17522e64b5cf50570ee57e48b",
+      "bytes": 215577,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-17T03:11:26.200851+00:00",
+      "status": "downloaded",
+      "indexed_passages": 12
+    },
+    {
+      "id": "cyber-20261012-brookings",
+      "title": "Shaping global governance of AI agents",
+      "url": "https://www.brookings.edu/articles/shaping-global-governance-of-ai-agents/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "AI governance",
+        "agent identity",
+        "permissions",
+        "runtime monitoring",
+        "accountability"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-12",
+      "publication": "2026-10-12",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "Landry Signe",
+        "Karla Yee Amezaga"
+      ],
+      "source_kind": "author policy commentary",
+      "version_scope": "Published this week (2026-10-12 through 2026-10-16). Vendor assertions are not independent benchmarks. Session descriptions are not transcripts.",
+      "rights": "Publisher retains copyright; private local reference only; no training or redistribution clearance.",
+      "sha256": "5412bcfcd4f91d3585d4ec8e4a6fd99fec44bc9ee6b507d73d344ad754aee1c0",
+      "bytes": 233225,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-17T03:11:26.100147+00:00",
+      "status": "downloaded",
+      "indexed_passages": 26
+    },
+    {
+      "id": "cyber-20261013-servicenow",
+      "title": "4 priorities for implementing AI agents",
+      "url": "https://www.servicenow.com/uk/blogs/2026/4-priorities-for-implementing-ai-agents",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "ServiceNow AI Platform",
+        "IT workflows",
+        "RAG",
+        "flow actions",
+        "AI governance",
+        "capacity"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-13",
+      "publication": "2026-10-13",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "ServiceNow"
+      ],
+      "source_kind": "vendor workflow",
+      "kind": "reviewed-local-brief",
+      "rights": "Private local reference summary; publisher retains rights.",
+      "sha256": "ebb6cbc1b9f7860ddab344ff3788e54891513e4c7d79f4617e8149bb8974cfdd",
+      "bytes": 679,
+      "content_type": "text/plain",
+      "fetched_at": "2026-10-17T03:11:25.962326+00:00",
+      "status": "prepared-brief",
+      "indexed_passages": 1
+    },
+    {
+      "id": "cyber-20261014-picus",
+      "title": "The blind spots of agentic pentesting and how to close them",
+      "url": "https://www.bleepingcomputer.com/news/security/the-blind-spots-of-agentic-pentesting-and-how-to-close-them/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "AI pentesting",
+        "Picus Exposure Validation",
+        "coverage gaps",
+        "authorized testing",
+        "exploitability"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-14",
+      "publication": "2026-10-14",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "Sila Ozeren Hacioglu"
+      ],
+      "source_kind": "vendor-authored technical commentary published by BleepingComputer",
+      "version_scope": "Published this week (2026-10-12 through 2026-10-16). Vendor assertions are not independent benchmarks. Session descriptions are not transcripts.",
+      "rights": "Publisher retains copyright; private local reference only; no training or redistribution clearance.",
+      "sha256": "6b0d5fe1a47d4681d9ef73d4cd91fadc2e5ec18da297d2d5978b3e2edad457a1",
+      "bytes": 93434,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-17T03:11:26.140545+00:00",
+      "status": "downloaded",
+      "indexed_passages": 11
+    },
+    {
+      "id": "cyber-20261013-mythos",
+      "title": "Beyond the hype: what Mythos actually means for security teams",
+      "url": "https://health-isac.org/beyond-the-hype-what-mythos-actually-means-for-security-teams/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "Mythos",
+        "AI pentesting",
+        "SDLC",
+        "cost at scale",
+        "human expertise"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-13",
+      "publication": "2026-10-13",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "Health-ISAC",
+        "Bishop Fox"
+      ],
+      "source_kind": "session description only; linked recording not transcribed",
+      "version_scope": "Published this week (2026-10-12 through 2026-10-16). Vendor assertions are not independent benchmarks. Session descriptions are not transcripts.",
+      "rights": "Publisher retains copyright; private local reference only; no training or redistribution clearance.",
+      "sha256": "81008dd69f5e584d244b0f0b7a38202c0e7eb63e088f8e7cf9a5a953414f23c1",
+      "bytes": 95010,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-17T03:11:26.151057+00:00",
+      "status": "downloaded",
+      "indexed_passages": 2
+    },
+    {
+      "id": "cyber-20261013-ai-pentesting",
+      "title": "AI pentesting or AI-powered AppSec?",
+      "url": "https://health-isac.org/ai-pentesting-or-ai-powered-appsec/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "AI pentesting",
+        "AppSec",
+        "attack paths",
+        "authorized testing"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-13",
+      "publication": "2026-10-13",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "Health-ISAC"
+      ],
+      "source_kind": "resource description only; linked material not assumed read",
+      "version_scope": "Published this week (2026-10-12 through 2026-10-16). Vendor assertions are not independent benchmarks. Session descriptions are not transcripts.",
+      "rights": "Publisher retains copyright; private local reference only; no training or redistribution clearance.",
+      "sha256": "6c321ccbc5c4d748ff7d74087e90574186d6e3e049da7c4fcf12bed5d7b7c5a6",
+      "bytes": 92284,
+      "content_type": "text/html",
+      "fetched_at": "2026-10-17T03:11:26.254951+00:00",
+      "status": "downloaded",
+      "indexed_passages": 2
+    },
+    {
+      "id": "cyber-20261015-unit42",
+      "title": "Unit 42: AI-assisted Linux espionage and SOC detection (2026-10-15)",
+      "url": "https://unit42.paloaltonetworks.com/ai-campaign-targets-linux-infrastructure/",
+      "roles": [
+        "it-larp-coach"
+      ],
+      "topics": [
+        "AI detection",
+        "SOC",
+        "Cortex XDR",
+        "Linux",
+        "AI attribution",
+        "threat hunting"
+      ],
+      "review": "official-publisher-documentation",
+      "reviewed_on": "2026-10-16",
+      "published_on": "2026-10-15",
+      "publication": "2026-10-15",
+      "snapshot": "2026-10-16",
+      "authors": [
+        "Roey Porat",
+        "Tom Fakterman"
+      ],
+      "source_kind": "primary vendor threat research; owner defensive summary",
+      "kind": "reviewed-local-brief",
+      "rights": "Private local reference summary; publisher retains rights.",
+      "sha256": "0f6c9c13f3fe0890a28817b0d71b7ffb424b4b5a889ee6430209474ad7a30e6f",
+      "bytes": 948,
+      "content_type": "text/plain",
+      "fetched_at": "2026-10-17T03:12:25.165667+00:00",
+      "status": "prepared-brief"
     }
   ]
 }
