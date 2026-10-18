@@ -1,4 +1,4 @@
-import contextlib,importlib.util,io,json,subprocess,sys,tempfile,unittest
+import contextlib,importlib.util,io,json,os,subprocess,sys,tempfile,unittest
 from pathlib import Path
 from unittest.mock import patch
 from tests.test_model_switch import Backend
@@ -30,6 +30,9 @@ class Followups(unittest.TestCase):
    c.request('larpus-3.8')
    with patch.object(Path,'replace',denied),contextlib.redirect_stderr(io.StringIO()):c.run('larpus-3.8')
    self.assertEqual(b.state['phase'],'ready');self.assertEqual(b.state['active_id'],'larpus-3.5');self.assertIn('restored',b.state['error'])
+ # subprocess.run is mocked, but runtime.isolation.wsl_command refuses to build the
+ # command unless os.name=='nt'; wsl.exe itself is never invoked.
+ @unittest.skipUnless(os.name=='nt','owner WSL command builder is Windows-only')
  def test_owner_subprocess_preserves_numeric_failure_without_output(self):
   from runtime.model_backend import Backend as Owner
   b=Owner.__new__(Owner);b.profile={'agent_image':'pinned'}

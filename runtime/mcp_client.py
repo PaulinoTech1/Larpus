@@ -8,11 +8,14 @@ from mcp.client.stdio import StdioServerParameters
 from runtime.agents import ROOT
 from runtime.diagnostics import failure
 from runtime.isolation import mode,child_args
+from runtime.dlp import CI_OVERRIDES
 
 def child_parameters():
     # Do not inherit credentials, proxies, or telemetry exporter configuration.
     env={key:os.environ[key] for key in ('SYSTEMROOT','WINDIR','PATH','TEMP','TMP','HOME','USERPROFILE') if key in os.environ}
     env.update({'PYTHONIOENCODING':'utf-8','PYTHONUTF8':'1','OLLAMA_NO_CLOUD':'1','OTEL_SDK_DISABLED':'true'})
+    # Bounded CI-only DLP settings; runtime.dlp ignores them outside GitHub Actions.
+    env.update({key:os.environ[key] for key in CI_OVERRIDES if key in os.environ})
     if mode()=='wsl-podman':
         command=child_args()
         return StdioServerParameters(command=command[0],args=command[1:],cwd=str(ROOT),env=env)

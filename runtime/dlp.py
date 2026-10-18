@@ -12,7 +12,22 @@ from pathlib import Path
 from runtime.skills import ROOT
 
 POLICY=ROOT/'config/dlp.json'
-QUARANTINE=ROOT/'data/quarantine'
+# Windows ACL helper timeout; fixed everywhere (the helper runs in well under 1 s).
+PROTECT_TIMEOUT_DEFAULT=10
+CI_OVERRIDES=('GITHUB_ACTIONS','LARPUS_CI_QUARANTINE_DIR')
+
+def on_github_actions(environ=None):
+    return (os.environ if environ is None else environ).get('GITHUB_ACTIONS')=='true'
+
+def quarantine_path(environ=None):
+    """CI-only stable quarantine so a workflow can pre-apply its ACL; never honoured locally."""
+    environ=os.environ if environ is None else environ
+    raw=environ.get('LARPUS_CI_QUARANTINE_DIR')
+    if raw is None or not on_github_actions(environ):return ROOT/'data/quarantine'
+    if not Path(raw).is_absolute():raise ValueError('CI quarantine path must be absolute')
+    return Path(raw)
+
+QUARANTINE=quarantine_path()
 RULES=(
     ('host_inventory_claim', re.compile(r'\b(?:my|our|this)\s+(?:station|setup|host|machine|system|cpu|processor|hardware)\b.{0,30}\b(?:uses?|runs?|has|is|powered|equipped)\b.{0,60}\b(?:5900x|ryzen|1245u|3090|rtx)\b|\blarpus\b.{0,60}\b(?:runs on|uses|powered by|equipped with)\b.{0,60}\b(?:5900x|ryzen|1245u|3090|rtx)\b',re.I|re.S)),
     ('credential_token', re.compile(r'\bAKIA[A-Z0-9]{16}\b|\bgh[pousr]_[A-Za-z0-9]{20,}\b|\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b')),
@@ -81,6 +96,9 @@ def stream_pending(text,system_prompt=''):
                 return True
     return False
 
+def protect_command(executable,target):
+    return [str(executable),'-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(target)]
+
 def secure_directory():
     for path in (QUARANTINE.parent,QUARANTINE):
         if path.exists() and (path.is_symlink() or (os.name=='nt' and path.stat().st_file_attributes & 1024)):
@@ -88,7 +106,8 @@ def secure_directory():
     QUARANTINE.mkdir(parents=True,exist_ok=True,mode=0o700)
     if os.name=='nt':
         executable=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
-        subprocess.run([str(executable),'-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(QUARANTINE)],shell=False,check=True,capture_output=True,timeout=10)
+        # stdin=DEVNULL: never let PowerShell inherit (and read) the MCP child's JSON-RPC stdin.
+        subprocess.run(protect_command(executable,QUARANTINE),shell=False,check=True,capture_output=True,stdin=subprocess.DEVNULL,timeout=PROTECT_TIMEOUT_DEFAULT)
     else:
         QUARANTINE.chmod(0o700)
         if QUARANTINE.stat().st_uid!=os.getuid():
