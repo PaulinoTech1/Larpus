@@ -50,5 +50,23 @@ jobs:
         run: |
           npm ci
           npm run vendor
+      - name: Pre-apply quarantine ACL (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          # Stable CI quarantine honoured by runtime.dlp only when GITHUB_ACTIONS=true.
+          # Smoke-test the same helper the gate uses twice (idempotency, timing) in the
+          # runner's own shell; tests/test_quarantine_acl.py covers the MCP child's env.
+          $dir = Join-Path $env:RUNNER_TEMP 'larpus-quarantine'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $ps = Join-Path $env:SYSTEMROOT 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          foreach ($pass in 1, 2) {
+            $timer = [Diagnostics.Stopwatch]::StartNew()
+            & $ps -NoProfile -NonInteractive -File scripts\protect-quarantine.ps1 -Target $dir
+            if ($LASTEXITCODE -ne 0) { throw "protect-quarantine.ps1 failed on pass $pass" }
+            "protect-quarantine pass $pass took $([math]::Round($timer.Elapsed.TotalSeconds, 2)) s"
+          }
+          # .NET appends UTF-8 without a BOM (Windows PowerShell's utf8 Out-File adds one).
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "LARPUS_CI_QUARANTINE_DIR=$dir`n")
       - name: Run public contracts and synthetic evaluations
         run: python scripts/ci.py
