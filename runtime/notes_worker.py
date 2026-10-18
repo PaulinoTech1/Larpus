@@ -25,6 +25,13 @@ def probe():
     if not ollama('/api/tags',timeout=3).get('models'):raise ValueError('Notes broker unavailable')
     return {'notes_capability_only':True,'raw_and_external_denied':True,'host_paths_absent':True}
 
+def producer(requested):
+    if requested not in ('qwen3.5:27b-q4_K_M','larpus3.8:27b-q4'):raise ValueError('Unapproved notes model')
+    status=ollama('/api/tags',timeout=5)
+    model=status.get('active_model',requested)
+    if model not in ('qwen3.5:27b-q4_K_M','larpus3.8:27b-q4'):raise ValueError('Invalid notes producer')
+    return model
+
 def main():
     policy=json.loads((Path(__file__).resolve().parents[1]/'config/inference-broker.json').read_text())
     for line in sys.stdin:
@@ -32,11 +39,12 @@ def main():
             if len(line.encode())>524288:raise ValueError('Job too large')
             job=json.loads(line)
             if not isinstance(job,dict) or set(job)-{'model','messages','num_predict'}:raise ValueError('Invalid job')
-            result=ollama('/api/chat',{'model':job['model'],'messages':job['messages'],'stream':False,'think':False,
+            actual=producer(job['model'])
+            result=ollama('/api/chat',{'model':actual,'messages':job['messages'],'stream':False,'think':False,
                 'format':'json','keep_alive':-1,'options':{'temperature':0.2,'num_ctx':policy['context'],
                 'num_predict':job.get('num_predict',2400),'num_gpu':99}},timeout=210)
             metrics={key:result.get(key) for key in ('total_duration','load_duration','prompt_eval_count','prompt_eval_duration','eval_count','eval_duration','done_reason')}
-            reply={'ok':result['message']['content'],'metrics':metrics}
+            reply={'ok':result['message']['content'],'metrics':metrics,'actual_model':actual}
         except BrokerRejected as exc:reply={'error':'broker-held','code':exc.code,'http_status':exc.status}
         except Exception as exc:reply={'error':type(exc).__name__,'diagnostic_code':'LARP-NOTES-WORKER','error_id':report('LARP-NOTES-WORKER',exc)}
         print(json.dumps(reply),flush=True)

@@ -43,6 +43,14 @@ class GatewayTests(unittest.TestCase):
         body.update(changes)
         return self.request('POST','/api/chat',body)
 
+    def test_model_controls_keep_auth_and_origin_guards(self):
+        from runtime import model_routes
+        with patch.object(model_routes,'controller') as control:
+            self.assertEqual(self.request('GET','/api/model-selection',authenticated=False)[0],401)
+            self.assertEqual(self.request('POST','/api/model-selection',{'model_id':'larpus-3.8'},authenticated=False)[0],401)
+            self.assertEqual(self.request('POST','/api/model-selection',{'model_id':'larpus-3.8'},{'Origin':'https://evil.example'})[0],403)
+            control.assert_not_called()
+
     def test_chat_uses_local_mcp(self):
         with patch.object(gateway, 'mcp_chat', return_value={'status':200,'content':'Local response','model':'qwen3.5:27b-q4_K_M'}) as model:
             status, body = self.chat()

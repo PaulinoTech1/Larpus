@@ -3,6 +3,7 @@ from runtime.diagnostics import report
 import json
 import re
 import threading
+import time
 from runtime.agents import load_personas, messages_for
 from runtime.local_ollama import ollama, chat_stream, BrokerRejected
 from runtime.text_filter import TextHeld
@@ -13,6 +14,12 @@ from runtime.context import CAPACITY,OUTPUT_LIMIT,INPUT_BOUND,COMPRESS_PREFIX,SU
 
 PERSONAS=load_personas()
 LOCK=threading.Lock()
+
+def active_model(default):
+    status=ollama('/api/tags',timeout=5)
+    tag=status.get('active_model',default)
+    if tag not in ('qwen3.5:27b-q4_K_M','larpus3.8:27b-q4'):raise ValueError('Unapproved selected model')
+    return tag
 
 def gpu_placement(tag):
     """Require Ollama's full GPU residency report, not host RAM/usage guesses."""
@@ -31,8 +38,10 @@ def health():
     try:
         result=ollama('/api/tags',timeout=2)
         models=[m['name'] for m in result['models'] if isinstance(m['name'],str)]
-        placements={tag:gpu_placement(tag) for tag in sorted({p['model'] for p in PERSONAS.values()})}
-        return {'ollama':'online','models':models,'model_processors':placements,'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
+        active=result.get('active_model')
+        configured={active} if active else {p['model'] for p in PERSONAS.values()}
+        placements={tag:gpu_placement(tag) for tag in sorted(configured)}
+        return {'ollama':'online','active_model':active,'switching':result.get('switching',False),'models':models,'model_processors':placements,'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
     except (OSError,ValueError,KeyError,TypeError):
         return {'ollama':'offline','models':[],'voice':'gateway-offline-worker','transport':'local-mcp-stdio'}
 
@@ -52,7 +61,13 @@ def citation_check(content,evidence):
     return {'status':'unknown-identifiers' if unknown else 'identified' if identifiers else 'no-citations',
             'cited':sorted(identifiers & selected),'unknown':unknown,'selected':len(selected)}
 
+def checked_content(result):
+    content=result['message']['content']
+    if not isinstance(content,str) or not content.strip():raise ValueError('Empty model response')
+    return content
+
 def chat(persona, messages, skill=None, on_chunk=None):
+    started=time.perf_counter();timing={}
     try:
         if len(json.dumps({'persona':persona,'messages':messages}).encode())>524288:
             raise ValueError('Input too large')
@@ -66,6 +81,8 @@ def chat(persona, messages, skill=None, on_chunk=None):
         return {'status':503 if exc.unavailable else 422,'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.','reason':exc.reason,'message_index':exc.index}
     except (ValueError,TypeError):
         return {'status':400,'error':'Invalid persona or conversation'}
+    timing['input']=round((time.perf_counter()-started)*1000,3)
+    retrieval_started=time.perf_counter()
     try:
         if compression is not None:
             prepared[0]['content']=SUMMARY_SYSTEM
@@ -76,10 +93,14 @@ def chat(persona, messages, skill=None, on_chunk=None):
         return {'status':413,'code':'context_pressure','error':'Conversation needs compression before continuing. Use COMPRESS or shorten the latest message.'}
     except Exception as exc:
         error_id=report('LARP-EVIDENCE-UNAVAILABLE',exc)
-        return {'status':503,'error_id':error_id,'diagnostic_code':'LARP-EVIDENCE-UNAVAILABLE','error':'Approved local evidence unavailable, rejected or exceeds the context budget. Shorten the question or check the library; no internet fallback is used.'}
+        return {'status':503,'error_id':error_id,'diagnostic_code':'LARP-EVIDENCE-UNAVAILABLE','error':'Approved local evidence was unavailable or rejected during screening. Check the library diagnostic; no internet fallback is used.'}
+    timing['retrieval']=round((time.perf_counter()-retrieval_started)*1000,3)
     if not LOCK.acquire(blocking=False):
         return {'status':409,'error':'Inference busy. Try again shortly.'}
     try:
+        selection_started=time.perf_counter()
+        selected=dict(selected,model=active_model(selected['model']))
+        timing['model_selection']=round((time.perf_counter()-selection_started)*1000,3)
         def release(text, frame):
             result=gate(text,prepared[0]['content'])
             if result.get('status')==200:
@@ -101,50 +122,65 @@ def chat(persona, messages, skill=None, on_chunk=None):
                         **({'tier':NOTE_TIER} if derived else {}),
                         **({'provenance':{k:v for k,v in source['provenance'].items() if k in ('document_authors','document_authors_status','published_on','revised_on','snapshot_on','retrieved_at','section')}} if 'provenance' in source else {}),
                         'preview':preview['content'] if preview.get('status')==200 else 'Preview withheld by local output screening.'})
+                timing['inference_total']=round((time.perf_counter()-started)*1000,3)
+                result['timing_ms']=dict(timing)
             return result
-        if on_chunk is not None:
-            content='';released=0;placed=False;final_frame={}
-            for frame in chat_stream({'model':selected['model'],'messages':prepared,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':CAPACITY,'num_predict':OUTPUT_LIMIT,'num_gpu':99}},timeout=900):
-                delta=frame.get('message',{}).get('content','')
-                if not isinstance(delta,str):
-                    raise ValueError('Invalid model content')
-                content+=delta
-                if len(content.encode())>65536:
-                    return {'status':422,'error':'Output held by local DLP.'}
-                done=frame.get('done') is True
-                if done:final_frame=frame
-                boundaries=list(re.finditer(r'[.!?]["\x27)\]]*\s+|\n\n',content[released:]))
-                cut=len(content) if done else released+boundaries[-1].end() if boundaries else released
-                if cut<=released or (not done and stream_pending(content,prepared[0]['content'])):
-                    continue
-                if not placed or done:
-                    if gpu_placement(selected['model'])!='GPU':
-                        return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
-                    placed=True
-                # Stage and inspect the ENTIRE generated prefix, including
-                # lookahead; never inspect isolated token fragments.
-                checked=gate(content,prepared[0]['content'])
-                if checked.get('status')!=200:
-                    return checked
-                on_chunk(content[released:cut]);released=cut
-            if not content.strip():
-                raise ValueError('Empty model response')
-            if gpu_placement(selected['model'])!='GPU':
-                return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
-            return release(content,final_frame)
+        if on_chunk is not None:return stream_reply(selected,prepared,release,on_chunk,timing,started)
         result=ollama('/api/chat',{'model':selected['model'],'messages':prepared,'stream':False,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':CAPACITY,'num_predict':OUTPUT_LIMIT,'num_gpu':99}},timeout=900)
         if gpu_placement(selected['model'])!='GPU':
             return {'status':503,'error':'Full GPU model placement unavailable. Free GPU memory and retry; CPU fallback replies are disabled.'}
-        content=result['message']['content']
-        if not isinstance(content,str) or not content.strip():
-            raise ValueError('Empty model response')
+        content=checked_content(result)
         return release(content,result)
     except BrokerRejected as exc:
         status=429 if exc.status==429 else 503
-        code=exc.code if exc.code in ('inference_budget','queue_full','admission_timeout','cancellation_unconfirmed','inference_deadline') else 'broker_held'
+        code=exc.code if exc.code in ('inference_budget','queue_full','admission_timeout','cancellation_unconfirmed','inference_deadline','model_switching') else 'broker_held'
         return {'status':status,'code':code,'error':'Local inference is busy or held by the broker. Retry shortly; no direct fallback is used.'}
     except (OSError,ValueError,KeyError,TypeError) as exc:
         error_id=report('LARP-INFERENCE-UNAVAILABLE',exc)
         return {'status':502,'error_id':error_id,'diagnostic_code':'LARP-INFERENCE-UNAVAILABLE','error':'Local Ollama unavailable or model missing. No cloud fallback is used.'}
     finally:
         LOCK.release()
+
+
+def stream_cut(content,released,done,system):
+    boundaries=list(re.finditer(r'[.!?]["\x27)\]]*\s+|\n\n',content[released:]))
+    cut=len(content) if done else released+boundaries[-1].end() if boundaries else released
+    return released if cut<=released or (not done and stream_pending(content,system)) else cut
+
+
+def mark_first_text(timing,released,started):
+    if not released:timing['first_checked_text']=round((time.perf_counter()-started)*1000,3)
+
+
+def stream_reply(selected,prepared,release,on_chunk,timing,started):
+    content='';released=0;placed=False;final_frame={}
+    model_started=time.perf_counter()
+    for frame in chat_stream({'model':selected['model'],'messages':prepared,'think':False,'keep_alive':-1,'options':{'temperature':selected['temperature'],'num_ctx':CAPACITY,'num_predict':OUTPUT_LIMIT,'num_gpu':99}},timeout=900):
+        timing.setdefault('model_first_frame',round((time.perf_counter()-model_started)*1000,3))
+        delta=frame.get('message',{}).get('content','')
+        if not isinstance(delta,str):
+            raise ValueError('Invalid model content')
+        content+=delta
+        if len(content.encode())>65536:
+            return {'status':422,'error':'Output held by local DLP.'}
+        done=frame.get('done') is True
+        final_frame=frame
+        cut=stream_cut(content,released,done,prepared[0]['content'])
+        if cut<=released:
+            continue
+        if not placed or done:
+            if gpu_placement(selected['model'])!='GPU':
+                return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
+            placed=True
+        # Stage and inspect the ENTIRE generated prefix, including
+        # lookahead; never inspect isolated token fragments.
+        checked=gate(content,prepared[0]['content'])
+        if checked.get('status')!=200:
+            return checked
+        mark_first_text(timing,released,started)
+        on_chunk(content[released:cut]);released=cut
+    if not content.strip():
+        raise ValueError('Empty model response')
+    if gpu_placement(selected['model'])!='GPU':
+        return {'status':503,'error':'Full GPU model placement unavailable. CPU fallback replies are disabled.'}
+    return release(content,final_frame)

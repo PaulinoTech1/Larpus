@@ -1,6 +1,7 @@
 import copy
 import json
 import unittest
+import threading
 from unittest.mock import patch
 from runtime import isolation,mcp_client
 
@@ -9,6 +10,19 @@ def fixture(model=False):
     return {'State':{'Running':True},'Image':'sha256:'+'a'*64,'Config':{'User':'1000:1000'},'Mounts':mounts,'HostConfig':{'ReadonlyRootfs':True,'Privileged':False,'PortBindings':{},'CapDrop':['ALL'],'SecurityOpt':['no-new-privileges'],'Memory':1073741824,'PidsLimit':64,'Devices':[{'PathOnHost':'/dev/dxg'}] if model else []}}
 
 class IsolationTests(unittest.TestCase):
+    def test_oci_reads_overlap_and_preserve_container_order(self):
+        barrier=threading.Barrier(4)
+        items=[{'Id':str(i)} for i in range(4)]
+        def read(item):
+            barrier.wait(timeout=2)
+            return {'id':item['Id']}
+        with patch.object(isolation,'read_oci',side_effect=read):
+            self.assertEqual(isolation.read_oci_many(items),[{'id':str(i)} for i in range(4)])
+
+    def test_parallel_oci_read_failure_is_not_ignored(self):
+        with patch.object(isolation,'read_oci',side_effect=OSError('unavailable')):
+            with self.assertRaises(OSError):isolation.read_oci_many([{'Id':'a'}])
+
     def test_rootless_oci_gpu_binding_requires_narrow_driver_mount(self):
         driver='/usr/lib/wsl/drivers/nv_dispi.inf_amd64_'+'b'*16
         item=fixture(True);item['HostConfig']['Devices']=[]

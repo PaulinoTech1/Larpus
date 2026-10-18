@@ -7,11 +7,10 @@ import ssl
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
-from runtime.agents import ROOT, load_personas, messages_for
+from runtime.agents import ROOT, load_personas, messages_for, summaries
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
 from runtime.mcp_client import chat as mcp_chat, health as mcp_health, stream_chat as mcp_stream
-from runtime.skills import summaries
 from runtime.inference_admission import Admission, Busy
 
 WEB = ROOT / 'web'
@@ -82,9 +81,8 @@ class Handler(BaseHTTPRequestHandler):
             except OSError:
                 self.reply(503, {'error':'Local MCP unavailable. No direct inference fallback.'})
             return
-        if path == '/api/station-health':
-            from runtime.health import read_latest
-            return self.reply(200,read_latest())
+        from runtime.model_routes import extra_get
+        if extra_get(self,path):return
         if path == '/assets/torus.gif' and (ROOT / 'assets/torus.gif').is_file():
             body = (ROOT / 'assets/torus.gif').read_bytes()
             self.headers_out(200, 'image/gif', len(body))
@@ -118,10 +116,10 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200,{'ok':True},{'Set-Cookie':'larpus_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' + ('; Secure' if getattr(self.server, 'tls', False) else '')})
         if not self.server.auth.allowed(('api',self.client_address[0]),30,60):
             return self.reply(429,{'error':'Too many requests. Try again shortly.'},{'Retry-After':'60'})
-        if self.path not in ('/api/chat', '/api/chat/stream', '/api/voice', '/api/context/compress'):
+        if self.path not in ('/api/chat', '/api/chat/stream', '/api/voice', '/api/context/compress', '/api/model-selection', '/api/retrieval-pipeline'):
             return self.reply(404, {'error': 'Not found'})
-        if DRAIN.exists():
-            return self.reply(503,{'error':'Finishing an update. Please retry shortly.'},{'Retry-After':'5'})
+        from runtime.model_routes import before_post
+        if before_post(self,DRAIN):return
         if self.path == '/api/context/compress':
             from runtime.context import compression_messages
             try:
@@ -225,7 +223,7 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}))
                     if result.get('status')==200:
-                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check') if key in result}})
+                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms') if key in result}})
                     else:
                         event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code'),'error_id':result.get('error_id')})
                 except (OSError,ValueError,KeyError,TypeError) as exc:

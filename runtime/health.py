@@ -14,6 +14,20 @@ from runtime.text_filter import inspect_message, TextHeld
 
 LATEST=ROOT/('release-state/health/latest.json' if (ROOT/'deployment.json').is_file() else 'data/health/latest.json')
 
+def model_checks(status,record):
+    if status.get('switching'):
+        record('models','error','Model selection is switching or requires recovery; inference is blocked')
+    elif status.get('ollama')!='online':
+        record('models','error','Local Ollama is offline')
+    else:
+        from runtime.agents import load_personas
+        configured={status['active_model']} if status.get('active_model') else {p['model'] for p in load_personas().values()}
+        missing=sorted(configured-set(status['models']))
+        record('models','error' if missing else 'pass','Missing configured models: '+', '.join(missing) if missing else 'Configured local model tags are installed')
+        processors=status.get('model_processors',{})
+        full_gpu=all(processors.get(tag)=='GPU' for tag in configured)
+        record('model_gpu','pass' if full_gpu else 'warning','Configured model fully GPU-resident (Ollama placement verified)' if full_gpu else 'Model unloaded, CPU-offloaded or placement unavailable; GPU residency is unverified')
+
 def check(scan_if_changed=True):
     checks=[]
     def record(name,status,message):
@@ -71,16 +85,7 @@ def check(scan_if_changed=True):
         record('mcp_surface','error','MCP discovery or approved snapshot unavailable')
     try:
         status=model_health()
-        if status.get('ollama')!='online':
-            record('models','error','Local Ollama is offline')
-        else:
-            from runtime.agents import load_personas
-            missing=sorted({p['model'] for p in load_personas().values()}-set(status['models']))
-            record('models','error' if missing else 'pass','Missing configured models: '+', '.join(missing) if missing else 'Configured local model tags are installed')
-            processors=status.get('model_processors',{})
-            configured={p['model'] for p in load_personas().values()}
-            full_gpu=all(processors.get(tag)=='GPU' for tag in configured)
-            record('model_gpu','pass' if full_gpu else 'warning','Configured model fully GPU-resident (Ollama placement verified)' if full_gpu else 'Model unloaded, CPU-offloaded or placement unavailable; GPU residency is unverified')
+        model_checks(status,record)
     except Exception:
         record('models','error','Local model status check failed')
     try:

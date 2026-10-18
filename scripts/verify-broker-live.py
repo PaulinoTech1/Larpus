@@ -19,9 +19,10 @@ c=http.client.HTTPConnection('localhost',timeout=30);c.sock=socket.socket(socket
 path=sys.argv[1]
 if path=='/api/chat':
  from runtime.agents import load_personas,messages_for
+ from runtime.inference import active_model
  from runtime.knowledge import EVIDENCE_PROMPT,NO_EVIDENCE_PROMPT
  p=load_personas()['home-assistant'];m=messages_for(p,[{'role':'user','content':'Hello'}]);m[0]['content']+=EVIDENCE_PROMPT+NO_EVIDENCE_PROMPT
- body={'model':p['model'],'messages':m,'stream':False,'think':False,'keep_alive':-1,'options':{'temperature':p['temperature'],'num_ctx':131072,'num_predict':32,'num_gpu':99}}
+ body={'model':active_model(p['model']),'messages':m,'stream':False,'think':False,'keep_alive':-1,'options':{'temperature':p['temperature'],'num_ctx':131072,'num_predict':32,'num_gpu':99}}
  c.request('POST',path,json.dumps(body))
 else:c.request('GET',path)
 r=c.getresponse();v=json.loads(r.read());c.close()

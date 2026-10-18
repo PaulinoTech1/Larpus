@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "models": {
+    "larpus-3.5": {
+      "name": "Larpus 3.5 27B Q4",
+      "tag": "qwen3.5:27b-q4_K_M",
+      "upstream": "Qwen/Qwen3.5-27B",
+      "weight_sha256": "c7e0e920a0948849beb7074d8368cbd5ac6825fcd1f2450cf851276325d8a6a5",
+      "context": 131072
+    },
+    "larpus-3.8": {
+      "name": "Larpus 3.8 27B Q4",
+      "tag": "larpus3.8:27b-q4",
+      "upstream": "Qwen/Qwen3.8-27B",
+      "weight_sha256": "322e194ff79741c7baa497c240f677f54b201b0efab44ca8e50f122b39123482",
+      "context": 131072
+    }
+  }
+}
