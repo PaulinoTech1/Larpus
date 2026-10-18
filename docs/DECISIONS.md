@@ -708,3 +708,13 @@ in the broker. Mathematics/quantum personas state assumptions and verification s
 [teacher-student pilot](TEACHER_STUDENT_PILOT.md) are proposals. No training has
 started. Any further exchange with a hosted teacher model needs its own owner
 decision, like the 2026-10-15 exception above.
+
+## Windows-only owner-subprocess test is skipped elsewhere (2026-10-18)
+
+`test_owner_subprocess_preserves_numeric_failure_without_output` exercises
+`runtime.model_backend.Backend.call`, whose `runtime.isolation.wsl_command`
+deliberately refuses to build a command when `os.name!='nt'`. The test now uses
+`skipUnless(os.name=='nt')`, so Linux CI no longer errors on it. It still runs on Windows
+(owner PC and the `windows-2025` runner), where it already passed. It needs no `wsl.exe`
+because `subprocess.run` is mocked, so there is no `which('wsl')` check. Other tests in
+the file keep running on all platforms. The production guard is unchanged.
