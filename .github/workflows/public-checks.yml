@@ -29,8 +29,6 @@ jobs:
       OLLAMA_NO_CLOUD: '1'
       OTEL_SDK_DISABLED: 'true'
       PIP_DISABLE_PIP_VERSION_CHECK: '1'
-      # Bounded CI-only DLP ACL-helper timeout (runtime.dlp caps it at 60 s; ignored outside GitHub Actions).
-      LARPUS_CI_QUARANTINE_TIMEOUT: '60'
     steps:
       - name: Checkout public source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -57,8 +55,8 @@ jobs:
         shell: powershell
         run: |
           # Stable CI quarantine honoured by runtime.dlp only when GITHUB_ACTIONS=true.
-          # Run the same helper the gate uses twice: proves idempotency and warms
-          # Windows PowerShell/.NET before the console-less MCP child calls it.
+          # Smoke-test the same helper the gate uses twice (idempotency, timing) in the
+          # runner's own shell; tests/test_quarantine_acl.py covers the MCP child's env.
           $dir = Join-Path $env:RUNNER_TEMP 'larpus-quarantine'
           New-Item -ItemType Directory -Force -Path $dir | Out-Null
           $ps = Join-Path $env:SYSTEMROOT 'System32\WindowsPowerShell\v1.0\powershell.exe'

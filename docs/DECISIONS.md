@@ -796,3 +796,10 @@ This fix:
     protected, holds only the user SID and S-1-5-18 with FullControl OI|CI and no
     inherited ACEs, and is the same after a second run;
   - a missing target and a junction both fail closed.
+
+Follow-up: the CI-only `LARPUS_CI_QUARANTINE_TIMEOUT` override from the earlier entry is
+removed. With this fix the helper finishes in well under a second inside the MCP child,
+so the fixed 10 s timeout applies everywhere and the variable is neither honoured nor
+forwarded. The Windows pre-apply step and `LARPUS_CI_QUARANTINE_DIR` stay. They are a
+cheap smoke test of the helper in the runner's own shell, and they still apply only when
+`GITHUB_ACTIONS=true`.

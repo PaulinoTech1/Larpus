@@ -12,22 +12,12 @@ from pathlib import Path
 from runtime.skills import ROOT
 
 POLICY=ROOT/'config/dlp.json'
-# Windows ACL helper timeout. Production always uses the default. GitHub Actions
-# may raise it within a hard cap. Invalid overrides raise, so the gate fails closed.
+# Windows ACL helper timeout; fixed everywhere (the helper runs in well under 1 s).
 PROTECT_TIMEOUT_DEFAULT=10
-PROTECT_TIMEOUT_MAX=60
-CI_OVERRIDES=('GITHUB_ACTIONS','LARPUS_CI_QUARANTINE_TIMEOUT','LARPUS_CI_QUARANTINE_DIR')
+CI_OVERRIDES=('GITHUB_ACTIONS','LARPUS_CI_QUARANTINE_DIR')
 
 def on_github_actions(environ=None):
     return (os.environ if environ is None else environ).get('GITHUB_ACTIONS')=='true'
-
-def protect_timeout(environ=None):
-    environ=os.environ if environ is None else environ
-    raw=environ.get('LARPUS_CI_QUARANTINE_TIMEOUT')
-    if raw is None or not on_github_actions(environ):return PROTECT_TIMEOUT_DEFAULT
-    value=int(raw) if re.fullmatch(r'[0-9]{1,3}',raw) else 0
-    if not PROTECT_TIMEOUT_DEFAULT<=value<=PROTECT_TIMEOUT_MAX:raise ValueError('Invalid CI quarantine timeout')
-    return value
 
 def quarantine_path(environ=None):
     """CI-only stable quarantine so a workflow can pre-apply its ACL; never honoured locally."""
@@ -110,7 +100,6 @@ def protect_command(executable,target):
     return [str(executable),'-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(target)]
 
 def secure_directory():
-    timeout=protect_timeout()
     for path in (QUARANTINE.parent,QUARANTINE):
         if path.exists() and (path.is_symlink() or (os.name=='nt' and path.stat().st_file_attributes & 1024)):
             raise OSError('Quarantine reparse point rejected')
@@ -118,7 +107,7 @@ def secure_directory():
     if os.name=='nt':
         executable=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
         # stdin=DEVNULL: never let PowerShell inherit (and read) the MCP child's JSON-RPC stdin.
-        subprocess.run(protect_command(executable,QUARANTINE),shell=False,check=True,capture_output=True,stdin=subprocess.DEVNULL,timeout=timeout)
+        subprocess.run(protect_command(executable,QUARANTINE),shell=False,check=True,capture_output=True,stdin=subprocess.DEVNULL,timeout=PROTECT_TIMEOUT_DEFAULT)
     else:
         QUARANTINE.chmod(0o700)
         if QUARANTINE.stat().st_uid!=os.getuid():
