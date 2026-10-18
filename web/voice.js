@@ -7,6 +7,7 @@ window.larpusVoice = (() => {
   let playback=null, playToken=0, lastText='', lastAudio=null;
   let speechQueue=[],queueActive=false,queueRunning=false,queueToken=0;
   let preparedSpeech=null,interruptFrames=[],interruptDuration=0,replyStarted=0;
+  let synthesisTail=Promise.resolve();
   function timing(result,start,kind){const t=result.timing||{};el('voice-latency').textContent=`${kind}: ${((performance.now()-start)/1000).toFixed(2)}s request${Number.isFinite(t.worker_ms)?` / ${(t.worker_ms/1000).toFixed(2)}s worker / ${t.model_cached?'warm model':'first model use'}`:''}. Playback timing excludes physical speaker delay.`;}
   function pipeline(value){if(typeof window.larpusPipeline==='function')window.larpusPipeline(value);}
   const speed=()=>Number(el('voice-speed').value);
@@ -180,7 +181,7 @@ window.larpusVoice = (() => {
     text=speakable(text);
     const out=[];
     while(text.length>2000){let cut=text.lastIndexOf(' ',2000);if(cut<1)cut=2000;out.push(text.slice(0,cut));text=text.slice(cut).trimStart();}
-    if(text.trim())out.push(text);return out;
+    if(text.trim())out.push(text);return out.filter(part=>/[\p{L}\p{N}]/u.test(part));
   }
   function beginReply(){replyStarted=performance.now();stopPlayback();queueActive=el('voice-output').checked;labels();}
   function enqueueSpeech(text){
@@ -189,11 +190,19 @@ window.larpusVoice = (() => {
     if(playback)prepareSpeech();
   }
   function finishReply(text){lastText=text;lastAudio=null;queueActive=false;labels();}
+  function requestSpeech(text,token){
+    const request=synthesisTail.then(()=>{
+      if(token!==playToken)throw Object.assign(new Error('Speech cancelled.'),{name:'AbortError'});
+      return api('/api/voice',{action:'synthesize',text});
+    });
+    synthesisTail=request.catch(()=>{});
+    return request;
+  }
   function prepareSpeech(){
     if(!preparedSpeech && speechQueue.length){
       // At most one prepared WAV ahead of playback, CPU synthesis stays serial.
       const token=playToken,text=speechQueue.shift();
-      const start=performance.now();preparedSpeech={token,promise:api('/api/voice',{action:'synthesize',text}).then(result=>{timing(result,start,'Synthesis');return {result};},error=>({error}))};
+      const start=performance.now();preparedSpeech={token,promise:requestSpeech(text,token).then(result=>{timing(result,start,'Synthesis');return {result};},error=>({error}))};
     }
   }
   async function pumpSpeech(){
@@ -225,12 +234,12 @@ window.larpusVoice = (() => {
       if(text===lastText && lastAudio){await audioPlay(lastAudio,token);return;}
       status('Preparing replay locally...');
       for(const part of parts(text)){
-        const start=performance.now(),result=await api('/api/voice',{action:'synthesize',text:part});timing(result,start,'Replay synthesis');
+        const start=performance.now(),result=await requestSpeech(part,token);timing(result,start,'Replay synthesis');
         if(token!==playToken)return;
         await audioPlay(result.audio,token);
         if(token!==playToken)return;
       }
-    }catch(error){notice.textContent=error.message;}
+    }catch(error){if(token===playToken)notice.textContent=error.message;}
     finally{labels();}
   }
   function pause(){

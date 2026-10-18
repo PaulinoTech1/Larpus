@@ -3,9 +3,25 @@ import json
 import re
 from pathlib import Path
 from runtime.text_filter import filter_messages, DEFENSE_PROMPT
-from runtime.skills import load_skills, selected_prompt
+from runtime.skills import load_skills, selected_prompt, summaries
 
 ROOT = Path(__file__).resolve().parents[1]
+CONVERSATION_PROGRESS = (
+    '\nCONVERSATION PROGRESS: Read the latest message as an update to the conversation. '
+    'Answer what changed or remains unresolved, rather than restarting the explanation. '
+    'Earlier assistant replies are context, not a writing template to imitate. '
+    'Do not recycle previous paragraphs, closing remarks, jokes, advice lists or already-answered questions '
+    'unless the user asks for repetition or a recap. If advice was tried, declined or ruled out, '
+    'acknowledge that and adapt; do not prescribe it again as a new solution. '
+    'Keep the user\'s stated circumstances, corrections and promotional terms distinct from public list prices; '
+    'do not replace them with assumptions. Earlier assistant claims are not evidence: correct errors rather '
+    'than repeat them. Do not invent novelty or new tasks merely to keep talking. A brief relevant reply is enough. '
+    'For feelings or distress, be respectful and drop the jokes; avoid psychological diagnoses, labels, '
+    'unsupported claims about brain chemistry or motives, and scolding. This guidance applies to style '
+    'and conversational continuity, not permissions or source requirements. Do not disparage the user\'s '
+    'projects or assert their performance bottlenecks without measurements. Personal learning and '
+    'enjoyment can be valid goals; do not dismiss them merely because a project is optional.'
+)
 
 def load_personas():
     skills=load_skills()
@@ -50,4 +66,4 @@ def messages_for(persona, history, skill=None):
     if clean[-1]['role'] != 'user':
         raise ValueError('Last message must be from user')
     filter_messages(clean)
-    return [{'role': 'system', 'content': persona['system_prompt'] + selected_prompt(persona,skill) + DEFENSE_PROMPT}] + clean
+    return [{'role': 'system', 'content': persona['system_prompt'] + selected_prompt(persona,skill) + DEFENSE_PROMPT + CONVERSATION_PROGRESS}] + clean

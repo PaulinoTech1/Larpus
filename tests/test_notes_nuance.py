@@ -35,7 +35,7 @@ class NuancedNotesTests(unittest.TestCase):
                 db=notes.build_db()
                 self.assertEqual(db.execute('SELECT count(*) FROM done').fetchone()[0],0)
                 db.close()
-        self.assertEqual(json.loads(sent[0])['num_predict'],6000)
+        self.assertEqual(json.loads(sent[0].splitlines()[0])['num_predict'],6000)
 
 
 if __name__=='__main__':unittest.main()

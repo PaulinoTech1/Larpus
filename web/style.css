@@ -36,3 +36,9 @@ button:disabled{opacity:.45;cursor:default}
 @media(max-width:600px){.core{order:1}.conversation{order:2}aside{order:3}.reactor{height:190px}#messages{min-height:300px}.chat-heading{align-items:flex-start}.context-usage{margin-bottom:0}}
 
 .teaching-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.teaching-settings select{margin-top:8px}.teaching-controls .memory-actions{margin:10px 0}#teaching-journal{max-height:260px;overflow:auto}#teaching-journal p{white-space:pre-wrap;border-bottom:1px solid var(--line);padding-bottom:12px}.teaching-controls button{margin-top:6px}.teaching-controls p{overflow-wrap:anywhere}@media(max-width:600px){.teaching-settings{grid-template-columns:1fr}}
+
+.model-switch{margin:1.25rem 0;padding:1rem;border:1px solid var(--line,#454545)}.model-switch strong{display:block;margin:.5rem 0}.model-switch p{font-size:.82rem;line-height:1.5}.model-switch button{width:100%;min-height:44px}.model-switch select{margin:.65rem 0}
+
+.session-panel{margin:1rem auto;padding:1rem;max-width:60rem;border:1px solid var(--accent,#82f6f4);background:var(--panel,#101c22)}
+.session-panel[hidden]{display:none}
+.session-panel form{display:flex;flex-wrap:wrap;align-items:center;gap:.7rem}.session-panel input{max-width:24rem}.session-panel h2{font-size:1.1rem}

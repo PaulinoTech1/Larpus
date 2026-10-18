@@ -9,7 +9,7 @@ Owner-approved boundary: GitHub-hosted runners may use public repository source,
 | Tracked-file boundary | Known private paths/weight/key/index patterns are absent from tracked files | Secret-content detection or protection after an accidental public push |
 | Complexity gate | Owned Python metrics stay within reviewed allowances | Good design or runtime deadlock freedom |
 | Isolated Python suite | Public contracts pass using synthetic index and test fixtures | Real WSL/Podman/GPU isolation, reboot safety or private corpus correctness |
-| Seven Node suites | Streaming, context, voice controls, teaching, memory, diagnostic IDs and speech-text logic pass | Rendered accessibility, physical microphone, room noise or cross-device acceptance |
+| Nine Node suites | Streaming, context, voice controls, teaching, memory, diagnostic IDs, speech-text, model-switch and session recovery logic pass | Rendered accessibility, physical microphone, room noise or cross-device acceptance |
 | Broker prompt hashes | Authored prompt templates match the committed approval manifest | Uncompromised runtime callers or semantic injection immunity |
 | Companion catalog | Scenarios/personas/skills meet authored catalog contracts | Actual model expertise or source-grounded answer quality |
 | Stegdetect evaluation | Synthetic classification accounting executes with explicit denominators and gaps | Production detection/FPR/FNR estimates or a required perfect score |
@@ -42,4 +42,6 @@ Workflow review should confirm triggers, least-privilege permissions, full SHA p
 
 ## Validation of this initial workflow
 
-A separate Windows Python 3.10 environment installed only `requirements-ci.txt` and ran `scripts/ci.py` successfully: 222 Python tests (two skips), all seven Node suites, approved broker prompt hashes, companion catalog and Stegdetect report. The initial rehearsal failed because NumPy was undeclared; the declared 2.2.6 dependency corrected it. YAML parsing and explicit trigger/permission/action-SHA controls were checked locally. Neither hosted runner has executed this checkout yet; a green GitHub result and required branch protections remain unverified. The active gateway/model/voice and nightly writer were kept running throughout, with no dependency replacement or deployment.
+A separate Windows Python 3.10 environment installed only `requirements-ci.txt` and ran `scripts/ci.py` successfully: 222 Python tests (two skips), the then-current seven Node suites, approved broker prompt hashes, companion catalog and Stegdetect report. The initial rehearsal failed because NumPy was undeclared; the declared 2.2.6 dependency corrected it. YAML parsing and explicit trigger/permission/action-SHA controls were checked locally. Neither hosted runner has executed this checkout yet; a green GitHub result and required branch protections remain unverified. The active gateway/model/voice and nightly writer were kept running throughout, with no dependency replacement or deployment.
+
+UI suites are enumerated once in `scripts/ui_checks.py` and used by both CI and owner release preparation. The model-switch and in-page reauthentication suites are included; the earlier seven-suite validation above is historical.

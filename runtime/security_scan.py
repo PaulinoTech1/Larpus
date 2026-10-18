@@ -27,6 +27,7 @@ def write_json(path,data):
 
 def fingerprint():
     paths=list((ROOT/'runtime').glob('*.py'))+list((ROOT/'skills').rglob('*'))+list((ROOT/'agents/personas').glob('*.json'))
+    paths += list((ROOT/'runtime/native').glob('*'))
     paths += [ROOT/'scripts/offline_skillspector.py',ROOT/'scripts/protect-quarantine.ps1',ROOT/'config/dlp.json',ROOT/'config/models.json',ROOT/'config/mcp-capabilities.json',APPROVED]
     paths += [ROOT/'scripts/run-isolated.ps1',ROOT/'scripts/export-isolation-source.ps1',ROOT/'scripts/transfer-isolation-source.py',ROOT/'scripts/setup-voice.py']+list((ROOT/'deploy/windows-home').rglob('*'))+list((ROOT/'deploy/voice').rglob('*'))
     paths += [ROOT/'.containerignore',ROOT/'.gitattributes',ROOT/'config/isolation.json',ROOT/'config/inference-broker.json',ROOT/'config/broker-prompts.json',ROOT/'scripts/broker-prompts.py',ROOT/'config/mcp-scan-reviewed.json']
@@ -66,7 +67,7 @@ def scan(descriptors):
         capabilities=json.loads((ROOT/'config/mcp-capabilities.json').read_text(encoding='utf-8'))
         (target/'SKILL.md').write_text('---\nname: larpus-mcp\ndescription: Local Larpus MCP server inventory and source.\npermissions: '+json.dumps(capabilities['permissions'])+'\n---\n\n# Local MCP inventory\n\n'+json.dumps(descriptors,indent=2)+'\n\n# Declared scope (documentation, not an OS grant)\n'+json.dumps(capabilities,indent=2),encoding='utf-8')
         # Only fixed source files; never include credentials, recordings or prompts.
-        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py','context.py','inference_broker.py','broker_scheduler.py','notes_worker.py','provenance.py','diagnostics.py'):
+        for name in ('mcp_server.py','mcp_client.py','local_ollama.py','inference.py','dlp.py','isolation.py','namespace_probe.py','knowledge.py','context.py','inference_broker.py','broker_scheduler.py','notes_worker.py','provenance.py','diagnostics.py','retrieval.py','retrieval_worker.py','scoring_pipeline.py','native_scoring.py'):
             shutil.copyfile(ROOT/'runtime'/name,target/name)
         (target/'scripts').mkdir(exist_ok=True)
         shutil.copyfile(ROOT/'scripts/protect-quarantine.ps1',target/'scripts/protect-quarantine.ps1')

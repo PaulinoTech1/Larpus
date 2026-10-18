@@ -17,3 +17,8 @@ knowledge/notes-manifest.json
 
 # Owner-local provenance includes private archived repository identities.
 knowledge/provenance.json
+
+# Locally built native scorer (owner build: python scripts/build-assembly.py; pinned by runtime/native/manifest.json).
+runtime/native/*.so
+# Generated report output.
+output/

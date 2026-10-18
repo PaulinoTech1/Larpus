@@ -52,8 +52,12 @@ class Scheduler:
         if len(history)>=limit['requests'] or sum(t for _,t in history)+tokens>limit['tokens']:
             raise Refused(429,'inference_budget')
         history.append((now,tokens))  # Reserve full requested output, including cancelled work.
+    def probe(self):
+        if self.needs_probe:
+            if not self.verify_idle():raise Refused(503,'cancellation_unconfirmed')
+            self.needs_probe=False
     @contextmanager
-    def slot(self,lane,tokens):
+    def slot(self,lane,tokens,admit=None):
         deadline=time.monotonic()+self.wait_seconds
         with self.condition:
             if self.faulted:raise Refused(503,'cancellation_unconfirmed')
@@ -73,18 +77,18 @@ class Scheduler:
                 job=Job(lane);self.active=job
             finally:
                 if lane=='chat':self.waiting-=1
-        timer=None;complete=False
+        timer=None;complete=False;admitted=False
         try:
-            if self.needs_probe:
-                if not self.verify_idle():raise Refused(503,'cancellation_unconfirmed')
-                self.needs_probe=False
+            if admit:admit()
+            admitted=True
+            self.probe()
             timer=threading.Timer(self.limits[lane]['seconds'],job.cancel,args=('inference_deadline',))
             timer.daemon=True;timer.start()
             yield job
             complete=job.reason is None
         finally:
             if timer:timer.cancel()
-            if not complete:
+            if admitted and not complete:
                 job.cancel('inference_interrupted')
                 # Keep the slot until the pinned single-slot runner demonstrably serves
                 # a bounded one-token fence. Disconnect alone is not confirmation.

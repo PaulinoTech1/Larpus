@@ -73,20 +73,32 @@ def run(request):
         text = request['text']
         if not isinstance(text,str) or not text.strip() or len(text)>2200:
             raise ValueError('Invalid speech text')
-        from piper import SynthesisConfig
-        voice = speech_models('tts')
-        output = io.BytesIO()
-        # Natural pace plus a short breath between sentences; 0.85 sounded rushed and clipped.
-        config=SynthesisConfig(length_scale=1.0,noise_scale=0.6,noise_w_scale=0.8)
-        with wave.open(output,'wb') as wav:
-            for index,chunk in enumerate(voice.synthesize(text,config)):
-                if index==0:
-                    wav.setframerate(chunk.sample_rate);wav.setsampwidth(chunk.sample_width);wav.setnchannels(chunk.sample_channels)
-                else:
-                    wav.writeframes(bytes(int(chunk.sample_rate*0.22)*chunk.sample_width*chunk.sample_channels))
-                wav.writeframes(chunk.audio_int16_bytes)
-        return {'audio':base64.b64encode(output.getvalue()).decode(), 'mime':'audio/wav'}
+        return synthesize(text)
     raise ValueError('Unsupported voice operation')
+
+def synthesize(text):
+    from piper import SynthesisConfig
+    voice = speech_models('tts')
+    output = io.BytesIO()
+    # Natural pace plus a short breath between sentences; 0.85 sounded rushed and clipped.
+    config=SynthesisConfig(length_scale=1.0,noise_scale=0.6,noise_w_scale=0.8)
+    spoken=False
+    with wave.open(output,'wb') as wav:
+        for chunk in voice.synthesize(text,config):
+            if not chunk.audio_int16_bytes:continue
+            if not spoken:
+                wav.setframerate(chunk.sample_rate);wav.setsampwidth(chunk.sample_width);wav.setnchannels(chunk.sample_channels)
+            else:
+                wav.writeframes(bytes(int(chunk.sample_rate*0.22)*chunk.sample_width*chunk.sample_channels))
+            wav.writeframes(chunk.audio_int16_bytes)
+            spoken=True
+        if not spoken:
+            # Older HUDs require a playable WAV for every accepted chunk.
+            # A brief silent chunk lets their FIFO continue past punctuation.
+            wav.setnchannels(1);wav.setsampwidth(2);wav.setframerate(voice.config.sample_rate)
+            wav.writeframes(bytes(max(1,int(voice.config.sample_rate*0.05))*2))
+    return {'audio':base64.b64encode(output.getvalue()).decode(), 'mime':'audio/wav','no_speech':not spoken}
+
 
 def receive(stream,limit):
     def exact(count):

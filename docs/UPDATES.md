@@ -1,5 +1,31 @@
 # Updates while Larpus remains usable
 
+## 2026-10-18 Assembly pipeline
+
+Activated `d604dfcd7ebd4c0199cdec395b6c61cf` after the owner approved near-tie
+reordering. Assembly is the startup default, with a station-wide HUD switch to
+NumPy and automatic fallback. Two Linux runs measured approximately 31% less
+scoring time (about 1 ms); an overall chat latency gain is not established.
+All 70 scan targets completed with the same 11 reviewed MCP warnings. Model and
+CPU voice IDs, images and start times stayed unchanged through activation;
+live reply, switching, functional health and LAN authentication checks passed.
+The activation command took 26.167 seconds including drain/readiness/pruning,
+not measured port downtime, and no rollback was needed. See
+[Assembly pipeline](ASSEMBLY_PIPELINE.md) for policy, measurements and receipts.
+
+## 2026-10-17 CPU timing and scoped WSL maintenance
+
+Activated `690d8bcbedcd4ff2a0f710b8fedaaa83` after Python/UI/isolation checks and
+70 complete scan targets, retaining the same 11 reviewed MCP issues. Preparation
+kept production available; app activation briefly rebound ports while model and
+voice start times stayed unchanged. The separately approved WSL restart then
+applied `processors=20`, preserving the 48 GB memory limit and existing image
+pins. Recovery from the drained gateway took 139.891 seconds; this was an
+interruption, not zero downtime. 3.8 full GPU/context, synthetic voice audio,
+functional health and CA-validated LAN authentication were verified afterward.
+The superseded first candidate's scan was cancelled and never activated.
+See [CPU tuning](CPU_TUNING.md) for measurements, limitations and rollback files.
+
 The running gateway now uses a frozen source, HUD and knowledge-index snapshot
 under `data/releases/<32-hex-ID>`. Editing this checkout does not change its
 fingerprint, static files or selected agent. Preparation runs beside production;

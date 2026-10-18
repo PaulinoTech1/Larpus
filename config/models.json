@@ -29,5 +29,19 @@
   ],
   "num_ctx": 131072,
   "num_predict": 1024,
-  "benchmark_status": "SEE_LOCAL_RECEIPT"
+  "benchmark_status": "SEE_LOCAL_RECEIPT",
+  "display_names": {
+    "qwen3.5:27b-q4_K_M": "Larpus 3.5 27B Q4",
+    "qwen3.8:27b-q4_K_M": "Larpus 3.8 27B Q4"
+  },
+  "downloaded_candidates": [
+    {
+      "name": "Larpus 3.8 27B Q4",
+      "upstream": "Qwen/Qwen3.8-27B",
+      "quantizer": "unsloth/Qwen3.8-27B-GGUF",
+      "quantization": "UD-Q4_K_M",
+      "activation": "not-selected; runtime compatibility and GPU evaluation required",
+      "sha256": "322e194ff79741c7baa497c240f677f54b201b0efab44ca8e50f122b39123482"
+    }
+  ]
 }

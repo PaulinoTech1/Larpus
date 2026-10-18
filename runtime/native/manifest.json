@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "sha256": "3cf2fcb2c80a7b0ecdd109e33281d9b55e9b51088c10f1d6321785c1fc3a717f",
+  "bytes": 2672,
+  "source_sha256": "a62d16d7b9f8e0ffd3a42d4424e9d5d7be4de9e9654ffe4569f42c7afb7a0b27",
+  "compiler": "Zig 0.17.0",
+  "target": "x86_64-linux-gnu",
+  "workers": 4
+}

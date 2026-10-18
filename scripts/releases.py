@@ -16,6 +16,7 @@ import urllib.request
 import uuid
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
 STORE=ROOT/'data/releases'
 DIRECTORIES=('runtime','agents','skills','config','scripts','deploy','tests','web','knowledge','evals')
 FILES=('.containerignore','.gitattributes','LICENSE','LICENSE-NOTICE.md','requirements.txt','requirements-knowledge.txt','requirements-retrieval.txt','package.json','package-lock.json')
@@ -116,17 +117,20 @@ def validate(root):
         if meta.get('voice_sha256') and checksum(root/'voice-deployment.json')!=meta['voice_sha256']:raise ValueError('Candidate voice receipt changed')
     return meta
 
-def stage():
-    if (ROOT/'knowledge/provenance.json').exists():run(ROOT,sys.executable,'scripts/source-provenance.py','check')
+def stage(source=None):
+    source=ROOT if source is None else Path(source)
+    if source.is_symlink() or not source.is_dir():raise ValueError('Invalid staging source')
+    source=source.resolve()
+    if (source/'knowledge/provenance.json').exists():run(source,sys.executable,'scripts/source-provenance.py','check')
     import _winapi
     identifier=uuid.uuid4().hex;dest=release_path(identifier)
-    before=payload(ROOT);dest.mkdir(parents=True)
-    for name in DIRECTORIES:shutil.copytree(ROOT/name,dest/name,ignore=shutil.ignore_patterns('__pycache__',*BUILD_TEMP))
+    before=payload(source);dest.mkdir(parents=True)
+    for name in DIRECTORIES:shutil.copytree(source/name,dest/name,ignore=shutil.ignore_patterns('__pycache__',*BUILD_TEMP))
     for name in FILES:
-        if (ROOT/name).is_file():shutil.copyfile(ROOT/name,dest/name)
+        if (source/name).is_file():shutil.copyfile(source/name,dest/name)
     _winapi.CreateJunction(str((ROOT/'data').resolve()),str(dest/'data'))
     _winapi.CreateJunction(str((ROOT/'vendor').resolve()),str(dest/'vendor'))
-    if before!=payload(ROOT) or before!=payload(dest):raise ValueError('Checkout changed during snapshot; candidate retained, not activated')
+    if before!=payload(source) or before!=payload(dest):raise ValueError('Checkout changed during snapshot; candidate retained, not activated')
     fingerprint=run(dest,sys.executable,'-c','from runtime.security_scan import fingerprint;print(fingerprint())')
     write(dest/'release.json',{'version':1,'id':identifier,'source_fingerprint':fingerprint,'files':before,'status':'staged'})
     print('Staged '+identifier+'; active release untouched.',flush=True)
@@ -154,6 +158,46 @@ def prepare_voice(dest,old,linux):
         except (OSError,RuntimeError,subprocess.SubprocessError):
             if attempt==9:raise
             time.sleep(0.5)
+
+def prepare_selection(dest,profile,identifier):
+    selection_args=[]
+    if read(dest/'config/inference-broker.json').get('selection_enabled'):
+        from runtime.model_selection import initial,validate
+        state=initial()
+        if profile.get('model_selection'):
+            previous=validate(json.loads(wsl('/usr/bin/python3','-c','print(open('+repr(profile['model_selection']+'/state.json')+').read())')))
+            if previous['phase']!='ready':raise ValueError('Model selection must be ready before preparation')
+            state['active_id']=previous['active_id']
+        source='/home/larpus/release-selection/'+identifier
+        code='import json,os;from pathlib import Path;p=Path('+repr(source)+');p.mkdir(parents=True,exist_ok=True);f=p/"state.json";f.write_text('+repr(json.dumps(state))+');os.chmod(p,0o755);os.chmod(f,0o644)'
+        wsl('/usr/bin/python3','-c',code)
+        selection_args=['--mount=type=bind,src='+source+',dst=/run/larpus-selection,ro']
+        profile['model_selection']=source
+    return selection_args
+
+def check_ui(root):
+    from scripts.ui_checks import TESTS
+    for test in TESTS:print(run(root,'node.exe','tests/'+test),flush=True)
+
+
+def verify_pipeline(profile):
+    code="""import json,time
+from runtime.retrieval_worker import call
+for attempt in range(60):
+ try:
+  initial=call({'action':'pipeline'},2);break
+ except OSError:
+  if attempt==59:raise
+  time.sleep(0.5)
+numpy=call({'action':'pipeline','pipeline_id':'numpy'},8)
+assembly=call({'action':'pipeline','pipeline_id':'assembly'},8)
+restored=call({'action':'pipeline','pipeline_id':initial['active_id']},8)
+print(json.dumps({'initial':initial,'numpy':numpy,'assembly':assembly,'restored':restored}))
+"""
+    state=json.loads(podman('exec',profile['agent_name'],'python','-c',code))
+    if state['initial']['active_id'] not in ('numpy','assembly') or (state['numpy']['active_id'],state['assembly']['active_id'],state['restored']['active_id'])!=('numpy','assembly',state['initial']['active_id']):
+        raise ValueError('Pipeline switch/restore readiness failed')
+    print('Candidate Assembly/NumPy worker switching verified; initial pipeline restored.',flush=True)
 
 def prepare(identifier):
     dest=release_path(identifier);meta=read(dest/'release.json')
@@ -189,7 +233,8 @@ def prepare(identifier):
         podman('build','--pull=never','--network=none','--build-arg','BASE_IMAGE='+base,'-f',linux+'/deploy/windows-home/Broker.Containerfile','-t','localhost/larpus-broker:'+identifier,linux)
         broker_image=podman('image','inspect','localhost/larpus-broker:'+identifier,'--format','{{.Id}}').removeprefix('sha256:')
         notes_volume=name+'-notes'
-        podman('run','--detach','--pull=never','--name',name,'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=64','--memory=256m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m','--volume='+name+':/run/larpus-broker:rw,noexec,nosuid,nodev','--volume='+notes_volume+':/run/larpus-notes:rw,noexec,nosuid,nodev',broker_image)
+        selection_args=prepare_selection(dest,profile,identifier)
+        podman('run','--detach','--pull=never',*selection_args,'--name',name,'--pod','larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=64','--memory=256m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m','--volume='+name+':/run/larpus-broker:rw,noexec,nosuid,nodev','--volume='+notes_volume+':/run/larpus-notes:rw,noexec,nosuid,nodev',broker_image)
         profile['broker']={'protocol':2,'container':name,'image':broker_image,'volume':name,'notes_volume':notes_volume}
         for attempt in range(20):
             try:
@@ -204,10 +249,11 @@ def prepare(identifier):
         profile['notes']={'container':notes_name,'image':notes_image,'volume':notes_volume}
     podman('run','--detach','--pull=never','--name',profile['agent_name'],*boundary,'--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges',*AGENT_LIMITS,'--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=128m','--volume=larpus-quarantine:/app/data/quarantine:rw,noexec,nosuid,nodev',profile['agent_image'])
     write(dest/'deployment.json',profile)
+    if (dest/'runtime/scoring_pipeline.py').exists():verify_pipeline(profile)
     prepare_voice(dest,old,linux)
     print(run(dest,sys.executable,'scripts/test-local.py'),flush=True)
     print(run(dest,sys.executable,'scripts/evaluate-companion.py'),flush=True)
-    for test in ('tests/voice-ui.cjs','tests/chat-stream-ui.cjs','tests/context-ui.cjs','tests/memory-ui.cjs','tests/teaching-ui.cjs'):print(run(dest,'node.exe',test),flush=True)
+    check_ui(dest)
     print(run(dest,sys.executable,'-m','runtime.isolation','check'),flush=True)
     print('Scanning candidate independently of the active release.',flush=True)
     run(dest,sys.executable,'-c',"import json;from runtime.security_scan import scan,discover,APPROVED;d=discover();assert d==json.loads(APPROVED.read_text())['tools'];r=scan(d);print(r['status'])",timeout=900)
@@ -285,9 +331,22 @@ def ensure_execution(root):
         if item['Image'].removeprefix('sha256:')!=image.removeprefix('sha256:'):raise ValueError('Retained execution image drift')
         if not item['State']['Running']:podman('start',name)
 
+def check_cutover_selection(candidate,current):
+    """Refuse stale prepared model state before stopping any gateway."""
+    from runtime.model_selection import initial,validate
+    states=[]
+    for root in (candidate,current):
+        source=read(root/'deployment.json').get('model_selection')
+        state=validate(json.loads(wsl('/usr/bin/python3','-c','print(open('+repr(source+'/state.json')+').read())'))) if source else initial()
+        if state['phase']!='ready':raise ValueError('Finish model switching or recovery before activation')
+        states.append(state['active_id'])
+    if states[0]!=states[1]:raise ValueError('Prepared selection is stale; select its model before activation or prepare a fresh release')
+
+
 def cutover(identifier):
     if (STORE/'pending.json').exists():raise ValueError('Interrupted cutover recorded; run start to recover first')
     root=release_path(identifier);validate(root)
+    old=read(STORE/'active.json');check_cutover_selection(root,release_path(old['id']))
     ensure_execution(root)
     run(root,sys.executable,'-m','runtime.isolation','check')
     old=read(STORE/'active.json')
@@ -378,12 +437,15 @@ def prune():
     return idle
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('operation',choices=('stage','prepare','activate','rollback','start','status','prune'));parser.add_argument('id',nargs='?');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('operation',choices=('stage','prepare','activate','rollback','start','status','prune'));parser.add_argument('id',nargs='?')
+    parser.add_argument('--source',type=Path,help='Explicit prepared source tree for stage; owner data/store remain unchanged')
+    args=parser.parse_args()
+    if args.source is not None and args.operation!='stage':parser.error('--source is only valid with stage')
     if os.name!='nt':raise SystemExit('Owner Windows release manager required')
     if args.operation=='status':
         state=read(STORE/'active.json');print(json.dumps({'id':state['id'],'running':running(state),'previous':state.get('previous'),'pending':(STORE/'pending.json').exists()},indent=2));return
     with exclusive():
-        if args.operation=='stage':stage()
+        if args.operation=='stage':stage(args.source)
         elif args.operation=='prepare':prepare(args.id)
         elif args.operation=='activate':cutover(args.id);prune()
         elif args.operation=='rollback':cutover(read(STORE/'active.json')['previous'])

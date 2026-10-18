@@ -23,11 +23,16 @@ Reduced motion shows a static torus. R = 2 and r = 0.8 give a volume of about 25
 
 See the dated [operational status](docs/STATUS.md) for the selected release, validation boundaries and later checks.
 
+See the [performance baseline](docs/PERFORMANCE_BASELINE_2026_10_17.md) for measured
+response times and quality findings, and the [test-suite guide](docs/PERFORMANCE_SUITE.md) to repeat the measurements.
+
 Vetted references bridge gaps after the model's training period. Refresh priority
 depends on the persona: product pricing, security guidance and platform behavior
 change faster than foundational mathematics. See the [research refresh policy and
 persona priorities](docs/RESEARCH_2025_2026.md). Downloads and prepared queues are
-not live knowledge until admitted and integrated; automatic expiry is not implemented.
+not live knowledge until admitted and integrated. The checkout includes
+[offline freshness detection](docs/SOURCE_FRESHNESS.md); age-based review warnings
+and scoped lifecycle signals do not certify current accuracy.
 
 Verified against the owner's active frozen release on **2026-10-11**. Counts and
 settings below describe that deployment; a fresh clone does not include its

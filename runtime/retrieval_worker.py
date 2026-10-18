@@ -37,25 +37,37 @@ def send_frame(stream,value,limit):
     if len(raw)>limit:raise ValueError('Retrieval result exceeds limit')
     stream.sendall(struct.pack('!I',len(raw))+raw)
 
+def _pipeline_request(request):
+    if set(request)=={'action'}:return request
+    if set(request)=={'action','pipeline_id'} and request['pipeline_id'] in ('numpy','assembly'):return request
+    raise ValueError('Invalid pipeline selection')
+
+def _rerank_request(request):
+    passages=request['passages']
+    if not isinstance(passages,list) or not 1<=len(passages)<=MAX_PASSAGES or any(not isinstance(p,str) or len(p)>MAX_TEXT for p in passages):
+        raise ValueError('Invalid passages')
+    if type(request['budget_ms']) is not int or not 1<=request['budget_ms']<=5000:raise ValueError('Invalid budget')
+    return request
+
 def validate(request):
     if not isinstance(request,dict):raise ValueError('Invalid retrieval request')
     action=request.get('action')
     if action=='status' and set(request)=={'action'}:return request
+    if action=='pipeline':return _pipeline_request(request)
     question=request.get('question')
     if not isinstance(question,str) or not 0<len(question)<=MAX_TEXT:raise ValueError('Invalid question')
     if action=='neighbors' and set(request)=={'action','question','limit'}:
         if type(request['limit']) is not int or not 1<=request['limit']<=64:raise ValueError('Invalid limit')
         return request
     if action=='rerank' and set(request)=={'action','question','passages','budget_ms'}:
-        passages=request['passages']
-        if not isinstance(passages,list) or not 1<=len(passages)<=MAX_PASSAGES or any(not isinstance(p,str) or len(p)>MAX_TEXT for p in passages):
-            raise ValueError('Invalid passages')
-        if type(request['budget_ms']) is not int or not 1<=request['budget_ms']<=5000:raise ValueError('Invalid budget')
-        return request
+        return _rerank_request(request)
     raise ValueError('Unsupported retrieval operation')
 
 def handle(engine,request,loaded_ms):
     request=validate(request)
+    if request['action']=='pipeline':
+        if 'pipeline_id' in request:return engine.pipeline.select(request['pipeline_id'])
+        return engine.pipeline.status()
     if request['action']=='status':
         return {'ready':True,'load_ms':loaded_ms,'rows':int(len(engine.rowids)),'pid':os.getpid()}
     if request['action']=='neighbors':

@@ -17,13 +17,42 @@ NOTES_SOCKET=Path('/run/larpus-notes/inference.sock')
 MAX_BODY=524288
 MAX_RESPONSE=2_000_000
 
+def generation_body(body,lane):
+    options=dict(body['options'])
+    # Only approved ordinary-chat system templates carry this marker. Summary
+    # and notes templates retain their existing sampling. Clients cannot add
+    # these options through the strict request schema.
+    if lane=='chat' and 'CONVERSATION PROGRESS:' in body['messages'][0]['content']:
+        options.update(repeat_last_n=4096,repeat_penalty=1.1)
+    return dict(body,options=options,stream=True)
+
 def policy():
     value=json.loads((ROOT/'config/inference-broker.json').read_text(encoding='utf-8'))
-    if set(value)!={'version','enabled','model','context','max_output'} or value['version']!=2 or value['enabled'] is not True:
+    if set(value)-{'selection_enabled'}!={'version','enabled','model','context','max_output'} or value['version']!=2 or value['enabled'] is not True:
         raise ValueError('Invalid broker policy')
     if value['model']!='qwen3.5:27b-q4_K_M' or value['context']!=131072 or value['max_output']!=6000:
         raise ValueError('Unreviewed broker policy')
     return value
+
+def selected_policy(approved):
+    if not approved.get('selection_enabled'):return dict(approved,switching=False)
+    from runtime import model_selection as selection
+    state=selection.read_selection()
+    return dict(approved,model=selection.model(state['active_id'])['tag'],switching=selection.is_switching(state))
+
+def selected_body(value,policy):
+    approved=selected_policy(policy)
+    if approved['switching']:raise Refused(503,'model_switching')
+    return validate_chat(value,approved)
+def ensure_selected(policy,body):
+    approved=selected_policy(policy)
+    if approved['switching'] or approved['model']!=body['model']:raise Refused(503,'model_switching')
+def selected_status(value,policy):
+    if not isinstance(value.get('models'),list):raise ValueError('Invalid model status')
+    approved=selected_policy(policy)
+    result={'models':[m for m in value['models'] if isinstance(m,dict) and m.get('name')==approved['model']]}
+    if policy.get('selection_enabled'):result.update(active_model=approved['model'],switching=approved['switching'])
+    return result
 
 def unique(pairs):
     result={}
@@ -137,8 +166,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not 1<=size<=MAX_BODY:return self.reply(413,{'error':'Request too large'})
                 raw=self.rfile.read(size)
                 if len(raw)!=size:raise ValueError('Truncated request')
-                body=validate_chat(decode(raw),self.server.approved)
+                body=selected_body(decode(raw),self.server.approved)
             elif lengths and lengths!=['0']:raise ValueError('Unexpected body')
+        except Refused as exc:return self.reply(exc.status,{'error':'Model switch in progress','code':exc.code})
         except (ValueError,TypeError,KeyError,UnicodeError):return self.reply(400,{'error':'Request not approved'})
         if self.server.approved['version']==2:
             try:
@@ -169,9 +199,7 @@ class Handler(BaseHTTPRequestHandler):
             if len(raw)>MAX_RESPONSE:raise ValueError('Response too large')
             value=decode(raw)
             if not isinstance(value,dict) or value.get('error'):raise ValueError('Invalid response')
-            if body is None:
-                if not isinstance(value.get('models'),list):raise ValueError('Invalid model status')
-                value={'models':[item for item in value['models'] if isinstance(item,dict) and item.get('name')==self.server.approved['model']]}
+            if body is None:value=selected_status(value,self.server.approved)
             self.reply(200,value)
         except (OSError,ValueError,TypeError,http.client.HTTPException):
             if not started:
@@ -182,11 +210,11 @@ class Handler(BaseHTTPRequestHandler):
     def managed_chat(self,body):
         started=False;scheduler=self.server.scheduler
         try:
-            with scheduler.slot(self.server.lane,body['options']['num_predict']) as job:
+            with scheduler.slot(self.server.lane,body['options']['num_predict'],admit=lambda:ensure_selected(self.server.approved,body)) as job:
                 upstream=upstream_connection(5)
                 try:
                     upstream.connect();job.bind(upstream.sock);upstream.sock.settimeout(LIMITS[job.lane]['seconds'])
-                    upstream.request('POST','/api/chat',json.dumps(dict(body,stream=True)),{'Content-Type':'application/json'})
+                    upstream.request('POST','/api/chat',json.dumps(generation_body(body,self.server.lane)),{'Content-Type':'application/json'})
                     response=upstream.getresponse()
                     if response.status!=200:raise OSError('Upstream unavailable')
                     self.connection.settimeout(5)
@@ -240,7 +268,7 @@ if hasattr(socketserver,'UnixStreamServer'):
 if __name__=='__main__':
     if Server is None:raise SystemExit('Broker requires Unix sockets on Linux')
     approved=policy();prompts=prompt_manifest();os.umask(0o077)
-    scheduler=Scheduler(lambda:idle_fence(approved))
+    scheduler=Scheduler(lambda:idle_fence(selected_policy(approved)))
     servers=[]
     for lane,path in (('chat',SOCKET),('notes',NOTES_SOCKET)):
         if path.parent.is_symlink() or path.is_symlink():raise SystemExit('Redirected broker socket')

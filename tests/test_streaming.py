@@ -20,7 +20,7 @@ class StreamingTests(unittest.TestCase):
         settings=dlp.policy()
         if private:settings['private_values']=[private]
         frames=[{'message':{'content':x},'done':False} for x in deltas]+[{'done':True}]
-        with tempfile.TemporaryDirectory() as temp,patch.object(dlp,'QUARANTINE',Path(temp)/'quarantine'),patch.object(dlp,'policy',return_value=settings),patch.object(inference,'gpu_placement',return_value=placement),patch.object(inference,'chat_stream',return_value=iter(frames)):
+        with tempfile.TemporaryDirectory() as temp,patch.object(dlp,'QUARANTINE',Path(temp)/'quarantine'),patch.object(dlp,'policy',return_value=settings),patch.object(inference,'active_model',return_value='qwen3.5:27b-q4_K_M'),patch.object(inference,'gpu_placement',return_value=placement),patch.object(inference,'chat_stream',return_value=iter(frames)):
             result=inference.chat('home-assistant',[{'role':'user','content':'Hello'}],on_chunk=released.append)
             held=[json.loads(p.read_text()) for p in dlp.QUARANTINE.glob('*.json')] if dlp.QUARANTINE.exists() else []
         return result,released,held

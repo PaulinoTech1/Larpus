@@ -18,6 +18,15 @@ KNOWLEDGE=ROOT/'knowledge'
 CACHE=ROOT/'data/knowledge'
 HOSTS={'documentation.ubuntu.com','ubuntu.com','www.kernel.org','cdn.kernel.org','doc.qubes-os.org','www.kali.org','docs.redhat.com','fedoraproject.org','packages.fedoraproject.org','www.intel.com','cdrdv2-public.intel.com','www.amd.com'}
 AI_DOCUMENTS={
+    'https://snyk.io/news/snyk-launches-evo-agentic-appsec/',
+    'https://socprime.com/blog/understand-any-threat-report-in-minutes-ai-summaries-and-attack-flow-in-prime-architect/',
+    'https://www.brookings.edu/articles/shaping-global-governance-of-ai-agents/',
+    'https://www.servicenow.com/uk/blogs/2026/4-priorities-for-implementing-ai-agents',
+    'https://www.bleepingcomputer.com/news/security/the-blind-spots-of-agentic-pentesting-and-how-to-close-them/',
+    'https://health-isac.org/beyond-the-hype-what-mythos-actually-means-for-security-teams/',
+    'https://health-isac.org/ai-pentesting-or-ai-powered-appsec/',
+    'https://unit42.paloaltonetworks.com/ai-campaign-targets-linux-infrastructure/',
+
     'https://learn.chatgpt.com/docs/pricing',
     'https://developers.openai.com/api/docs/models/gpt-6.1-sol',
     'https://developers.openai.com/api/docs/models/gpt-6-astra',
