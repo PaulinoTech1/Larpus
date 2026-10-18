@@ -52,9 +52,6 @@ jobs:
         run: |
           npm ci
           npm run vendor
-      - name: TEMPORARY diagnostic - PowerShell launch timing from piped child (Windows)
-        if: runner.os == 'Windows'
-        run: python scripts/ci_diag_ps_launch.py
       - name: Pre-apply quarantine ACL (Windows)
         if: runner.os == 'Windows'
         shell: powershell
