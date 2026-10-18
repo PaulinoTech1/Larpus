@@ -106,6 +106,9 @@ def stream_pending(text,system_prompt=''):
                 return True
     return False
 
+def protect_command(executable,target):
+    return [str(executable),'-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(target)]
+
 def secure_directory():
     timeout=protect_timeout()
     for path in (QUARANTINE.parent,QUARANTINE):
@@ -114,7 +117,8 @@ def secure_directory():
     QUARANTINE.mkdir(parents=True,exist_ok=True,mode=0o700)
     if os.name=='nt':
         executable=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
-        subprocess.run([str(executable),'-NoProfile','-NonInteractive','-File',str(ROOT/'scripts/protect-quarantine.ps1'),'-Target',str(QUARANTINE)],shell=False,check=True,capture_output=True,timeout=timeout)
+        # stdin=DEVNULL: never let PowerShell inherit (and read) the MCP child's JSON-RPC stdin.
+        subprocess.run(protect_command(executable,QUARANTINE),shell=False,check=True,capture_output=True,stdin=subprocess.DEVNULL,timeout=timeout)
     else:
         QUARANTINE.chmod(0o700)
         if QUARANTINE.stat().st_uid!=os.getuid():

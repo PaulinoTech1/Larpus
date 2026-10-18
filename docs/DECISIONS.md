@@ -739,3 +739,60 @@ two CI-only mitigations:
 The MCP child's environment allowlist forwards only these three named variables when
 they are set. Tests cover the unchanged default, the cap, invalid values, the fail-closed
 gate and the narrow forwarding (`tests/test_dlp_ci_overrides.py`).
+
+## Quarantine ACL helper uses no cmdlets; PowerShell gets no MCP stdin (2026-10-18)
+
+Root cause of the slow `protect-quarantine.ps1` call on `windows-2025`, measured with a
+temporary, reverted CI diagnostic that launched the helper from a child process with
+piped stdin:
+
+| Launch condition | Time |
+|---|---|
+| Runner's full environment, or allowlist plus the runner's `PSModulePath` | 0.25–0.4 s |
+| MCP child allowlist (no `PSModulePath`) | 24–30 s, once >60 s |
+| Allowlist plus inbox-only `PSModulePath` (the Oct 12 attempt) | 19–37 s |
+| Allowlist plus each of `LOCALAPPDATA`, `APPDATA`, `ProgramFiles`, `PATHEXT`, … | ~24 s |
+| Allowlist with `stdin=DEVNULL` or `CREATE_NO_WINDOW` | ~24 s |
+
+So the problem was neither console allocation nor inherited stdin. It was Windows
+PowerShell 5.1 module discovery. The script's one cmdlet, `Get-Item`, makes 5.1 resolve
+the command through PSModulePath module analysis. This is slow on hosts with many
+installed modules (the runner has Az and SQL Server modules) when the MCP child's
+allowlisted environment does not carry the PSModulePath the analysis cache was built for.
+
+Why the Oct 12 attempt (`e22523d`, merged via `d4584e3`, reverted by `a99bee0`) failed:
+
+- It added `CREATE_NO_WINDOW`, `-ExecutionPolicy Bypass` and a 30 s timeout, and pinned
+  `PSModulePath` to the inbox module directory.
+- On a cold runner the inbox-only path is still slow (measured above). The HUD request
+  in `test_mcp` real_child_chat then exceeded its 10 s client timeout (run 38265577136:
+  `TimeoutError`, 162 s test time).
+- It was reverted because it did not fix the problem. Nothing else broke.
+
+This fix:
+
+- `protect-quarantine.ps1` now uses .NET only: `[IO.DirectoryInfo]` replaces `Get-Item`,
+  and a missing target throws. No cmdlet is resolved, so no module discovery runs
+  whatever the environment.
+- The ACL semantics are unchanged:
+  - reparse points are rejected;
+  - inheritance is removed (`SetAccessRuleProtection($true,$false)`);
+  - every rule is removed;
+  - FullControl CI/OI Allow is granted to the current user and SYSTEM only;
+  - a readback is verified.
+- `runtime.dlp` also passes `stdin=subprocess.DEVNULL`, so PowerShell can never read the
+  MCP child's JSON-RPC stdin. Flags, timeout and environment are otherwise unchanged:
+  - no `CREATE_NO_WINDOW`;
+  - no `-ExecutionPolicy` change;
+  - no PSModulePath forwarding.
+
+  PSModulePath is deliberately not forwarded: a pwsh 7 parent would prepend 7.x module
+  paths, which broke 5.1 before (see the `Get-Acl` note above).
+- Tests in `tests/test_quarantine_acl.py`:
+  - the exact command and subprocess arguments;
+  - the script contains no cmdlets;
+  - on Windows only: running the helper with the MCP child's own environment, the
+    production 10 s timeout and an advapi32 ACL readback asserts that the DACL is
+    protected, holds only the user SID and S-1-5-18 with FullControl OI|CI and no
+    inherited ACEs, and is the same after a second run;
+  - a missing target and a junction both fail closed.
