@@ -2,6 +2,7 @@
 import asyncio
 import os
 import sys
+import time
 from mcp import Client
 from mcp.client.stdio import StdioServerParameters
 from runtime.agents import ROOT
@@ -21,7 +22,11 @@ def child_parameters():
 async def call_async(tool, arguments=None, on_chunk=None):
     if tool not in ('chat_local','list_personas','local_status'):
         raise ValueError('MCP tool is not allowed')
-    async with Client(child_parameters(),read_timeout_seconds=930) as client:
+    started=time.perf_counter();parameters=child_parameters()
+    preflight_ms=round((time.perf_counter()-started)*1000,3)
+    connect_started=time.perf_counter()
+    async with Client(parameters,read_timeout_seconds=930) as client:
+        connect_ms=round((time.perf_counter()-connect_started)*1000,3)
         chunks=[]
         async def progress(_progress,_total,message):
             if not isinstance(message,str) or len(message.encode())>65536 or sum(len(s.encode()) for s in chunks)+len(message.encode())>65536:
@@ -33,7 +38,10 @@ async def call_async(tool, arguments=None, on_chunk=None):
             raise OSError('Local MCP operation failed')
         if on_chunk and result.structured_content.get('status')==200 and ''.join(chunks)!=result.structured_content.get('content'):
             raise OSError('Incomplete local MCP stream')
-        return result.structured_content
+        value=result.structured_content
+        if tool=='chat_local' and value.get('status')==200:
+            value['timing_ms']={**value.get('timing_ms',{}),'preflight':preflight_ms,'mcp_connect':connect_ms,'mcp_total':round((time.perf_counter()-started)*1000,3)}
+        return value
 
 def call(tool, arguments=None):
     try:
