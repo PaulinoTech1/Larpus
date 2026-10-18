@@ -566,3 +566,145 @@ writer against the new agent at cutover. Retain pinned rollback, while stopping
 old raw-access agents after activation. Rollback to an older release restores
 its weaker boundary. This limits API reachability, not prompt semantics or DLP
 correctness. See INFERENCE_BROKER.md for limits and verification evidence.
+
+## Study-notes stuck windows, transport diagnostics and overlap dedupe (2026-10-15)
+
+Owner-approved fixes to `scripts/study-notes.py` (continuous loop, retries,
+inference budget and 6000-token ceiling unchanged):
+
+- Truncation: counts of `done_reason=length` per window are persisted in a new
+  `truncations` table in `notes.build.sqlite`. After 3 truncations a window is
+  split near the middle (paragraph, then sentence, then whitespace boundary)
+  into resumable units `<key>:h1`/`<key>:h2`. A half that also truncates 3 times
+  is marked done with 0 notes and reason `skipped: persistent truncation`
+  (logged). When both halves are done the parent key is marked done, so
+  `status.windows_pending` (the auto-publish gate) counts it as complete; status
+  also reports `units_skipped`. Notes from halves are stored under the parent key.
+- Diagnostics: on LARP-NOTES-TRANSPORT / worker errors, `scripts/notes_diagnostics.py`
+  writes a private JSON file under `data/diagnostics/` (exception type/message and
+  cause type, worker stderr tail, `podman logs --tail 200 larpus-model`, notes and
+  model container State.Status/ExitCode/OOMKilled/RestartCount, nvidia-smi
+  memory/utilisation). Secret patterns are redacted; files are capped at 64 KB and
+  rotated to the newest 50. Prompts, passages and notes are never captured. The
+  main log gets a `diagnostic_file` pointer line.
+- Overlap dedupe: chunk overlap (longest suffix/prefix match, 16-400 chars) is
+  removed from window text sent to the model. Window boundaries and keys are still
+  computed from the raw concatenation, so no completed window is reprocessed.
+  Existing stored note contexts were not rewritten (cosmetic; avoided risk to the
+  live build DB); new notes get deduplicated contexts.
+
+## Owner-approved one-time exception: hosted Codex comparison (2026-10-15)
+
+Owner-approved one-time exception (2026-10-15): up to 833 library passages plus
+provenance were sent to OpenAI-hosted Codex (gpt-6.1-sol, tools/web/MCP disabled)
+solely to compare against LARPUS-generated study notes. Not to be repeated without
+a new owner decision; no runtime cloud path exists.
+
+The owner-side runner (`data/codex-full-notes.py`, private) was stopped by its
+`STOP` marker at 21:40 Eastern on October 15 with 652 complete, 181 manually
+approved, 3 failed and 2 bibliography-only windows out of 13,737. Private logs show
+twelve worker processes launched at 21:28 Eastern, more than the three-worker
+extension described in the comparison doc. Results never write the Qwen notes
+database or approved index. The runner pins the pre-2026-10-15 `study-notes.py`
+hash and refuses to resume against the current validator. See
+[Codex notes comparison](CODEX_NOTES_COMPARISON.md).
+
+## Host-side owner-run fetches (2026-10-16)
+
+These were deliberate owner-run downloads on the Windows host, not new runtime
+network paths. The deployed station keeps no internet, cloud fallback or telemetry.
+
+- Model weights: Larpus 3.8 27B Q4 (`unsloth/Qwen3.8-27B-GGUF`, `UD-Q4_K_M`,
+  revision `4ca720788d1e01f1bff70c033e0d0028fd02e502`) downloaded from Hugging
+  Face on October 16, 23:08-23:23 Eastern. Size (16,464,440,224 bytes) and SHA-256
+  `322e194f…3482` were verified before use. Weights stay in ignored `data/`.
+- Web sources: eight IT / Cyber coach sources plus AI product pricing/model pages
+  were fetched with `scripts/prepare-knowledge.py` (allowlisted hosts, screened
+  and checksum-pinned). See [Cyber AI week](CYBER_AI_WEEK_2026_10_12.md).
+
+## Optional study-note screening exclusion (2026-10-18)
+
+Recorded from [evidence rejection fix](EVIDENCE_REJECTION_FIX.md) (2026-10-16). A derived
+study note that fails a *completed* screen is excluded with diagnostic
+`LARP-EVIDENCE-NOTE-EXCLUDED` instead of failing the whole retrieval. Scanner
+unavailability or incomplete scans still fail closed. Originals use exact
+owner-reviewed reference hashes (`config/reference-reviews.json`, see
+[reference review](REFERENCE_HUMAN_REVIEW.md)). Retrieved items carry
+compact offline freshness signals ([source freshness](SOURCE_FRESHNESS.md)).
+These signals annotate; they do not certify accuracy.
+
+## Voice: empty synthesis chunks and replay admission (2026-10-18)
+
+Recorded from [empty chunk fix](VOICE_EMPTY_CHUNK_FIX.md) and
+[replay admission fix](REPLAY_ADMISSION_FIX.md) (2026-10-16). Punctuation-only
+cleaned fragments yield a valid silent chunk rather than a worker error. HUD
+synthesis is serialized, so replay waits for unfinished synthesis and superseded
+replays never reach the worker.
+
+## Chat latency and CPU tuning (2026-10-18)
+
+Recorded from [chat latency](CHAT_LATENCY.md) (2026-10-16), [CPU tuning](CPU_TUNING.md)
+(2026-10-17) and [CPU follow-up](CPU_TUNING_FOLLOWUP_2026_10_18.md). Successful
+replies carry an additive numeric `timing_ms`, with no prompt or evidence text. Station
+OCI inspection is parallelised. The owner approved a scoped WSL change to
+`processors=20`, keeping 48 GB memory. That restart was an interruption of about
+140 s, not zero downtime. Unmeasured latency gains are not claimed.
+
+## Station-wide local model selection: Larpus 3.5 / 3.8 (2026-10-18)
+
+Recorded from [model switching](MODEL_SWITCHING.md) (2026-10-17). A fixed allowlist
+of two pinned identities (`config/model-selection.json`) can be switched station-wide
+from the HUD, behind auth and Origin checks. The broker reads a read-only selection
+mount validated by isolation preflight. Switching blocks new inference and restores
+the prior model on failure. No HUD/MCP download or arbitrary tag is accepted.
+Derived notes now record their producing model (`note_producers`). Activation
+refuses a stale prepared selection.
+
+## Reliability follow-ups (2026-10-18)
+
+Recorded from [project review](PROJECT_REVIEW_2026_10_17.md) and
+[reliability](RELIABILITY_2026_10_17.md) (2026-10-17). On 401, the HUD keeps the
+conversation and shows in-page sign-in, and never resends automatically. UI suites
+are listed once in `scripts/ui_checks.py` for CI and release preparation. The
+study-notes worker transport moved to `scripts/notes_transport.py`, unchanged in
+behaviour, and still writes `data/diagnostics/` files.
+
+## Performance suite and baseline (2026-10-18)
+
+Recorded from [performance suite](PERFORMANCE_SUITE.md) and
+[baseline](PERFORMANCE_BASELINE_2026_10_17.md). The fixed local API workload
+(`evals/performance.json`) gave a first baseline: 24/24 requests, median first
+checked text 6.726 s, median completion 9.064 s on Larpus 3.8. This is a
+baseline, not a claimed improvement.
+
+## Assembly retrieval scoring (2026-10-18)
+
+Recorded from [native retrieval spike](NATIVE_RETRIEVAL_SPIKE_2026_10_17.md),
+[native assembly experiment](NATIVE_ASSEMBLY_EXPERIMENT_2026_10_18.md) and
+[assembly pipeline](ASSEMBLY_PIPELINE.md). An optional Linux x86-64 AVX2/FMA/F16C scorer
+(`runtime/native/score_half.S`) is the startup default, with a HUD switch and
+automatic fallback to NumPy. The measured gain is about 1 ms of scoring time;
+no overall chat-latency gain is claimed. The compiled `runtime/native/liblarpus_score.so`
+is **not committed** (gitignored). Build it on the owner side with
+`python scripts/build-assembly.py`, which uses the pinned Linux Zig 0.17.0:
+`zig cc -target x86_64-linux-gnu -shared -nostdlib -O3
+-Wl,--build-id=none,-z,now,-z,relro,-z,noexecstack score_half.S -o liblarpus_score.so`.
+`runtime/native/manifest.json` pins the artifact's SHA-256/size, and a mismatch or
+missing artifact falls back to NumPy. The owner PC must keep its local copy, because
+releases stage `runtime/` from the checkout.
+
+## Conversation progress and persona tone (2026-10-18)
+
+Recorded from [conversation progress](CONVERSATION_PROGRESS_2026_10_18.md) and
+[precision personas](PRECISION_PERSONAS.md). Shared guidance puts the latest
+update first, stops recycling earlier replies or advice that was ruled out, and drops
+jokes and psychological labels around feelings. All twelve personas make humour
+optional. Approved chat templates get `repeat_last_n=4096` and `repeat_penalty=1.1`
+in the broker. Mathematics/quantum personas state assumptions and verification status.
+
+## Behaviour tuning and teacher-student pilot: planning only (2026-10-18)
+
+[Behavior tuning plan](BEHAVIOR_TUNING_PLAN.md) and
+[teacher-student pilot](TEACHER_STUDENT_PILOT.md) are proposals. No training has
+started. Any further exchange with a hosted teacher model needs its own owner
+decision, like the 2026-10-15 exception above.
