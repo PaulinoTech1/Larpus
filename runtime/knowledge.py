@@ -7,8 +7,9 @@ import time
 from contextlib import closing
 from pathlib import Path
 from runtime.skills import ROOT
+from runtime.reference_review import inspect_reference
 from runtime.provenance import evidence as source_provenance,chronology,read as provenance_entries
-from runtime.text_filter import inspect_message
+from runtime.text_filter import inspect_message, screen_optional_evidence
 from runtime.context import INPUT_BOUND,CONTEXT_PREFIX,ContextPressure,upper_bound
 
 DIRECTORY=ROOT/'knowledge'
@@ -32,7 +33,8 @@ EVIDENCE_PROMPT=(
     'its source IDs in brackets [source-id]; when an item has a cite field, also credit its authors in writing, '
     'for example (Blackwell, 1956) [source-id], never inventing names; distinguish documented facts from inference, and state gaps '
     'or conflicting versions. For document authorship use provenance.document_authors, not citations. '
-    'Dates alone do not refute claims; apply scoped corrections and preserve historical versions. Items whose tier says derived study note are LARPUS\'s own pre-written notes: '
+    'Disclose freshness warnings; apply scoped corrections and preserve historical versions. '
+    'Items whose tier says derived study note are LARPUS\'s own pre-written notes: '
     'trust them only where original_passage supports them, cite the item source ID, never cite the note itself as a source. '
     'Every persona can use the entire approved library; '
     'interpret relevant evidence through your role without inventing expertise '
@@ -129,8 +131,9 @@ def study_notes(words,budget,limit=2,question=None):
         except Exception:pass
     for identifier,title,url,locator,question,text,context in rows:
         if any(n['id']==identifier and n['note']==text for n in out):continue
-        for part in (question,text,context):
-            if part:inspect_message(part)
+        checks=[(inspect_message,part) for part in (question,text)]
+        checks.append((lambda value:inspect_reference(value,identifier),context))
+        if not screen_optional_evidence(checks):continue
         item={'id':identifier,'title':title,'url':url,'locator':locator,'tier':NOTE_TIER,'note':text,'original_passage':context}
         item['provenance']=source_provenance(DIRECTORY,identifier,context)
         if item['provenance']['section']=='bibliography':continue
@@ -278,7 +281,7 @@ def _retrieve(persona,question,budget=3600):
     found=[];used=0;per_source={}
     for identifier,title,url,snapshot,locator,text in rows:
         if per_source.get(identifier,0)>=(3 if identifier.startswith('github-') and identifier!='github-catalog' else 1):continue
-        inspect_message(text)  # Recheck selected evidence; fail closed on drift.
+        inspect_reference(text,identifier)  # Exact reviewed references only.
         item={'id':identifier,'title':title,'url':url,'snapshot':snapshot,'locator':locator,'text':text}
         item['provenance']=source_provenance(DIRECTORY,identifier,text)
         if item['provenance']['section']=='bibliography' and not re.search(r'\bbibliograph|\breferences|\bcited',question,re.I):continue
@@ -293,7 +296,7 @@ def _retrieve(persona,question,budget=3600):
                 after=[(int(loc.rsplit(' offset ',1)[1]),part) for loc,part in neighbors if loc.rsplit(' offset ',1)[1].isdigit() and int(offset)<int(loc.rsplit(' offset ',1)[1])<=int(offset)+1000]
                 if after:
                     position,continuation=min(after)
-                    inspect_message(continuation)
+                    inspect_reference(continuation,identifier)
                     overlap=next((n for n in range(min(200,len(text),len(continuation)),0,-1) if text.endswith(continuation[:n])),0)
                     expanded=(text+' '+continuation[overlap:])[:1200]
                     expanded=expanded.rsplit(' ',1)[0]

@@ -1,5 +1,9 @@
 # Local Stegdetect detection and gap tracking
 
+The [Chicone review](CHICONE_SCREENING_REVIEW.md) documents an owner-adjudicated
+mathematics false-positive incident. Its selected held subset and mixed gate reasons
+are kept separate from the public synthetic evaluation and its rate denominators.
+
 Run from any PowerShell folder:
 
 ```powershell

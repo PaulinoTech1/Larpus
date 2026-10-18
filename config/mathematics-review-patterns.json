@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "domain": "mathematics and quantum reference review",
+  "mode": "exact-source-and-text-hash-required",
+  "symbols_are_not_global_allow_rules": true,
+  "reviewed_examples": [
+    {
+      "source_id": "salsa-partial-differential-equations",
+      "approved_on": "2026-10-14",
+      "reviewer": "owner",
+      "symbols": [
+        {
+          "codepoints": "U+03B1",
+          "names": [
+            "GREEK SMALL LETTER ALPHA"
+          ],
+          "finding_occurrences": 94
+        },
+        {
+          "codepoints": "U+03B5",
+          "names": [
+            "GREEK SMALL LETTER EPSILON"
+          ],
+          "finding_occurrences": 86
+        },
+        {
+          "codepoints": "U+03BA",
+          "names": [
+            "GREEK SMALL LETTER KAPPA"
+          ],
+          "finding_occurrences": 6
+        },
+        {
+          "codepoints": "U+03BD",
+          "names": [
+            "GREEK SMALL LETTER NU"
+          ],
+          "finding_occurrences": 7
+        },
+        {
+          "codepoints": "U+03C1",
+          "names": [
+            "GREEK SMALL LETTER RHO"
+          ],
+          "finding_occurrences": 212
+        },
+        {
+          "codepoints": "U+03C4",
+          "names": [
+            "GREEK SMALL LETTER TAU"
+          ],
+          "finding_occurrences": 108
+        },
+        {
+          "codepoints": "U+03C7",
+          "names": [
+            "GREEK SMALL LETTER CHI"
+          ],
+          "finding_occurrences": 14
+        }
+      ],
+      "categories": {
+        "MIXED_SCRIPT": 527
+      }
+    }
+  ]
+}

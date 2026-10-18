@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 from datetime import date
+from runtime.freshness import assess
 
 REFERENCE_HEADING=re.compile(r'(?im:(?:^|\n)\s*(?:references|bibliography|works cited)\s*(?:\n|$))|\b(?:REFERENCES|Bibliography|Works Cited)\b|\bReferences\b(?=\s+(?:\[?\d{1,3}[.\]]|[A-Z][a-z]+,))')
 CITATIONS=re.compile(r'\[\d{1,3}\]|\bet al\.|\bdoi:|arXiv:\d|\bpp\.\s*\d')
@@ -46,6 +47,8 @@ def evidence(directory,identifier,text):
     if item:
         result.update({k:v for k,v in item.items() if k not in ('title','id') and v not in (None,[],{})})
     else:result['document_authors_status']='unknown'
+    # Keep retrieval metadata compact so freshness does not crowd out passages.
+    result['freshness']={'signals':assess(item or {'id':identifier})['signals']}
     return result
 
 def validate_relations(relations,entries):
