@@ -16,12 +16,17 @@ def child():
     full=dict(os.environ)
     mini={k:full[k] for k in ALLOW if k in full}
     print(json.dumps({'missing_vs_full':sorted(set(full)-set(mini))}),file=sys.stderr,flush=True)
-    run('full_env',full);run('full_env_again',full)
-    run('allowlist',mini);run('allowlist_again',mini)
-    for key in ('LOCALAPPDATA','APPDATA','PSModulePath','ProgramFiles','PROGRAMDATA','PATHEXT','COMSPEC','SystemDrive','USERNAME','COMPUTERNAME','PROCESSOR_ARCHITECTURE'):
-        if key in full or key.upper() in {k.upper() for k in full}:
-            v=next(full[k] for k in full if k.upper()==key.upper());run('allowlist+'+key,{**mini,key:v})
-    run('allowlist+devnull',mini,stdin=subprocess.DEVNULL)
+    print(json.dumps({'runner_PSModulePath':full.get('PSMODULEPATH')}),file=sys.stderr,flush=True)
+    inbox=str(Path(full['SYSTEMROOT'])/'system32/WindowsPowerShell/v1.0/Modules')
+    pf=str(Path(full['SYSTEMROOT']).drive+'\\')+'Program Files\\WindowsPowerShell\\Modules'
+    run('allowlist',mini)
+    run('allowlist+inbox_only',{**mini,'PSModulePath':inbox})
+    run('allowlist+inbox_only_again',{**mini,'PSModulePath':inbox})
+    run('allowlist+inbox_only+e22523d_flags',{**mini,'PSModulePath':inbox},creationflags=subprocess.CREATE_NO_WINDOW)
+    run('allowlist+programfiles+inbox',{**mini,'PSModulePath':pf+os.pathsep+inbox})
+    run('allowlist+empty_PSModulePath',{**mini,'PSModulePath':''})
+    run('allowlist+runner_PSModulePath',{**mini,'PSModulePath':full.get('PSMODULEPATH','')})
+
 if __name__=='__main__':
     if sys.argv[1:]==['--child']:child();raise SystemExit
     p=subprocess.Popen([sys.executable,__file__,'--child'],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
