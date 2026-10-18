@@ -3,11 +3,24 @@ import wave
 import unittest
 from unittest.mock import patch
 from runtime.voice_worker import validate_wav, SpeechOnlyModel
+from runtime import voice_worker
 from types import SimpleNamespace
 from unittest.mock import Mock
 from runtime import gateway
 
 class VoiceTests(unittest.TestCase):
+    def test_empty_synthesis_is_playable_and_does_not_break_next_sentence(self):
+        chunk=SimpleNamespace(sample_rate=22050,sample_width=2,sample_channels=1,audio_int16_bytes=b'\1\0'*2205)
+        voice=SimpleNamespace(config=SimpleNamespace(sample_rate=22050),synthesize=Mock(side_effect=[iter([]),iter([chunk])]))
+        with patch.object(voice_worker,'speech_models',return_value=voice),patch.dict('sys.modules',{'piper':SimpleNamespace(SynthesisConfig=lambda **kwargs:None)}):
+            for text,empty in (('...',True),('The next sentence continues.',False)):
+                result=voice_worker.run({'action':'synthesize','text':text})
+                import base64
+                with wave.open(io.BytesIO(base64.b64decode(result['audio'])),'rb') as audio:
+                    self.assertEqual((audio.getnchannels(),audio.getsampwidth(),audio.getframerate()),(1,2,22050))
+                    self.assertGreater(audio.getnframes(),0)
+                    self.assertEqual(result.get('no_speech',False),empty)
+
     def audio(self,rate=16000,frames=1600):
         out=io.BytesIO()
         with wave.open(out,'wb') as wav:

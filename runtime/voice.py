@@ -36,10 +36,11 @@ def preflight():
         raise ValueError('Voice host devices prohibited')
 
 def call(request):
-    if not LOCK.acquire(blocking=False):
+    start=time.monotonic()
+    if not LOCK.acquire(timeout=30):
         raise failure('LARP-VOICE-UNAVAILABLE',OSError('Voice worker busy'),'Voice worker busy')
     try:
-        start=time.monotonic();preflight();profile=json.loads(PROFILE.read_text(encoding='utf-8-sig'))
+        preflight();profile=json.loads(PROFILE.read_text(encoding='utf-8-sig'))
         arguments=['podman','exec','--interactive',profile.get('container','larpus-voice'),'python','/app/voice_worker.py']
         if profile.get('protocol')=='unix-persistent':arguments.append('--client')
         result=subprocess.run(wsl_command(*arguments),input=json.dumps(request).encode(),capture_output=True,timeout=120,check=True)
