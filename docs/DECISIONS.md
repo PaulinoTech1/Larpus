@@ -718,3 +718,24 @@ deliberately refuses to build a command when `os.name!='nt'`. The test now uses
 (owner PC and the `windows-2025` runner), where it already passed. It needs no `wsl.exe`
 because `subprocess.run` is mocked, so there is no `which('wsl')` check. Other tests in
 the file keep running on all platforms. The production guard is unchanged.
+
+## Windows CI: quarantine ACL helper pre-applied, with a bounded CI-only timeout (2026-10-18)
+
+On `windows-2025` runners, `test_mcp` real_child_chat returned 503. The DLP gate's
+`protect-quarantine.ps1` call timed out (`TimeoutExpired`, 10 s) inside the
+console-less MCP child, and the gate correctly withheld the output. The owner approved
+two CI-only mitigations:
+
+- The Windows job runs the same helper twice on a stable `$RUNNER_TEMP\larpus-quarantine`
+  before the tests. This confirms the helper is idempotent and warms Windows
+  PowerShell/.NET. `runtime.dlp` uses that directory (`LARPUS_CI_QUARANTINE_DIR`, which
+  must be absolute) only when `GITHUB_ACTIONS=true`. The helper still runs on every
+  gate call; nothing is skipped.
+- `LARPUS_CI_QUARANTINE_TIMEOUT` can raise the helper timeout only on GitHub Actions,
+  and only to between 10 and 60 seconds. Values outside that range or malformed raise,
+  so the gate returns 503 (fail closed). Without `GITHUB_ACTIONS=true` both variables
+  are ignored. Production keeps `data/quarantine` and the 10 s default.
+
+The MCP child's environment allowlist forwards only these three named variables when
+they are set. Tests cover the unchanged default, the cap, invalid values, the fail-closed
+gate and the narrow forwarding (`tests/test_dlp_ci_overrides.py`).
