@@ -1,10 +1,15 @@
 function failureText(data){const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (data.error||'Gateway request failed')+id;}
-function showModel(tag){$('model').textContent=tag==='qwen3.5:27b-q4_K_M'?'LARP 3.5 27B Limitless LARP':tag;$('model').title=tag;}
+function showModel(tag){tag=window.larpusSelectedModel||tag;$('model').textContent=({'qwen3.5:27b-q4_K_M':'Larpus 3.5 27B Q4','qwen3.8:27b-q4_K_M':'Larpus 3.8 27B Q4','larpus3.8:27b-q4':'Larpus 3.8 27B Q4'})[tag]||tag;$('model').title=tag;}
 const $ = id => document.getElementById(id);
 let history = [], busy = false, personas = [], skills = [];
 let conversation=window.LarpusConversation?new window.LarpusConversation():null,lastUsage=null;
-let teaching=null;
+let teaching=null,modelSwitch=null,pipelineSwitch=null;
 let requestController=null,localMemory=null,chatId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
+const session=window.bindLarpusSession?window.bindLarpusSession({element:$,fetch:(...args)=>fetch(...args),
+ onExpired:()=>{window.larpusVoice?.stopPlayback();setBusy(busy);$('notice').textContent='Session expired. Sign in above; your conversation and draft stay here.';},
+ onRestored:()=>{setBusy(busy);$('notice').textContent='Signed in. Review your draft and submit when ready.';if(!personas.length)boot();else{refreshConnection();refreshHealth();modelSwitch?.refresh();}}
+}):null;
+function sessionResponse(response){if(session)return session.check(response);if(response.status===401)throw Error('Session expired. Your conversation is retained. Sign in from another tab, then retry.');return response;}
 function pipeline(value){$('pipeline-status').textContent=value;state(value);}
 function saveChat(){if(!localMemory)return;try{localMemory.save({id:chatId,title:(history[0]?.content||'Conversation').slice(0,80),persona:$('persona').value,skill:$('skill').value,messages:history,...(conversation?{record:conversation.record,through:conversation.through}:{}),updated:new Date().toISOString()});memoryMenu();}catch(e){$('memory-status').textContent=e.message;}}
 function stopGeneration(){requestController?.abort();window.larpusVoice?.stopPlayback();}
@@ -30,13 +35,13 @@ function contextUsage(usage) {
   $('context-detail').textContent=`${prompt.toLocaleString()} input + ${output.toLocaleString()} output. Up to 1,024 output tokens requested. ${Number.isInteger(omitted)&&omitted>0?`${omitted} older messages omitted from model input. `:''}Full chat stays visible; older turns may leave model context.`;
 }
 function reset() { window.larpusVoice?.stopPlayback(); saveChat(); chatId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9); history = [];conversation=window.LarpusConversation?new window.LarpusConversation():null;compressionDisplay(); contextUsage(null); $('context-detail').textContent='Measured after a reply; includes instructions and selected references.'; $('messages').replaceChildren(); $('notice').textContent = 'New chat. Previously saved conversations remain in LOCAL CHATS.'; }
-function setBusy(value) { busy = value; teaching?.busy(value); for (const id of ['send','persona','skill','clear']) $(id).disabled = value; $('stop-generation').disabled=!value;for(const id of ['load-chat','delete-chat','delete-memory','save-chats','compress-chat','export-handoff','import-handoff'])$(id).disabled=value;pipeline(value?'WAITING / RETRIEVING / PREPARING MODEL':window.larpusVoice?.playing?'SPEAKING':'STANDBY'); }
+function setBusy(value) { busy = value;modelSwitch?.controls();pipelineSwitch?.controls(); teaching?.busy(value); for (const id of ['send','persona','skill','clear']) $(id).disabled = value; $('stop-generation').disabled=!value;for(const id of ['load-chat','delete-chat','delete-memory','save-chats','compress-chat','export-handoff','import-handoff'])$(id).disabled=value;$('send').disabled=value||!!window.larpusModelSwitching||!!session?.locked;$('compress-chat').disabled=value||!!window.larpusModelSwitching||!!session?.locked;pipeline(value?'WAITING / RETRIEVING / PREPARING MODEL':window.larpusVoice?.playing?'SPEAKING':'STANDBY'); }
 async function api(path, body) {
   const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),...(requestController?{signal:requestController.signal}:{})} : {});
-  if(r.status===401){location.replace('/login');throw Error('Session expired');}
+  sessionResponse(r);
   const data = await r.json(); if (!r.ok) throw Error(failureText(data)); return data;
 }
-$('persona').addEventListener('change', () => {const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; $('model').textContent = p.model; $('skill').value='';$('skill-search').value='';refreshSkills(p);teaching?.refresh();$('notice').textContent='Persona changed. Chat retained; the next reply uses the new role.';});
+$('persona').addEventListener('change', () => {const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; showModel(p.model); $('skill').value='';$('skill-search').value='';refreshSkills(p);teaching?.refresh();$('notice').textContent='Persona changed. Chat retained; the next reply uses the new role.';});
 function refreshSkills(persona) {
   if(!persona)return;
   const selected=$('skill').value,query=$('skill-search').value.toLowerCase().trim();
@@ -54,7 +59,7 @@ logout.onclick=async()=>{try{await api('/api/logout',{});location.replace('/logi
 document.querySelectorAll('.suggestion').forEach(b => b.onclick = () => {$('prompt').value = b.dataset.prompt; $('prompt').focus();});
 $('prompt').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {e.preventDefault(); $('chat').requestSubmit();} });
 $('chat').onsubmit = async e => {
-  e.preventDefault(); const content = $('prompt').value.trim(); if (busy || !content || !personas.length) return;
+  e.preventDefault(); const content = $('prompt').value.trim(); if (busy || session?.locked || window.larpusModelSwitching || !content || !personas.length) return;
   if (history.length >= (conversation?400:38)) { $('notice').textContent = 'Transcript limit reached. Export a handoff, then start a new conversation from it.'; return; }
   $('messages').querySelector('.empty')?.remove(); message('user', content); $('prompt').value = ''; $('notice').textContent = ''; setBusy(true);
   const next = [...history,{role:'user',content}];
@@ -68,7 +73,7 @@ $('chat').onsubmit = async e => {
     if(conversation?.needs(history,question,lastUsage))await compressConversation();
     const outgoing=conversation?conversation.wire(history,question):[...next.slice(0,-1),{role:'user',content:question}];
     const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},...(requestController?{signal:requestController.signal}:{}),body:JSON.stringify({persona:$('persona').value,messages:outgoing,skill:$('skill').value||null})});
-    if(response.status===401){location.replace('/login');throw Error('Session expired');}
+    sessionResponse(response);
     if(!response.ok)throw Error(failureText(await response.json()));
     pipeline('GENERATING / WAITING FOR CHECKED TEXT');
     const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
@@ -188,12 +193,20 @@ function bindMemory(){
   memoryMenu();
 }
 
+async function refreshConnection(){
+  const p=personas.find(p=>p.id===$('persona').value)||personas[0];
+  try{
+    const h = await api('/api/health'); $('connection').textContent = h.ollama === 'online' ? `OLLAMA ONLINE / ${h.model_processors?.[h.active_model||p.model] || 'PLACEMENT UNKNOWN'}` : 'OLLAMA OFFLINE';
+    if(h.ollama === 'offline') $('notice').textContent='Start local Ollama to open the inference channel.';
+    else if(!h.models.includes(h.active_model||p.model)) $('notice').textContent=`Install ${p.model} in local Ollama before chatting.`;
+  }catch(e){$('connection').textContent='GATEWAY UNAVAILABLE';$('notice').textContent=e.message;}
+}
 async function boot() {
   try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas.find(p=>p.id==='home-assistant')||personas[0]; $('persona').value=p.id; $('description').textContent=p.description; showModel(p.model);refreshSkills(p);bindMemory();bindHandoff();
     if(window.bindLarpusTeaching)teaching=window.bindLarpusTeaching({scope:()=>window.LarpusTeaching.scope($('persona').value,$('skill').value),isBusy:()=>busy,prompt:$('prompt')});
-    const h = await api('/api/health'); $('connection').textContent = h.ollama === 'online' ? `OLLAMA ONLINE / ${h.model_processors?.[p.model] || 'PLACEMENT UNKNOWN'}` : 'OLLAMA OFFLINE';
-    if(h.ollama === 'offline') $('notice').textContent='Start local Ollama to open the inference channel.';
-    else if(!h.models.includes(p.model)) $('notice').textContent=`Install ${p.model} in local Ollama before chatting.`;
+    if(window.bindLarpusModelSwitch){modelSwitch=window.bindLarpusModelSwitch({api,element:$,isBusy:()=>busy||!!session?.locked,onState:s=>{window.larpusModelSwitching=s.phase!=='ready';window.larpusSelectedModel=s.models?.find(m=>m.id===s.active_id)?.tag;showModel(p.model);$('send').disabled=busy||window.larpusModelSwitching||!!session?.locked;$('compress-chat').disabled=busy||window.larpusModelSwitching||!!session?.locked;}});await modelSwitch.refresh();setInterval(()=>modelSwitch.refresh(),2500);}
+    if(window.bindLarpusPipeline){pipelineSwitch=window.bindLarpusPipeline({api,element:$,isBusy:()=>busy||!!session?.locked||!!window.larpusModelSwitching});await pipelineSwitch.refresh();setInterval(()=>pipelineSwitch.refresh(),15000);}
+    await refreshConnection();
   } catch(e) {$('connection').textContent='○ GATEWAY UNAVAILABLE'; $('notice').textContent=e.message;}
   if(window.katex) {
     katex.render(String.raw`\iiint_T 1\,dV = 2\pi^2Rr^2 \approx 25.266`, $('equation'), {throwOnError:false});

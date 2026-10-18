@@ -9,6 +9,30 @@ spec=importlib.util.spec_from_file_location('releases',Path(__file__).resolve().
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
+    def test_pipeline_preparation_smoke_switches_and_restores_before_scan(self):
+        response={'initial':{'active_id':'assembly'},'numpy':{'active_id':'numpy'},'assembly':{'active_id':'assembly'},'restored':{'active_id':'assembly'}}
+        with patch.object(release,'podman',return_value=json.dumps(response)) as command:
+            release.verify_pipeline({'agent_name':'larpus-agent-'+'a'*32})
+        self.assertEqual(command.call_args.args[:3],('exec','larpus-agent-'+'a'*32,'python'))
+        response['assembly']['active_id']='numpy'
+        with patch.object(release,'podman',return_value=json.dumps(response)):
+            with self.assertRaises(ValueError):release.verify_pipeline({'agent_name':'larpus-agent-'+'a'*32})
+
+    def test_scoped_staging_reads_source_and_keeps_owner_store_and_data(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)/'owner';source=Path(directory)/'source';store=root/'data/releases'
+            for path in (root/'runtime',root/'vendor',store,source/'runtime'):path.mkdir(parents=True,exist_ok=True)
+            (root/'runtime/one.py').write_text('unrelated owner edit')
+            (source/'runtime/one.py').write_text('scoped candidate')
+            junction=Mock()
+            with patch.object(release,'ROOT',root),patch.object(release,'STORE',store),patch.object(release,'DIRECTORIES',('runtime',)),patch.object(release,'FILES',()),patch.object(release,'run',return_value='a'*64),patch.dict('sys.modules',{'_winapi':SimpleNamespace(CreateJunction=junction)}):
+                identifier=release.stage(source)
+            self.assertEqual((store/identifier/'runtime/one.py').read_text(),'scoped candidate')
+            self.assertEqual((root/'runtime/one.py').read_text(),'unrelated owner edit')
+            self.assertEqual(junction.call_args_list[0].args,(str((root/'data').resolve()),str(store/identifier/'data')))
+
     def test_readiness_uses_functional_station_health(self):
         import io
         names=('password','local_skills','approved_knowledge','input_filter','output_dlp','mcp_surface','models','model_gpu','egress_enforcement','voice')
@@ -58,10 +82,11 @@ class ReleaseTests(unittest.TestCase):
         with patch.object(release,'process',return_value=None):self.assertFalse(release.running(state))
 
     def test_failed_candidate_restores_old_release_and_pointer(self):
-        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'validate'),patch.object(release,'run'),patch.object(release,'stop') as stop,patch.object(release,'running',return_value=False),patch.object(release,'launch') as launch,patch.object(release,'ready',side_effect=[RuntimeError('candidate failed'),None]):
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'validate'),patch.object(release,'run'),patch.object(release,'stop') as stop,patch.object(release,'running',return_value=False),patch.object(release,'launch') as launch,patch.object(release,'ready',side_effect=[RuntimeError('candidate failed'),None]),patch.object(release,'ensure_execution'):
             old={'id':'a'*32,'pid':1,'process':{},'host':'192.168.1.2','subnet':'192.168.1.0/24','port':8080}
             new={**old,'id':'b'*32,'pid':2};restored={**old,'pid':3}
             release.write(Path(directory)/'active.json',old);launch.side_effect=[new,restored]
+            for state in (old,new):release.write(Path(directory)/state['id']/'deployment.json',{})
             with self.assertRaises(RuntimeError):release.cutover(new['id'])
             self.assertEqual(release.read(Path(directory)/'active.json')['pid'],3)
             self.assertEqual(stop.call_args_list[0].args[0],old)

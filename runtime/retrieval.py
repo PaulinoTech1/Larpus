@@ -142,12 +142,14 @@ class Engine:
         self.batch=int(settings['rerank_batch']);self.deadline=float(settings['rerank_deadline_seconds'])
         self.minimum=float(settings['semantic_min_rerank_score'])
         self.vectors,self.rowids=load_index(directory,self.config)
+        from runtime.scoring_pipeline import Pipeline
+        self.pipeline=Pipeline(self.vectors)
         self.embedder=Embedder(self.config,threads,models)
         self.reranker=Reranker(self.config,threads,models)
     def neighbors(self,question,limit):
         import numpy
         query=self.embedder.encode([question],query=True)[0]
-        similarity=self.vectors@query
+        similarity=self.pipeline.score(query,limit)
         limit=min(limit,len(similarity))
         if limit<=0:return []
         top=numpy.argpartition(-similarity,limit-1)[:limit]
