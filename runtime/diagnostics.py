@@ -10,20 +10,28 @@ import uuid
 
 LOCK=threading.Lock()
 RECOVERY={
+ 'LARP-MODEL-MAINTENANCE':'Inspect the matching model-operation diagnostic and fixed model identity; recover locally without fallback.',
  'LARP-MCP-UNAVAILABLE':'Inspect owner gateway stderr and frozen release/source/OCI pins; no direct model fallback.',
  'LARP-MCP-STREAM':'Inspect matching error ID; retain transcript, mark partial reply incomplete, retry only after boundary checks.',
  'LARP-VOICE-UNAVAILABLE':'Check pinned CPU voice service and protocol; text remains usable, no cloud fallback.',
  'LARP-NOTES-TRANSPORT':'Check worker stderr, process exit and active notes container; current window remains pending.',
  'LARP-NOTES-WORKER':'Inspect cause chain and notes-only broker status; do not save partial JSON.',
  'LARP-EVIDENCE-UNAVAILABLE':'Check approved-index, manifest/provenance binding and text screening; do not infer without evidence.',
+ 'LARP-EVIDENCE-NOTE-EXCLUDED':'An optional derived note failed completed screening and was excluded. Original records remain unchanged; inspect the source before rebuilding notes.',
  'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.'
 }
-CODES={'LARP-MCP-UNAVAILABLE','LARP-MCP-STREAM','LARP-VOICE-UNAVAILABLE',
+CODES={'LARP-MODEL-MAINTENANCE','LARP-MCP-UNAVAILABLE','LARP-MCP-STREAM','LARP-VOICE-UNAVAILABLE',
        'LARP-NOTES-TRANSPORT','LARP-NOTES-WORKER','LARP-EVIDENCE-UNAVAILABLE',
-       'LARP-INFERENCE-UNAVAILABLE'}
+       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED'}
 
 # Exact, reviewed literals only. Never copy arbitrary exception text into logs.
 KNOWN_MESSAGES={
+ 'Fixed local model operation failed':('MODEL-OPERATION-FAILED','Inspect the numeric subprocess return code and pinned model service.'),
+ 'Owner selection state unavailable':('MODEL-STATE-UNAVAILABLE','Inspect owner WSL selection state access without editing release pins.'),
+ 'Model weight identity differs':('MODEL-WEIGHT-MISMATCH','Verify the approved model artifact and catalog hash.'),
+ 'Full GPU/context verification failed':('MODEL-GPU-CONTEXT-FAILED','Restore the prior selection; inspect GPU allocation and context configuration.'),
+ 'Warm-up did not complete':('MODEL-WARMUP-INCOMPLETE','Inspect local model service readiness before retrying.'),
+ 'Warm-up produced no text':('MODEL-WARMUP-EMPTY','Inspect local model warm-up before retrying.'),
  'Compression batch exceeds context':('INFERENCE-COMPRESSION-BATCH-EXCEEDS-CONTEXT', 'Inspect model reply schema and pinned GPU placement; preserve the conversation and reject invalid content.'),
  'Empty model response':('INFERENCE-EMPTY-MODEL-RESPONSE', 'Inspect model reply schema and pinned GPU placement; preserve the conversation and reject invalid content.'),
  'Incomplete local MCP stream':('MCP_CLIENT-INCOMPLETE-LOCAL-MCP-STREAM', 'Inspect the fixed MCP child and its stderr. Verify allowed tool and stream framing; do not bypass MCP.'),

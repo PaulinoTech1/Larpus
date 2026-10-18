@@ -5,8 +5,9 @@ import subprocess
 import sys
 
 ROOT=Path(__file__).resolve().parents[1]
-UI_TESTS=('voice-ui.cjs','chat-stream-ui.cjs','context-ui.cjs','memory-ui.cjs',
-          'teaching-ui.cjs','diagnostics-ui.cjs','speech-text.cjs')
+sys.path.insert(0,str(ROOT))
+from scripts.ui_checks import TESTS as UI_TESTS
+
 PRIVATE_NAMES={'provenance.json','github-manifest.json','embeddings-manifest.json','notes-manifest.json'}
 
 def forbidden(name):
