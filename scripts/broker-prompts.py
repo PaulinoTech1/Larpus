@@ -10,7 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 
 def manifest():
-    from runtime.agents import load_personas
+    from runtime.agents import load_personas,CONVERSATION_PROGRESS
     from runtime.skills import selected_prompt
     from runtime.text_filter import DEFENSE_PROMPT
     from runtime.knowledge import EVIDENCE_PROMPT,PROTECTED_PROMPT,NO_EVIDENCE_PROMPT
@@ -19,7 +19,7 @@ def manifest():
     chat={SUMMARY_SYSTEM}
     for persona in load_personas().values():
         for skill in [None,*persona.get('skills',[])]:
-            base=persona['system_prompt']+selected_prompt(persona,skill)+DEFENSE_PROMPT+EVIDENCE_PROMPT
+            base=persona['system_prompt']+selected_prompt(persona,skill)+DEFENSE_PROMPT+CONVERSATION_PROGRESS+EVIDENCE_PROMPT
             for protected in ('',PROTECTED_PROMPT):
                 for absent in ('',NO_EVIDENCE_PROMPT):chat.add(base+protected+absent)
     background={notes['FACT_PROMPT'],notes['ASK'],notes['ANSWER']}

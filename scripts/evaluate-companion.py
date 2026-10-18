@@ -29,5 +29,5 @@ def run(live=False,limit=None):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--live',action='store_true');parser.add_argument('--limit',type=int);args=parser.parse_args()
-    if args.limit is not None and not 1<=args.limit<=29:parser.error('limit must be 1-29')
+    if args.limit is not None and not 1<=args.limit<=len(catalog()):parser.error('limit must be within the catalog case count')
     run(args.live,args.limit)
