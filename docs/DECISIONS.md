@@ -245,6 +245,8 @@ confidence checks reduce false recognition without claiming perfect accuracy. Pl
 is independently controlled, retains position on pause, has a speed slider and can
 replay any displayed reply. Replay text is bounded and rechecked by input filtering
 and DLP before TTS; the isolated generated-output quarantine path remains intact.
+(Superseded 2026-10-18: speech text is no longer input-filtered; see "Speech text is
+screened as output, not as inbound input".)
 Wit is a scoped persona instruction, not a speech-model capability or invented
 credential. No new ports, mounts, tools, external downloads or accounts were added.
 
@@ -640,6 +642,29 @@ Recorded from [empty chunk fix](VOICE_EMPTY_CHUNK_FIX.md) and
 cleaned fragments yield a valid silent chunk rather than a worker error. HUD
 synthesis is serialized, so replay waits for unfinished synthesis and superseded
 replays never reach the worker.
+
+## Speech text is screened as output, not as inbound input (2026-10-18)
+
+Recorded from [speech screening fix](VOICE_SPEECH_SCREENING_FIX.md). `/api/voice`
+synthesis no longer runs `inspect_message`, the inbound prompt-injection filter.
+Text reaching TTS is assistant reply text that already passed the streaming output
+gate. Its instruction-override and role patterns match ordinary security prose
+("never disable your security updates", "ignore all the firewall rules",
+"System:" log lines), so security answers returned 422 mid-reply, the HUD dropped the
+rest of the speech queue, and replay of the same passage failed. The input filter
+protects the model from untrusted input; TTS gives text no model, tool or memory
+access, so it adds no protection there.
+
+Leak protection stays fail-closed. Speech still requires output DLP with every
+persona's system prompt, the private-value list, credential/token, private-host and
+local-path rules, plus the hidden control/format character check (ZWNJ/ZWJ allowed for
+emoji, as on input). User inbound filtering is unchanged. Held speech logs
+`LARP-VOICE-HELD` with reason codes only. Speech gets a separate rate bucket
+(`('voice', ip)`, 120/60 s), so one-request-per-sentence speech cannot starve chat
+(30/60 s) or the reverse; refusals log `LARP-RATE-LIMITED` with the bucket name only
+and return the real remaining Retry-After. The HUD skips a failed sentence instead of
+abandoning the reply, retries 429/503 once (Retry-After capped at 5 s), keeps replay
+enabled for partial replies, and no longer attaches the chat AbortController to speech.
 
 ## Chat latency and CPU tuning (2026-10-18)
 

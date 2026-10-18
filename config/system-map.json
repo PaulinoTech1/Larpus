@@ -152,6 +152,7 @@
       "id": "voice",
       "files": [
         "runtime/voice.py",
+        "runtime/voice_routes.py",
         "runtime/voice_worker.py"
       ],
       "purpose": "Provides local CPU speech without cloud inference.",
@@ -160,12 +161,15 @@
       "keep_condition": "Retain voice features that improve measured interaction without starving chat.",
       "failure_modes": [
         "voice busy",
+        "speech held by output DLP (sentence skipped)",
+        "voice rate bucket exhausted",
         "stopped worker",
         "invalid reply",
         "microphone permission/device error"
       ],
       "verification": [
         "tests/test_voice.py",
+        "tests/test_voice_speech_screening.py",
         "tests/voice-ui.cjs"
       ]
     },

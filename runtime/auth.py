@@ -46,6 +46,12 @@ class Auth:
             self.windows[key] = (deadline, count + 1)
             return True
 
+    def retry_after(self, key):
+        """Whole seconds until a refused bucket reopens (1..period)."""
+        with self.lock:
+            window = self.windows.get(key)
+            return max(1, int(window[0] - time.monotonic() + 0.999)) if window else 1
+
     def login(self, ip, password):
         # Count every attempt, even valid ones. Global cap prevents IP rotation.
         with self.lock:

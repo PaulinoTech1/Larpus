@@ -72,8 +72,15 @@ Opt-in mic -> mono 16 kHz PCM16 WAV -> offline VoiceStudio/Faster Whisper adapte
 
 Only DLP-approved generated replies reach automatic TTS. Held replies return an
 incident instead. Command confirmations are fixed application text. The authenticated,
-rate-limited replay route accepts bounded text and applies the local input filter
-and output DLP again before synthesis; it is not a trusted model-output bypass. Replies longer than 2000 characters speak an initial portion
+rate-limited speech route accepts bounded text (at most 2200 characters) and applies
+output DLP (all persona system prompts, private values, credentials, hosts, paths)
+plus the hidden control/format character check before synthesis; it is not a trusted
+model-output bypass. Since 2026-10-18 it does not apply the inbound prompt-injection
+filter, which produced false positives on security prose and cut speech short; see
+[speech screening fix](VOICE_SPEECH_SCREENING_FIX.md). Speech has its own per-client
+bucket (120 requests/60 s), separate from chat (30/60 s). A held or failed sentence
+is skipped and the rest of the reply (or replay) continues; 429/503 get one retry
+after Retry-After, capped at 5 s. Replies longer than 2000 characters speak an initial portion
 and indicate the remainder is displayed. Text still works if synthesis fails.
 Utterances are at most 30 seconds. Audio is browser/process memory only; runtime
 does not save recordings or generated speech. No prompt/audio logs are enabled.

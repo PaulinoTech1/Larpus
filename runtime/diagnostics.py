@@ -18,11 +18,13 @@ RECOVERY={
  'LARP-NOTES-WORKER':'Inspect cause chain and notes-only broker status; do not save partial JSON.',
  'LARP-EVIDENCE-UNAVAILABLE':'Check approved-index, manifest/provenance binding and text screening; do not infer without evidence.',
  'LARP-EVIDENCE-NOTE-EXCLUDED':'An optional derived note failed completed screening and was excluded. Original records remain unchanged; inspect the source before rebuilding notes.',
- 'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.'
+ 'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.',
+ 'LARP-VOICE-HELD':'Speech text was held by output DLP or hidden-format screening; the reply stays displayed. Inspect the listed reason codes; text is never logged.',
+ 'LARP-RATE-LIMITED':'A per-client request bucket was exhausted; inspect the bucket name and client pacing before raising limits.'
 }
 CODES={'LARP-MODEL-MAINTENANCE','LARP-MCP-UNAVAILABLE','LARP-MCP-STREAM','LARP-VOICE-UNAVAILABLE',
        'LARP-NOTES-TRANSPORT','LARP-NOTES-WORKER','LARP-EVIDENCE-UNAVAILABLE',
-       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED'}
+       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED','LARP-VOICE-HELD','LARP-RATE-LIMITED'}
 
 # Exact, reviewed literals only. Never copy arbitrary exception text into logs.
 KNOWN_MESSAGES={
@@ -74,6 +76,9 @@ KNOWN_MESSAGES={
  'Voice image drift or stopped worker':('VOICE-VOICE-IMAGE-DRIFT-OR-STOPPED-WORKER', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
  'Voice privileges violated':('VOICE-VOICE-PRIVILEGES-VIOLATED', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
  'Voice response too large':('VOICE-VOICE-RESPONSE-TOO-LARGE', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
+ 'Speech held by output screening':('VOICE-SPEECH-HELD', 'Review the DLP/hidden-format reason codes; the displayed reply is unchanged and no speech text is logged.'),
+ 'Voice request rate limited':('RATE-VOICE-BUCKET-EXHAUSTED', 'Check HUD speech pacing; the voice bucket is separate from chat and other API requests.'),
+ 'API request rate limited':('RATE-API-BUCKET-EXHAUSTED', 'Check client request pacing; chat and other API requests share this bucket.'),
  'Voice worker busy':('VOICE-VOICE-WORKER-BUSY', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
  'Voice worker source changed; rebuild voice image':('VOICE-VOICE-WORKER-SOURCE-CHANGED--REBUILD-VOICE-IMAGE', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
 }
@@ -104,7 +109,12 @@ def describe(exc):
     return {'reason':'UNCLASSIFIED','message':'No reviewed exact message is available; inspect type, frames and numeric error codes.',
             'action':'Reproduce locally and add a reviewed fixed message at the failing boundary.'}
 
-def report(code,exc):
+def reason_field(reasons):
+    """At most eight sanitized reason-code names; never free text."""
+    return {'reasons':sorted({safe_name(r) for r in reasons})[:8]} if reasons else {}
+
+def report(code,exc,reasons=()):
+    """Write one bounded record; optional reasons are fixed code names, never text."""
     if code not in CODES:raise ValueError('Unknown diagnostic code')
     identifier=uuid.uuid4().hex[:16];causes=[];seen=set();current=exc
     while isinstance(current,BaseException) and id(current) not in seen and len(causes)<8:
@@ -122,6 +132,7 @@ def report(code,exc):
         current=current.__cause__ or (None if current.__suppress_context__ else current.__context__)
     record={'schema':'larpus.diagnostic/v1','time':datetime.now(timezone.utc).isoformat(),
             'severity':'ERROR','code':code,'next_step':RECOVERY[code],'error_id':identifier,'pid':os.getpid(),'causes':causes,
+            **reason_field(reasons),
             'omitted':'Unreviewed exception messages, absolute paths, source lines, locals, stdin/stdout, prompts and credentials intentionally omitted.'}
     # stderr is captured by the owner gateway/notes logs; never the MCP/notes stdout protocol.
     try:

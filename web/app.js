@@ -36,10 +36,15 @@ function contextUsage(usage) {
 }
 function reset() { window.larpusVoice?.stopPlayback(); saveChat(); chatId=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9); history = [];conversation=window.LarpusConversation?new window.LarpusConversation():null;compressionDisplay(); contextUsage(null); $('context-detail').textContent='Measured after a reply; includes instructions and selected references.'; $('messages').replaceChildren(); $('notice').textContent = 'New chat. Previously saved conversations remain in LOCAL CHATS.'; }
 function setBusy(value) { busy = value;modelSwitch?.controls();pipelineSwitch?.controls(); teaching?.busy(value); for (const id of ['send','persona','skill','clear']) $(id).disabled = value; $('stop-generation').disabled=!value;for(const id of ['load-chat','delete-chat','delete-memory','save-chats','compress-chat','export-handoff','import-handoff'])$(id).disabled=value;$('send').disabled=value||!!window.larpusModelSwitching||!!session?.locked;$('compress-chat').disabled=value||!!window.larpusModelSwitching||!!session?.locked;pipeline(value?'WAITING / RETRIEVING / PREPARING MODEL':window.larpusVoice?.playing?'SPEAKING':'STANDBY'); }
-async function api(path, body) {
-  const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),...(requestController?{signal:requestController.signal}:{})} : {});
+// options.abortable=false keeps a request (speech synthesis) off the chat
+// stream's AbortController: stopping generation must not orphan a synthesis.
+async function api(path, body, options={}) {
+  const signal=options.abortable!==false && requestController?{signal:requestController.signal}:{};
+  const r = await fetch(path, body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),...signal} : {});
   sessionResponse(r);
-  const data = await r.json(); if (!r.ok) throw Error(failureText(data)); return data;
+  const data = await r.json();
+  if (!r.ok) throw Object.assign(Error(failureText(data)),{status:r.status,retryAfter:Number(r.headers?.get?.('Retry-After'))||0});
+  return data;
 }
 $('persona').addEventListener('change', () => {const p = personas.find(p => p.id === $('persona').value); $('description').textContent = p.description; showModel(p.model); $('skill').value='';$('skill-search').value='';refreshSkills(p);teaching?.refresh();$('notice').textContent='Persona changed. Chat retained; the next reply uses the new role.';});
 function refreshSkills(persona) {
@@ -120,7 +125,7 @@ $('chat').onsubmit = async e => {
     history=[...next,{role:'assistant',content:full}];reply.replay.disabled=false;saveChat();teaching?.completed(adaptation.token);
     window.larpusVoice?.finishReply(full);
   }
-  catch (err) {if(err.name!=='AbortError')window.larpusVoice?.stopPlayback();if(reply)reply.label.textContent='LARPUS / INCOMPLETE — NOT SAVED';$('notice').textContent=err.name==='AbortError'?'Stopped. Incomplete reply excluded from chat memory.':err.message;$('prompt').value=content;}
+  catch (err) {if(err.name!=='AbortError')window.larpusVoice?.stopPlayback();if(reply && full.trim()){reply.replay.disabled=false;window.larpusVoice?.finishReply(full);}if(reply)reply.label.textContent='LARPUS / INCOMPLETE — NOT SAVED';$('notice').textContent=err.name==='AbortError'?'Stopped. Incomplete reply excluded from chat memory.':err.message;$('prompt').value=content;}
   finally {requestController=null;setBusy(false); $('prompt').focus();}
 };
 
