@@ -103,13 +103,14 @@ test harness time only, not a runtime measurement.
 
 ## Release status and rollback
 
-This is **uncommitted development code pending live cold-start acceptance**.
+This code was committed as `363f085` and is **pending live cold-start acceptance**.
 The checkout baseline was `f81635976458990e0782addfec4c75b734db1301`; the active
 frozen release remains `7df2e957751642d6ace4630fa047fe94`, with
 `f08b98ea2f34407cb77dc79aa7d7866a` recorded as previous and no pending cutover.
 The running gateway was confirmed against the active release after testing.
-No frozen payload was edited, prepared, activated, rolled back, committed, or
-pushed. No service was stopped for this work.
+At the original synthetic-test checkpoint, no frozen payload was edited, prepared,
+activated or rolled back, and no service was stopped. The code was subsequently
+committed and published; that does not establish production activation.
 
 No rollback is needed because production selection did not change. Retain the
 existing frozen release directory and payload untouched. If an owner-authorized
