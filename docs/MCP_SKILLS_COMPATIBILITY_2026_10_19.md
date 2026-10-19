@@ -87,3 +87,16 @@ metrics helper was absent from the older frozen source. Its files/receipt were r
 The next snapshot adds the unchanged helper and eight-case catalog required by the approved
 harness. Neither candidate has been activated. Live performance, Linux preparation and
 final stopped-state evidence are tracked separately; implementation is not a speedup claim.
+
+## Completed implementation and acceptance follow-up
+
+Implementation was merged into main as `e9de9de`. Final candidate
+`c7a16c1c9fbc408199b1d05a57d15244` prepared successfully, including actual sealed
+Linux stdio/symlink/isolation checks, 70 completed scan targets and the unchanged
+11 reviewed findings. It remains inactive. Two focused runs, two eight-case MCP
+runs and the separate HTTP baseline delivered 244 replies; all 192 measured
+answers received AI rubric review. Timings and quality remain mixed, so no
+speedup, stable latency neutrality or blanket quality preservation is accepted.
+See the [acceptance matrix](MCP_SKILLS_ACCEPTANCE_2026_10_19.md) and
+[measurement report](MCP_SKILLS_PERFORMANCE_2026_10_19.md), which supersede the
+earlier pending-stage statements without erasing their failed receipts.

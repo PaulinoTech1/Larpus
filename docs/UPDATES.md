@@ -1,5 +1,34 @@
 # Updates while Larpus remains usable
 
+
+## 2026-10-19 MCP Skills - prepared, not activated
+
+Candidate `c7a16c1c9fbc408199b1d05a57d15244` adds read-only standard Skills
+list/get and resource reads for the 69 reviewed local skills. The three tools,
+explicit persona selection, instruction bytes, model/voice pins and security
+boundaries remain unchanged. Main integration passed 398 tests (four skips),
+all ten UI suites and prompt pins; sealed Linux protocol/resource checks passed
+13 tests without skips. Preparation completed 70 scan targets, retaining the
+same 11 reviewed MCP findings.
+
+Focused timings were mixed: initial Home first-text median +11.8%; the registered
+confirmation showed Home -3.1% but math +11.9%, with pacing variation. AI answer
+review also found existing and candidate arithmetic/attribution issues, and
+reference selection varied. This does not establish stable performance or
+unchanged answer quality. No optimization C or automatic activation was adopted.
+The eight-case comparison and its single confirmation also remained mixed;
+all 244 benchmark calls delivered replies and 192 measured answers received AI
+rubric review. Successful delivery is not factual correctness.
+The station still selects `7df2e957751642d6ace4630fa047fe94`.
+See [acceptance](MCP_SKILLS_ACCEPTANCE_2026_10_19.md) and
+[measurements](MCP_SKILLS_PERFORMANCE_2026_10_19.md) for receipts and limits.
+
+Owner startup also avoids whole-pod start, which revived retained historical
+containers during the controlled restart check. It starts only the model and
+selected services, retaining broker/model readiness before gateway admission.
+See [startup evidence](BROKER_COLD_START_RECOVERY_2026_10_19.md).
+
+
 ## 2026-10-19 Response consistency experiment - not promoted
 
 Prepared `ddf716bcc1f04df891de7545f2052b64` with a single fresh WSL security collector. First-text median/p95 improved about 13.4 percent in 24 paired cases, with unchanged evidence and all frozen gates passing. However, a separate pacing confirmation failed the registered median chunk-gap criterion. The candidate was not activated, and the checkout default was restored to the existing preflight. Current release `7df2e957751642d6ace4630fa047fe94` remains selected. All results, including the failed criterion, are retained in [the consistency report](RESPONSE_CONSISTENCY_2026_10_19.md). No security checks were removed or cached.

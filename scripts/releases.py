@@ -482,14 +482,16 @@ def start():
     voice=read(release_path(state['id'])/('voice-deployment.json' if (release_path(state['id'])/'voice-deployment.json').exists() else 'data/voice-deployment.json'))
     voice_name=voice.get('container','larpus-voice')
     if not re.fullmatch(r'larpus-voice(?:-[a-f0-9]{32})?',voice_name):raise ValueError('Invalid voice identity')
-    podman('pod','start','larpus-offline')
+    # Starting the whole pod also revives retained historical containers.
+    # Podman starts its infrastructure with this one approved member instead.
+    podman('start','larpus-model')
+    if profile.get('broker'):podman('start',profile['broker']['container'])
+    if profile.get('notes'):podman('start',profile['notes']['container'])
     if profile.get('broker'):
         verify_broker_startup(profile)
         ensure_startup_model()
         verify_broker_startup(profile)
     podman('start',voice_name)
-    if profile.get('broker'):podman('start',profile['broker']['container'])
-    if profile.get('notes'):podman('start',profile['notes']['container'])
     podman('start',profile.get('agent_name','larpus-agent'))
     new=launch(state['id'],state)
     try:ready(new)

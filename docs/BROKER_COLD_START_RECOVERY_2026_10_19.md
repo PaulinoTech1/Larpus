@@ -2,7 +2,7 @@
 
 ## Root cause
 
-**Probable; live cold-start confirmation is pending.** The recorded incident is
+**Probable original incident diagnosis; controlled service-restart evidence added below.** The recorded incident is
 consistent with the broker's first scheduler probe running its cancellation
 idle-fence request before the selected model has finished loading. `needs_probe`
 starts true, so the first admitted slot probes with a one-token Ollama request.
@@ -97,13 +97,14 @@ security scan. No security finding is represented as resolved by these tests.
 
 ## Runtime
 
-No real cold-start, model-readiness, broker-readiness, or first-chat timing was
-collected. The synthetic broker receipt took 0.485 seconds on Windows; this is
-test harness time only, not a runtime measurement.
+At the original code-only checkpoint, no real cold-start, model-readiness,
+broker-readiness or first-chat timing was collected. The synthetic broker receipt
+took 0.485 seconds on Windows; this is harness time, not runtime measurement.
 
 ## Release status and rollback
 
-This code was committed as `363f085` and is **pending live cold-start acceptance**.
+The initial readiness code was committed as `363f085`. Later controlled restart
+evidence and a scoped owner-startup correction are recorded below.
 The checkout baseline was `f81635976458990e0782addfec4c75b734db1301`; the active
 frozen release remains `7df2e957751642d6ace4630fa047fe94`, with
 `f08b98ea2f34407cb77dc79aa7d7866a` recorded as previous and no pending cutover.
@@ -121,10 +122,60 @@ release payload.
 
 ## Unresolved problems and acceptance
 
-The cold-start diagnosis remains probable until a separately authorized
+At the code-only checkpoint, the cold-start diagnosis remained probable pending an authorized
 maintenance session verifies model identity, complete GPU residency, context
 131072, both broker sockets, first chat, and normal operation after a real
 shutdown/start cycle. Do not restart the active broker or perform that test as
 part of this code-only repair. A cold warm-up is explicitly deferred while the
 nightly notes maintenance marker is active. No other cold-start issue was
 confirmed by these synthetic tests.
+
+## Authorized follow-up: controlled model-pod restart
+
+The owner subsequently requested completion of the outstanding tasks. Private
+receipt `cold-start-live.json` records a drained gateway and stopped/restarted
+model pod, preserving the selected baseline, model/voice images, binding and auth.
+The selected `larpus3.8:27b-q4` reported size and VRAM both 20,862,835,097 bytes
+and context 131072. Both private broker sockets passed readiness; the scheduler
+was idle and unfaulted before and after the first chat. The greeting completed
+with HTTP 200, first text 11.202 seconds and total 11.504 seconds.
+
+Elapsed checkpoints from the test's beginning were drain 5.918 seconds, pod
+stopped 69.336, functional readiness 217.085 and final verification 230.497.
+These include owner checks and service transitions; they are not model-load time.
+The selected frozen gateway lacks the new HTTP admission gate, so this validates
+owner prewarming/broker readiness and first chat, not live activation of that gate.
+Full Windows/WSL power-cycle behavior and original-incident causality remain unproven.
+
+The first follow-up exposed another lifecycle defect: `pod start larpus-offline`
+revived historical retained containers. The shutdown verifier refused its original
+image-only scope rather than silently stopping unknown names; that failed receipt
+is retained. The revised cleanup separately verifies the fixed offline pod's ID,
+network-none scope and member names, plus exact image pins for outside services.
+Owner `releases.start()` now starts only `larpus-model` (which brings up its pod
+infrastructure), the selected broker/notes services, voice and agent. Idle broker
+and model checks still precede gateway admission. Regression assertions failed
+against whole-pod startup before the correction. No frozen payload or pin changed.
+
+## Corrected start-from-stopped acceptance
+
+Private `scoped-start-live.json` begins with an empty running-container inventory.
+The corrected owner startup produced exactly five selected LARPUS services plus
+their pod infrastructure: model, baseline broker, baseline notes client, pinned
+CPU voice and baseline agent. No historical container started. Functional
+readiness completed 136.302 seconds from the helper's beginning, including
+validation/WSL startup; the whole check took 148.973 seconds. These are single
+observations, not boot-speed guarantees or directly matched restart comparisons.
+
+Model size/VRAM both remained 20,862,835,097 bytes, context 131072. Broker state
+was idle/unfaulted before and after a successful first greeting: HTTP 200,
+first text 10.031 seconds, total 10.231 seconds. Selection remained
+`7df2e957751642d6ace4630fa047fe94`; no candidate activation or model replacement
+occurred. The final local regression ran 398 tests successfully with four
+documented skips. Complexity checks retained the existing thresholds.
+
+The service-restart acceptance is complete within this scope. Original-incident
+causality, a full Windows power-cycle, live candidate HTTP admission-gate behavior,
+browser rendering and second-device sessions remain unverified. The earlier
+whole-pod receipt and refused cleanup attempt remain available alongside the
+corrected check; neither was relabeled or overwritten.

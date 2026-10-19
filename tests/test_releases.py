@@ -175,16 +175,20 @@ class ReleaseTests(unittest.TestCase):
             release.write(root/'voice-deployment.json',{'container':'larpus-voice-'+identifier})
             with self.assertRaisesRegex(RuntimeError,'model not ready'):release.start()
             launch.assert_not_called()
-            self.assertEqual([call.args for call in podman.call_args_list],[('pod','start','larpus-offline')])
+            self.assertEqual([call.args for call in podman.call_args_list],[('start','larpus-model'),('start','larpus-broker-'+identifier)])
 
     def test_startup_model_is_verified_before_agent_and_gateway_start(self):
         events=[]
         with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=False),patch.object(release,'verify_broker_startup',side_effect=lambda profile:events.append('broker-ready')),patch.object(release,'ensure_startup_model',side_effect=lambda:events.append('model-ready')),patch.object(release,'podman',side_effect=lambda *args:events.append('container:'+args[-1])),patch.object(release,'launch',side_effect=lambda *args:events.append('gateway') or {'id':'a'*32,'pid':2}),patch.object(release,'ready',side_effect=lambda state:events.append('functional-ready')):
             identifier='a'*32;root=Path(directory)/identifier;root.mkdir()
             release.write(Path(directory)/'active.json',{'id':identifier,'pid':1})
-            release.write(root/'deployment.json',{'broker':{'container':'larpus-broker-'+identifier},'agent_name':'larpus-agent-'+identifier})
+            release.write(root/'deployment.json',{'broker':{'container':'larpus-broker-'+identifier},'notes':{'container':'larpus-notes-'+identifier},'agent_name':'larpus-agent-'+identifier})
             release.write(root/'voice-deployment.json',{'container':'larpus-voice-'+identifier})
             release.start()
+        self.assertEqual([event for event in events if event.startswith('container:')],[
+            'container:larpus-model','container:larpus-broker-'+identifier,
+            'container:larpus-notes-'+identifier,'container:larpus-voice-'+identifier,
+            'container:larpus-agent-'+identifier])
         self.assertLess(events.index('model-ready'),events.index('container:larpus-agent-'+identifier))
         self.assertLess(events.index('broker-ready'),events.index('model-ready'))
         self.assertLess(events.index('model-ready'),len(events)-3)
