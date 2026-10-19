@@ -45,16 +45,8 @@ def query(*args):
     return json.loads(result.stdout.decode('utf-8'))
 
 def read_oci(item):
-    identifier=item['Id']
-    if not re.fullmatch(r'[a-f0-9]{64}',identifier):
-        raise ValueError('Invalid container ID')
-    path=f'/home/larpus/.local/share/containers/storage/overlay-containers/{identifier}/userdata/config.json'
-    if item.get('OCIConfigPath')!=path:
-        raise ValueError('Unexpected OCI configuration path')
-    result=subprocess.run(wsl_command('/usr/bin/cat',path),capture_output=True,timeout=10,check=True)
-    if len(result.stdout)>1_000_000:
-        raise ValueError('Oversized OCI configuration')
-    return json.loads(result.stdout.decode())
+    return read_oci_batch([item])[0]
+
 
 def read_oci_many(items):
     """Overlap independent WSL reads; validate every result before execution.
@@ -64,6 +56,40 @@ def read_oci_many(items):
     """
     with ThreadPoolExecutor(max_workers=4) as pool:
         return list(pool.map(read_oci,items))
+
+
+OCI_BATCH_CODE="""import json,sys
+paths=json.loads(sys.argv[1]);result=[]
+for path in paths:
+ with open(path,'rb') as stream:raw=stream.read(1000001)
+ if len(raw)>1000000:raise ValueError('Oversized OCI configuration')
+ result.append({'path':path,'value':json.loads(raw)})
+print(json.dumps(result))
+"""
+
+def _oci_path(item):
+    identifier=item['Id']
+    if not isinstance(identifier,str) or not re.fullmatch(r'[a-f0-9]{64}',identifier):raise ValueError('Invalid container ID')
+    path=f'/home/larpus/.local/share/containers/storage/overlay-containers/{identifier}/userdata/config.json'
+    if item.get('OCIConfigPath')!=path:raise ValueError('Unexpected OCI configuration path')
+    return path
+
+def read_oci_batch(items):
+    """Fresh bounded OCI reads in one WSL process; never caches approvals."""
+    if not items:return []
+    if len(items)>4:raise ValueError('Oversized OCI batch')
+    paths=[_oci_path(item) for item in items]
+    result=subprocess.run(wsl_command('python3','-c',OCI_BATCH_CODE,json.dumps(paths)),capture_output=True,timeout=10,check=True)
+    if len(result.stdout)>4100000:raise ValueError('Oversized OCI batch response')
+    values=json.loads(result.stdout)
+    return _validated_oci_batch(values,paths)
+
+def _validated_oci_batch(values,paths):
+    if not isinstance(values,list) or len(values)!=len(paths):raise ValueError('Incomplete OCI batch')
+    for path,value in zip(paths,values):
+        if not isinstance(value,dict) or set(value)!={'path','value'} or value['path']!=path or not isinstance(value['value'],dict):raise ValueError('Invalid OCI batch identity')
+    return [value['value'] for value in values]
+
 
 def selection_mounts(expected,source):
     return expected|{('/run/larpus-selection',False)} if source else expected
@@ -165,7 +191,7 @@ def preflight():
     if broker_policy.exists() and json.loads(broker_policy.read_text())['version']==2 and (not broker or broker.get('protocol')!=2):raise ValueError('Scoped broker deployment required')
     containers=query('inspect',selected_agent,MODEL,*([broker['container']] if broker else []),*([notes['container']] if notes else []))
     by_name={c['Name'].lstrip('/'):c for c in containers}
-    oci_by_name=dict(zip(by_name,read_oci_many(list(by_name.values()))))
+    oci_by_name=dict(zip(by_name,read_oci_batch(list(by_name.values()))))
     agent,model=by_name[selected_agent],by_name[MODEL]
     validate_container(agent,profile['agent_image'],False,oci_by_name[selected_agent],broker_volume=broker['volume'] if broker else None)
     validate_container(model,profile['model_image'],True,oci_by_name[MODEL],gpu_driver)

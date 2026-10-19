@@ -1,5 +1,10 @@
 # Updates while Larpus remains usable
 
+## 2026-10-19 Response latency
+
+Activated `7df2e957751642d6ace4630fa047fe94` after clean paired checks and frozen preparation. Reuse of verified request-local SQLite connections, bounded read-only mapping and batched fresh OCI reads reduce first approved text from 5.869 to 5.457 seconds in the 16-pair sample. Evidence matched in every pair; model, prompts and budgets stayed unchanged. Assembly optimized is selected. Existing quality limitations remain. Live health and streaming passed; the temporary test station is stopped, including all LARPUS containers and WSL. See [measurement scope and retained evidence](RESPONSE_LATENCY_2026_10_19.md).
+
+
 ## 2026-10-18 Assembly pipeline
 
 Activated `d604dfcd7ebd4c0199cdec395b6c61cf` after the owner approved near-tie
