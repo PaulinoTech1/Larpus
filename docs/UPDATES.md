@@ -1,5 +1,10 @@
 # Updates while Larpus remains usable
 
+## 2026-10-19 Response consistency experiment - not promoted
+
+Prepared `ddf716bcc1f04df891de7545f2052b64` with a single fresh WSL security collector. First-text median/p95 improved about 13.4 percent in 24 paired cases, with unchanged evidence and all frozen gates passing. However, a separate pacing confirmation failed the registered median chunk-gap criterion. The candidate was not activated, and the checkout default was restored to the existing preflight. Current release `7df2e957751642d6ace4630fa047fe94` remains selected. All results, including the failed criterion, are retained in [the consistency report](RESPONSE_CONSISTENCY_2026_10_19.md). No security checks were removed or cached.
+
+
 ## 2026-10-19 Response latency
 
 Activated `7df2e957751642d6ace4630fa047fe94` after clean paired checks and frozen preparation. Reuse of verified request-local SQLite connections, bounded read-only mapping and batched fresh OCI reads reduce first approved text from 5.869 to 5.457 seconds in the 16-pair sample. Evidence matched in every pair; model, prompts and budgets stayed unchanged. Assembly optimized is selected. Existing quality limitations remain. Live health and streaming passed; the temporary test station is stopped, including all LARPUS containers and WSL. See [measurement scope and retained evidence](RESPONSE_LATENCY_2026_10_19.md).

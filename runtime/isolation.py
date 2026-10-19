@@ -90,6 +90,28 @@ def _validated_oci_batch(values,paths):
         if not isinstance(value,dict) or set(value)!={'path','value'} or value['path']!=path or not isinstance(value['value'],dict):raise ValueError('Invalid OCI batch identity')
     return [value['value'] for value in values]
 
+def read_snapshot(names):
+    """Fresh observations in one WSL launch; never reuse a prior verdict."""
+    if not 1<=len(names)<=4 or len(set(names))!=len(names):raise ValueError('Invalid isolation names')
+    if any(not isinstance(n,str) or not re.fullmatch(r'larpus-(?:model|(?:agent|broker|notes)(?:-[a-f0-9]{32})?)',n) for n in names):raise ValueError('Invalid isolation name')
+    from runtime.isolation_probe import CODE
+    result=subprocess.run(wsl_command('python3','-c',CODE,json.dumps(names)),capture_output=True,timeout=75,check=True)
+    if len(result.stdout)>8200000:raise ValueError('Oversized isolation snapshot')
+    value=json.loads(result.stdout)
+    return _validated_snapshot(value,names)
+
+def _validated_snapshot(value,names):
+    if not isinstance(value,dict) or set(value)!={'info','containers','oci','pod','infra'}:raise ValueError('Incomplete isolation snapshot')
+    containers=value['containers']
+    if not isinstance(containers,list) or [c['Name'].lstrip('/') for c in containers]!=names:raise ValueError('Isolation container identity drift')
+    _validated_oci_batch(value['oci'],[_oci_path(c) for c in containers])
+    model=containers[names.index(MODEL)]
+    if value['pod']['Id']!=model['Pod'] or value['infra']['Id']!=value['pod']['InfraContainerID']:raise ValueError('Isolation namespace identity drift')
+    return value
+
+def _snapshot_oci(snapshot):
+    return {item['Name'].lstrip('/'):oci['value'] for item,oci in zip(snapshot['containers'],snapshot['oci'])}
+
 
 def selection_mounts(expected,source):
     return expected|{('/run/larpus-selection',False)} if source else expected
