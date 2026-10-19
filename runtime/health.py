@@ -9,6 +9,7 @@ from pathlib import Path
 from runtime.auth import Auth, PASSWORD_FILE
 from runtime.skills import load_skills, ROOT
 from runtime.mcp_client import health as model_health
+from runtime.mcp_client import surface
 from runtime.security_scan import APPROVED, DATA, discover, fingerprint, scan, timestamp, write_json
 from runtime.text_filter import inspect_message, TextHeld
 
@@ -75,12 +76,17 @@ def check(scan_if_changed=True):
         record('output_dlp','error','Output DLP or restricted quarantine unavailable; generated replies fail closed')
     descriptors=None
     try:
-        descriptors=discover()
+        observed=surface()
+        descriptors=observed['tools']
         baseline=json.loads(APPROVED.read_text(encoding='utf-8'))
         if descriptors!=baseline['tools'] or {t['name'] for t in descriptors}!={'list_personas','local_status','chat_local'}:
             record('mcp_surface','error','MCP tool definitions changed from approved local snapshot')
         else:
             record('mcp_surface','pass','Local stdio handshake and exact approved tool surface verified')
+        capabilities=observed['capabilities']
+        present=(observed['protocol_version']=='2026-07-28' and 'resources' in capabilities
+                 and 'io.modelcontextprotocol/skills' in capabilities.get('extensions',{}))
+        record('mcp_skills','pass' if present else 'error','Local MCP Skills declaration and resources verified' if present else 'Local MCP Skills declaration missing')
     except Exception:
         record('mcp_surface','error','MCP discovery or approved snapshot unavailable')
     try:

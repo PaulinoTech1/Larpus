@@ -24,6 +24,14 @@ configs, never caller-supplied model/URL/system instructions.
 
 ## Available operations
 
+The Skills update adds `skills/list`, `skills/get` and prompt-only
+`resources/read`, announced under `capabilities.extensions["io.modelcontextprotocol/skills"]`.
+It adds no tool or listener. Modern Skills methods are restricted to `2026-07-28`;
+legacy `2025-11-25` keeps the original three-tool path. Consumers must inspect
+the observed declaration rather than assume support from installed SDK versions.
+See [Skills](SKILLS.md), [acceptance](MCP_SKILLS_ACCEPTANCE_2026_10_19.md) and
+[measurements](MCP_SKILLS_PERFORMANCE_2026_10_19.md). No production activation is implied.
+
 | Tool | Input | Capability |
 |---|---|---|
 | list_personas | none | read configured persona summaries |

@@ -6,9 +6,11 @@ from typing import Any
 from mcp.server import MCPServer
 from mcp.server.mcpserver import Context
 from runtime import inference
+from runtime.mcp_skills import LocalSkillsExtension, register_skill_resource
 
-server=MCPServer('larpus-local',version='0.1.0',log_level='CRITICAL',
+server=MCPServer('larpus-local',version='0.1.0',log_level='CRITICAL',extensions=[LocalSkillsExtension()],
     instructions='Local-only Larpus inference. No web, filesystem, or shell tools are available.')
+register_skill_resource(server)
 RATE_LOCK=threading.Lock()
 WINDOW_START=0.0
 CALLS=0

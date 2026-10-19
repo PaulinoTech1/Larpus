@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10, installed mcp==2.3.0 and mcp-types==2.3.0, standard library, unittest, existing E:-backed WSL/rootless Podman release tooling. No new dependency.
 
-**Spec:** [approved design](../specs/2026-10-19-mcp-skills-design.md); [compatibility evidence](../../MCP_SKILLS_COMPATIBILITY_2026_10_19.md). Architecture approved by the owner after `f1edb3f`; this implementation plan awaits review.
+**Spec:** [approved design](../specs/2026-10-19-mcp-skills-design.md); [compatibility evidence](../../MCP_SKILLS_COMPATIBILITY_2026_10_19.md). Architecture approved by the owner after `f1edb3f`; implementation plan approved by the owner; native execution underway.
 
 ## Global Constraints
 
