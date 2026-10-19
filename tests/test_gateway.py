@@ -147,6 +147,24 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(self.request('GET','/login',authenticated=False)[0],200)
         self.assertEqual(self.request('POST','/api/chat',{},authenticated=False)[0],401)
 
+    def test_startup_gate_blocks_api_until_owner_marks_ready(self):
+        import os
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as directory:
+            gate=Path(directory)/'startup-ready'
+            with patch.dict(os.environ,{'LARPUS_STARTUP_GATE':str(gate)}),patch.object(gateway,'mcp_chat',return_value={'status':200,'content':'ready'}) as model,patch('runtime.health.read_latest',return_value={'checks':[]}):
+                body={'persona':'home-assistant','messages':[{'role':'user','content':'Hello'}]}
+                self.assertEqual(self.request('POST','/api/chat',body,authenticated=False)[0],401)
+                self.assertEqual(self.chat()[0],503)
+                self.assertEqual(self.request('GET','/api/personas')[0],503)
+                self.assertEqual(self.request('GET','/api/station-health')[0],200)
+                model.assert_not_called()
+                gate.write_text('ready\n')
+                self.assertEqual(self.chat()[0],200)
+                self.assertEqual(self.request('GET','/api/personas')[0],200)
+                model.assert_called_once()
+
     def test_failed_password_phrase(self):
         status,body=self.request('POST','/api/login',{'password':'wrong'},authenticated=False)
         self.assertEqual(status,401)

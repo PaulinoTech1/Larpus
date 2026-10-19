@@ -5,6 +5,7 @@ import json
 import os
 import ssl
 import threading
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from runtime.agents import ROOT, load_personas, messages_for, summaries
@@ -62,15 +63,28 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def startup_ready(self):
+        gate=os.environ.get('LARPUS_STARTUP_GATE')
+        if not gate:return True
+        path=Path(gate)
+        return not path.is_symlink() and path.is_file()
+
+    def authorize_get(self,path):
+        if path in ('/login','/login.js','/style.css'):return True
+        if not self.authorized():
+            if path.startswith('/api/'):self.reply(401,{'error':'Password required'})
+            else:self.headers_out(302,'text/plain',0,{'Location':'/login'})
+            return False
+        if path.startswith('/api/') and path!='/api/station-health' and not self.startup_ready():
+            self.reply(503,{'error':'Station startup checks are still running.'},{'Retry-After':'5'})
+            return False
+        return True
+
     def do_GET(self):
         if not self.trusted():
             return
         path = urlsplit(self.path).path
-        if path not in ('/login','/login.js','/style.css') and not self.authorized():
-            if path.startswith('/api/'):
-                return self.reply(401, {'error':'Password required'})
-            self.headers_out(302,'text/plain',0,{'Location':'/login'})
-            return
+        if not self.authorize_get(path):return
         if path == '/login':
             path = '/login.html'
         if path == '/api/personas':

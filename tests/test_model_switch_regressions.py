@@ -30,6 +30,17 @@ class Regressions(unittest.TestCase):
   for response in ({'error':'bad'},{'done':False,'message':{'content':'ready'}},{'done':True,'message':{'content':' '}}):
    b.call=lambda *a:response
    with self.assertRaises(ValueError):b.load('larpus-3.8')
+ def test_backend_verify_requires_exact_approved_gpu_and_context(self):
+  from scripts.releases import ModelPlacementPending
+  model={'name':'larpus3.8:27b-q4','size':10,'size_vram':10,'context_length':131072}
+  b=Backend.__new__(Backend);b.call=lambda path:{'models':[model]};b.identity=lambda identifier:None
+  self.assertEqual(b.verify('larpus-3.8'),model)
+  b.call=lambda path:{'models':[{**model,'context_length':65536}]}
+  with self.assertRaises(ValueError):b.verify('larpus-3.8')
+  b.call=lambda path:{'models':[{**model,'size_vram':9}]}
+  with self.assertRaises(ModelPlacementPending):b.verify('larpus-3.8')
+  b.call=lambda path:{'models':[{'name':model['name'],'size':10,'size_vram':0,'context_length':131072}]}
+  with self.assertRaises(ModelPlacementPending):b.verify('larpus-3.8')
  def test_health_retains_switch_gate(self):
   with patch.object(inference,'ollama',return_value={'models':[],'switching':True}),patch.object(inference,'gpu_placement',return_value='GPU'):
    self.assertTrue(inference.health()['switching'])

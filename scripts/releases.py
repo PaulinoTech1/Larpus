@@ -26,7 +26,57 @@ BUILD_TEMP=('approved.build.sqlite','notes.build.sqlite','notes.build.sqlite-jou
 AGENT_LIMITS=('--pids-limit=64','--memory=12g','--cpus=8')
 HTTP=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
+class ModelPlacementPending(RuntimeError):pass
+
 def read(path):return json.loads(path.read_text(encoding='utf-8-sig'))
+
+def _wait_until(deadline,interval,message):
+    remaining=deadline-time.monotonic()
+    if remaining<=0:raise RuntimeError(message)
+    time.sleep(min(interval,remaining))
+
+def _startup_gate(identifier):
+    if not isinstance(identifier,str) or not re.fullmatch(r'[a-f0-9]{32}',identifier):raise ValueError('Invalid startup release identity')
+    path=STORE/(identifier+'.startup-ready')
+    if path.is_symlink():raise ValueError('Startup readiness gate redirected')
+    return path
+
+def _mark_startup_ready(state):
+    path=_startup_gate(state['id']);temp=path.with_name(path.name+'.tmp')
+    if temp.is_symlink():raise ValueError('Startup readiness temporary redirected')
+    temp.write_text('ready\n',encoding='ascii');temp.replace(path)
+
+def _startup_model_status(backend,deadline,poll_interval):
+    remaining=deadline-time.monotonic()
+    if remaining<=0:raise RuntimeError('Local model service did not become ready within the startup deadline')
+    try:
+        status=backend.call('/api/ps',timeout=max(1,min(5,int(remaining))),
+                            process_timeout=max(2,remaining+2))
+    except (OSError,RuntimeError,subprocess.TimeoutExpired) as exc:
+        if time.monotonic()>=deadline:
+            raise RuntimeError('Local model service did not become ready within the startup deadline') from exc
+        _wait_until(deadline,poll_interval,'Local model service did not become ready within the startup deadline')
+        return None
+    models=status.get('models') if isinstance(status,dict) else None
+    if not isinstance(models,list) or any(not isinstance(model,dict) for model in models):
+        raise ValueError('Local model service returned an invalid process list')
+    return models
+
+def _await_selected_model(backend,identifier,tag,timeout,poll_interval):
+    deadline=time.monotonic()+timeout;warmed=False
+    while True:
+        models=_startup_model_status(backend,deadline,poll_interval)
+        if models is None:continue
+        if any(model.get('name')==tag for model in models):
+            try:return backend.verify(identifier)
+            except ModelPlacementPending as exc:
+                _wait_until(deadline,poll_interval,'Selected model did not reach full GPU residency before the startup deadline')
+                continue
+        if not warmed:
+            if backend.notes_busy():raise RuntimeError('Nightly notes workload is active; model warm-up is deferred')
+            backend.load(identifier);warmed=True;deadline=time.monotonic()+timeout
+            continue
+        _wait_until(deadline,poll_interval,'Selected model did not become resident before the startup deadline')
 
 def checksum(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -283,8 +333,10 @@ def running(state):
 
 def launch(identifier,settings):
     root=release_path(identifier);validate(root)
+    gate=_startup_gate(identifier)
+    gate.unlink(missing_ok=True)
     (root/'release-state/drain').unlink(missing_ok=True)
-    env=os.environ.copy();env.update(LARPUS_HOST=settings['host'],LARPUS_LAN_CIDR=settings['subnet'],LARPUS_PORT=str(settings['port']),LARPUS_ISOLATION='wsl-podman',PYTHONUTF8='1',PYTHONDONTWRITEBYTECODE='1')
+    env=os.environ.copy();env.update(LARPUS_HOST=settings['host'],LARPUS_LAN_CIDR=settings['subnet'],LARPUS_PORT=str(settings['port']),LARPUS_ISOLATION='wsl-podman',LARPUS_STARTUP_GATE=str(gate),PYTHONUTF8='1',PYTHONDONTWRITEBYTECODE='1')
     code='import sys,runpy;sys.path.insert(0,'+repr(str(root))+');runpy.run_module("runtime.gateway",run_name="__main__")'
     with (STORE/(identifier+'.gateway.log')).open('ab') as log:child=subprocess.Popen([sys.executable,'-c',code],cwd=root,env=env,stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW)
     identity=process(child.pid)
@@ -314,10 +366,51 @@ def ready(state,timeout=60):
             with HTTP.open(f'http://127.0.0.1:{state["port"]}/api/station-health',timeout=3) as response:health=json.load(response)
             checks={c['name']:c['status'] for c in health.get('checks',[])}
             required={'password','local_skills','approved_knowledge','input_filter','output_dlp','mcp_surface','models','model_gpu','egress_enforcement','voice'}
-            if required.issubset(checks) and all(checks[n]=='pass' for n in required):return
+            if required.issubset(checks) and all(checks[n]=='pass' for n in required):
+                _mark_startup_ready(state)
+                return
         except OSError:pass
         time.sleep(.5)
     raise RuntimeError('New gateway functional readiness failed')
+
+def ensure_startup_model(backend=None,timeout=60,poll_interval=1):
+    """Verify the approved local model before the agent can admit inference."""
+    from runtime import model_selection
+    if backend is None:
+        from runtime.model_backend import Backend
+        backend=Backend()
+    state=model_selection.validate(backend.read())
+    if state['phase']!='ready':raise RuntimeError('Model selection is not ready; owner recovery is required')
+    identifier=state['active_id']
+    return _await_selected_model(backend,identifier,model_selection.model(identifier)['tag'],timeout,poll_interval)
+
+def verify_broker_startup(profile,timeout=15,poll_interval=.5):
+    name=profile.get('broker',{}).get('container')
+    if not isinstance(name,str) or not re.fullmatch(r'larpus-broker-[a-f0-9]{32}',name):
+        raise ValueError('Invalid broker startup identity')
+    code="""import http.client,json,socket,stat
+from pathlib import Path
+for path in ('/run/larpus-broker/inference.sock','/run/larpus-notes/inference.sock'):
+ info=Path(path).lstat()
+ if not stat.S_ISSOCK(info.st_mode) or info.st_mode&0o077 or info.st_uid!=1000:raise SystemExit('Invalid broker socket')
+c=http.client.HTTPConnection('localhost',timeout=2);c.sock=socket.socket(socket.AF_UNIX);c.sock.settimeout(2);c.sock.connect('/run/larpus-broker/inference.sock');c.request('GET','/broker/state');r=c.getresponse();v=json.loads(r.read(8193));c.close()
+if r.status!=200 or not isinstance(v,dict) or type(v.get('faulted')) is not bool or 'active' not in v or type(v.get('waiting_chat')) is not int:raise SystemExit('Invalid broker state')
+print(json.dumps(v))
+"""
+    deadline=time.monotonic()+timeout
+    while True:
+        remaining=deadline-time.monotonic()
+        if remaining<=0:raise RuntimeError('Broker sockets did not become idle and ready before the startup deadline')
+        try:
+            value=json.loads(podman('exec',name,'python','-c',code,timeout=max(3,remaining+2)))
+        except (OSError,RuntimeError,subprocess.TimeoutExpired) as exc:
+            if time.monotonic()>=deadline:raise RuntimeError('Broker sockets did not become ready before the startup deadline') from exc
+            time.sleep(min(poll_interval,max(0,deadline-time.monotonic())))
+            continue
+        if value['faulted']:raise RuntimeError('Broker cancellation fence is faulted; owner recovery is required')
+        if value['active'] is None and value['waiting_chat']==0:return value
+        if time.monotonic()>=deadline:raise RuntimeError('Broker remained busy; startup did not interrupt active inference')
+        time.sleep(min(poll_interval,max(0,deadline-time.monotonic())))
 
 def ensure_execution(root):
     path=root/'deployment.json'
@@ -389,11 +482,21 @@ def start():
     voice=read(release_path(state['id'])/('voice-deployment.json' if (release_path(state['id'])/'voice-deployment.json').exists() else 'data/voice-deployment.json'))
     voice_name=voice.get('container','larpus-voice')
     if not re.fullmatch(r'larpus-voice(?:-[a-f0-9]{32})?',voice_name):raise ValueError('Invalid voice identity')
-    podman('pod','start','larpus-offline');podman('start',voice_name)
+    podman('pod','start','larpus-offline')
+    if profile.get('broker'):
+        verify_broker_startup(profile)
+        ensure_startup_model()
+        verify_broker_startup(profile)
+    podman('start',voice_name)
     if profile.get('broker'):podman('start',profile['broker']['container'])
     if profile.get('notes'):podman('start',profile['notes']['container'])
     podman('start',profile.get('agent_name','larpus-agent'))
-    new=launch(state['id'],state);write(STORE/'active.json',new);ready(new)
+    new=launch(state['id'],state)
+    try:ready(new)
+    except Exception:
+        stop(new)
+        raise
+    write(STORE/'active.json',new)
     print('Started active release '+state['id'])
 
 def keep_names(state):

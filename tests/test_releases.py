@@ -4,11 +4,205 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from runtime import model_selection
 
 spec=importlib.util.spec_from_file_location('releases',Path(__file__).resolve().parents[1]/'scripts/releases.py')
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
+    def test_startup_model_readiness_reuses_verified_model(self):
+        class Backend:
+            def __init__(self):
+                self.state = dict(model_selection.initial(), active_id='larpus-3.8')
+                self.model = {'name':'larpus3.8:27b-q4','size':10,'size_vram':10,'context_length':131072}
+                self.loads = []
+                self.verifications = []
+            def read(self):return self.state
+            def call(self,path,timeout=300,process_timeout=None):return {'models':[self.model]}
+            def verify(self,identifier):
+                self.verifications.append(identifier)
+                return self.model
+            def load(self,identifier):self.loads.append(identifier)
+            def notes_busy(self):return False
+        backend=Backend()
+        result=release.ensure_startup_model(backend,timeout=1,poll_interval=0)
+        self.assertEqual(result['name'],backend.model['name'])
+        self.assertEqual(backend.verifications,['larpus-3.8'])
+        self.assertEqual(backend.loads,[])
+
+    def test_startup_model_readiness_warms_cold_approved_model(self):
+        class Backend:
+            def __init__(self):
+                self.state = dict(model_selection.initial(), active_id='larpus-3.8')
+                self.model = {'name':'larpus3.8:27b-q4','size':10,'size_vram':10,'context_length':131072}
+                self.loaded=False;self.loads=[];self.verifications=[]
+            def read(self):return self.state
+            def call(self,path,timeout=300,process_timeout=None):return {'models':[self.model] if self.loaded else []}
+            def identity(self,identifier):self.asserted_identity=identifier
+            def load(self,identifier):
+                self.identity(identifier);self.loads.append(identifier);self.loaded=True
+            def verify(self,identifier):
+                self.verifications.append(identifier)
+                if not self.loaded:raise ValueError('Model is not resident')
+                return self.model
+            def notes_busy(self):return False
+        backend=Backend()
+        release.ensure_startup_model(backend,timeout=1,poll_interval=0)
+        self.assertEqual(backend.loads,['larpus-3.8'])
+        self.assertEqual(backend.verifications,['larpus-3.8'])
+        self.assertEqual(backend.asserted_identity,'larpus-3.8')
+
+    def test_startup_model_readiness_waits_for_delayed_model_service(self):
+        class Backend:
+            def __init__(self):
+                self.state=model_selection.initial();self.calls=0
+                self.model={'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':10,'context_length':131072}
+            def read(self):return self.state
+            def call(self,path,timeout=300,process_timeout=None):
+                self.calls+=1
+                if self.calls<3:raise RuntimeError('Model service is starting')
+                return {'models':[self.model]}
+            def verify(self,identifier):return self.model
+            def load(self,identifier):self.fail('Already verified model was reloaded')
+            def notes_busy(self):return False
+        backend=Backend()
+        with patch.object(release.time,'sleep'):
+            release.ensure_startup_model(backend,timeout=1,poll_interval=.01)
+        self.assertEqual(backend.calls,3)
+
+    def test_startup_model_readiness_waits_for_full_gpu_placement(self):
+        class Backend:
+            def __init__(self):
+                self.state=model_selection.initial();self.verifications=0
+                self.model={'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':10,'context_length':131072}
+            def read(self):return self.state
+            def call(self,path,timeout=300,process_timeout=None):return {'models':[self.model]}
+            def verify(self,identifier):
+                self.verifications+=1
+                if self.verifications==1:raise release.ModelPlacementPending('partial placement')
+                return self.model
+            def load(self,identifier):self.fail('Already loaded model was reloaded')
+            def notes_busy(self):return False
+        backend=Backend()
+        with patch.object(release.time,'sleep'):
+            release.ensure_startup_model(backend,timeout=1,poll_interval=.01)
+        self.assertEqual(backend.verifications,2)
+
+    def test_startup_model_readiness_fails_bounded_when_service_stays_down(self):
+        class Backend:
+            def read(self):return model_selection.initial()
+            def call(self,path,timeout=300,process_timeout=None):raise RuntimeError('Model service is unavailable')
+        with patch.object(release.time,'sleep'):
+            with self.assertRaisesRegex(RuntimeError,'model service'):
+                release.ensure_startup_model(Backend(),timeout=.01,poll_interval=0)
+
+    def test_startup_model_readiness_rejects_invalid_identity_or_placement(self):
+        class Backend:
+            def __init__(self,model):
+                self.state=model_selection.initial();self.model=model;self.loads=[]
+            def read(self):return self.state
+            def call(self,path,timeout=300,process_timeout=None):return {'models':[self.model]}
+            def verify(self,identifier):raise ValueError('Full GPU/context verification failed')
+            def load(self,identifier):self.loads.append(identifier)
+            def notes_busy(self):return False
+        for model in (
+            {'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':9,'context_length':131072},
+            {'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':10,'context_length':65536},
+        ):
+            backend=Backend(model)
+            with self.assertRaisesRegex(ValueError,'GPU/context'):
+                release.ensure_startup_model(backend,timeout=1,poll_interval=0)
+            self.assertEqual(backend.loads,[])
+
+    def test_startup_model_readiness_rejects_bad_cold_identity_before_warmup(self):
+        class Backend:
+            def __init__(self):self.state=model_selection.initial();self.warmups=0
+            def read(self):return self.state
+            def call(self,path,timeout=300,process_timeout=None):return {'models':[]}
+            def notes_busy(self):return False
+            def identity(self,identifier):raise ValueError('Model weight identity differs')
+            def load(self,identifier):
+                self.identity(identifier);self.warmups+=1
+        backend=Backend()
+        with self.assertRaisesRegex(ValueError,'identity'):
+            release.ensure_startup_model(backend,timeout=1,poll_interval=0)
+        self.assertEqual(backend.warmups,0)
+
+    def test_startup_model_readiness_rejects_unapproved_selection(self):
+        class Backend:
+            def read(self):return dict(model_selection.initial(),active_id='remote-model')
+        with self.assertRaisesRegex(ValueError,'Unknown local model'):
+            release.ensure_startup_model(Backend(),timeout=1,poll_interval=0)
+
+    def test_startup_model_readiness_defers_cold_warmup_during_notes(self):
+        class Backend:
+            def read(self):return model_selection.initial()
+            def call(self,path,timeout=300,process_timeout=None):return {'models':[]}
+            def notes_busy(self):return True
+            def load(self,identifier):self.fail('Must not warm while notes are active')
+        with self.assertRaisesRegex(RuntimeError,'Nightly notes'):
+            release.ensure_startup_model(Backend(),timeout=1,poll_interval=0)
+
+    def test_broker_startup_requires_private_sockets_and_idle_scheduler(self):
+        profile={'broker':{'container':'larpus-broker-'+'a'*32}}
+        state={'faulted':False,'active':None,'waiting_chat':0}
+        with patch.object(release,'podman',return_value=json.dumps(state)) as command:
+            self.assertEqual(release.verify_broker_startup(profile),state)
+        self.assertEqual(command.call_args.args[:4],('exec',profile['broker']['container'],'python','-c'))
+        self.assertIn('/run/larpus-notes/inference.sock',command.call_args.args[4])
+
+    def test_broker_startup_waits_for_active_work_without_stopping_it(self):
+        profile={'broker':{'container':'larpus-broker-'+'a'*32}}
+        states=iter(({'faulted':False,'active':'notes','waiting_chat':0},{'faulted':False,'active':None,'waiting_chat':0}))
+        with patch.object(release,'podman',side_effect=lambda *args,**kwargs:json.dumps(next(states))) as command,patch.object(release.time,'sleep'):
+            release.verify_broker_startup(profile,timeout=1,poll_interval=.01)
+        self.assertEqual(command.call_count,2)
+        self.assertTrue(all(call.args[0]=='exec' for call in command.call_args_list))
+
+    def test_broker_startup_does_not_clear_cancellation_fault(self):
+        profile={'broker':{'container':'larpus-broker-'+'a'*32}}
+        state={'faulted':True,'active':None,'waiting_chat':0}
+        with patch.object(release,'podman',return_value=json.dumps(state)) as command:
+            with self.assertRaisesRegex(RuntimeError,'cancellation fence is faulted'):
+                release.verify_broker_startup(profile)
+        self.assertEqual(command.call_count,1)
+
+    def test_startup_model_failure_does_not_start_agent_or_gateway(self):
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=False),patch.object(release,'verify_broker_startup'),patch.object(release,'ensure_startup_model',side_effect=RuntimeError('model not ready')),patch.object(release,'launch') as launch,patch.object(release,'podman') as podman:
+            identifier='a'*32;root=Path(directory)/identifier;root.mkdir()
+            release.write(Path(directory)/'active.json',{'id':identifier,'pid':1})
+            release.write(root/'deployment.json',{'broker':{'container':'larpus-broker-'+identifier},'agent_name':'larpus-agent-'+identifier})
+            release.write(root/'voice-deployment.json',{'container':'larpus-voice-'+identifier})
+            with self.assertRaisesRegex(RuntimeError,'model not ready'):release.start()
+            launch.assert_not_called()
+            self.assertEqual([call.args for call in podman.call_args_list],[('pod','start','larpus-offline')])
+
+    def test_startup_model_is_verified_before_agent_and_gateway_start(self):
+        events=[]
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=False),patch.object(release,'verify_broker_startup',side_effect=lambda profile:events.append('broker-ready')),patch.object(release,'ensure_startup_model',side_effect=lambda:events.append('model-ready')),patch.object(release,'podman',side_effect=lambda *args:events.append('container:'+args[-1])),patch.object(release,'launch',side_effect=lambda *args:events.append('gateway') or {'id':'a'*32,'pid':2}),patch.object(release,'ready',side_effect=lambda state:events.append('functional-ready')):
+            identifier='a'*32;root=Path(directory)/identifier;root.mkdir()
+            release.write(Path(directory)/'active.json',{'id':identifier,'pid':1})
+            release.write(root/'deployment.json',{'broker':{'container':'larpus-broker-'+identifier},'agent_name':'larpus-agent-'+identifier})
+            release.write(root/'voice-deployment.json',{'container':'larpus-voice-'+identifier})
+            release.start()
+        self.assertLess(events.index('model-ready'),events.index('container:larpus-agent-'+identifier))
+        self.assertLess(events.index('broker-ready'),events.index('model-ready'))
+        self.assertLess(events.index('model-ready'),len(events)-3)
+        self.assertLess(events.index('model-ready'),events.index('gateway'))
+        self.assertLess(events.index('gateway'),events.index('functional-ready'))
+
+    def test_startup_health_failure_closes_and_drains_unready_gateway(self):
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=False),patch.object(release,'verify_broker_startup'),patch.object(release,'ensure_startup_model'),patch.object(release,'podman'),patch.object(release,'launch',return_value={'id':'a'*32,'pid':2}),patch.object(release,'ready',side_effect=RuntimeError('functional health failed')),patch.object(release,'stop') as stop:
+            identifier='a'*32;root=Path(directory)/identifier;root.mkdir()
+            previous={'id':identifier,'pid':1}
+            release.write(Path(directory)/'active.json',previous)
+            release.write(root/'deployment.json',{'broker':{'container':'larpus-broker-'+identifier},'agent_name':'larpus-agent-'+identifier})
+            release.write(root/'voice-deployment.json',{'container':'larpus-voice-'+identifier})
+            with self.assertRaisesRegex(RuntimeError,'functional health'):
+                release.start()
+            self.assertEqual(release.read(Path(directory)/'active.json'),previous)
+            stop.assert_called_once_with({'id':identifier,'pid':2})
+
     def test_pipeline_preparation_smoke_switches_and_restores_before_scan(self):
         response={'initial':{'active_id':'assembly'},'numpy':{'active_id':'numpy'},'assembly':{'active_id':'assembly'},'optimized':{'active_id':'assembly-optimized'},'restored':{'active_id':'assembly'}}
         with patch.object(release,'podman',return_value=json.dumps(response)) as command:
@@ -37,9 +231,10 @@ class ReleaseTests(unittest.TestCase):
         import io
         names=('password','local_skills','approved_knowledge','input_filter','output_dlp','mcp_surface','models','model_gpu','egress_enforcement','voice')
         body=json.dumps({'checks':[{'name':name,'status':'pass'} for name in names]}).encode()
-        with patch.object(release,'running',return_value=True),patch.object(release.HTTP,'open',return_value=io.BytesIO(body)) as request:
-            release.ready({'port':8080})
+        with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=True),patch.object(release.HTTP,'open',return_value=io.BytesIO(body)) as request:
+            release.ready({'id':'a'*32,'port':8080})
             self.assertEqual(request.call_args.args[0],'http://127.0.0.1:8080/api/station-health')
+            self.assertEqual(release._startup_gate('a'*32).read_text(), 'ready\n')
 
     def test_recovery_preserves_already_restored_gateway_pid(self):
         with tempfile.TemporaryDirectory() as directory,patch.object(release,'STORE',Path(directory)),patch.object(release,'running',return_value=True),patch.object(release,'ready') as ready,patch.object(release,'stop') as stop:

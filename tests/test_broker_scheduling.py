@@ -68,6 +68,14 @@ class ScopeTests(unittest.TestCase):
                 with s.slot(lane,1):pass
             self.assertEqual(held.exception.code,'cancellation_unconfirmed')
 
+    def test_failed_initial_probe_can_fault_broker_without_a_generation(self):
+        probes=iter([False,False]);s=Scheduler(lambda:next(probes))
+        with self.assertRaises(Refused) as held:
+                with s.slot('chat',1):self.fail('cold model must not admit inference')
+        self.assertEqual(held.exception.code,'cancellation_unconfirmed')
+        self.assertTrue(s.faulted)
+        self.assertTrue(s.needs_probe)
+
     def test_deadline_shuts_down_a_stalled_generation_socket(self):
         limits=copy.deepcopy(LIMITS);limits['notes']['seconds']=.05
         s=Scheduler(lambda:True,limits=limits)
