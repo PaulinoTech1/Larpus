@@ -95,11 +95,11 @@ class HealthTests(unittest.TestCase):
             tools=[{'name':name} for name in ('chat_local','list_personas','local_status')]
             write_json(approved,{'tools':tools})
             write_json(root/'summary.json',{'fingerprint':'fixture','status':'pass'})
-            with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'discover',return_value=tools),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
+            with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'surface',return_value={'protocol_version':'2026-07-28','tools':tools,'capabilities':{'resources':{},'extensions':{'io.modelcontextprotocol/skills':{}}}}),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
                 report=health.check(False)
                 self.assertEqual(report['status'],'degraded')
                 self.assertTrue(any(c['status']=='unverified' for c in report['checks']))
-                with patch.object(health,'discover',return_value=[{'name':'fetch_url'}]):
+                with patch.object(health,'surface',return_value={'protocol_version':'2026-07-28','tools':[{'name':'fetch_url'}],'capabilities':{}}):
                     report=health.check(False)
                     self.assertEqual(report['status'],'error')
 

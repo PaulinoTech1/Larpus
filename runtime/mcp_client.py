@@ -63,3 +63,13 @@ def stream_chat(persona,messages,skill,on_chunk):
 
 def health():
     return call('local_status')
+
+async def surface_async():
+    async with Client(child_parameters(),read_timeout_seconds=10) as client:
+        tools=await client.list_tools()
+        return {'protocol_version':client.protocol_version,
+                'capabilities':client.server_capabilities.model_dump(mode='json',by_alias=True,exclude_none=True),
+                'tools':sorted([t.model_dump(mode='json',exclude_none=True) for t in tools.tools],key=lambda t:t['name'])}
+
+def surface():
+    return asyncio.run(asyncio.wait_for(surface_async(),timeout=20))

@@ -71,3 +71,19 @@ Prepare a separate frozen candidate after implementation and tests. Do not alter
 ## Receipts and limits
 
 Ignored owner evidence: data/mcp-skills-compatibility-20261019/{existing-sdk-and-loader.json,legacy-discovery.json,spec-source.json,skills-stable.mdx}. No raw downloaded instructions were installed or executed. No dependencies, station services or GPU workloads were started; LARPUS and its WSL remain stopped. The source spec is downloaded reference data, not workspace instructions. Linux SDK parity, extension wire compliance, security-negative tests, A/B/C timing and a new release remain unverified.
+
+
+## Approved implementation follow-up
+
+The owner approved the architecture and native implementation plan. The isolated branch
+now adds the verified resource layer, SDK Extension methods and resource callback without
+new tools or a dependency update. Windows stdio interoperability and security negatives,
+UI contracts and prompt hash checks have passed; see the current
+[acceptance matrix](MCP_SKILLS_ACCEPTANCE_2026_10_19.md). Stage 1's stopped-service
+and unverified statements above describe that earlier stage, not the later authorized test window.
+
+Candidate `651658465bf54e5e9298c7d34a7082f6` failed preparation because a benchmark-only
+metrics helper was absent from the older frozen source. Its files/receipt were retained.
+The next snapshot adds the unchanged helper and eight-case catalog required by the approved
+harness. Neither candidate has been activated. Live performance, Linux preparation and
+final stopped-state evidence are tracked separately; implementation is not a speedup claim.
