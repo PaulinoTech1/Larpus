@@ -1,6 +1,6 @@
 # MCP Skills extension design
 
-Date: 2026-10-19. Status: proposed architecture, awaiting owner review. This is a design, not an implementation or release approval. Evidence and limitations: [compatibility review](../../MCP_SKILLS_COMPATIBILITY_2026_10_19.md).
+Date: 2026-10-19. Status: architecture approved by owner; implementation plan awaits review. This is a design, not an implementation or release approval. Evidence and limitations: [compatibility review](../../MCP_SKILLS_COMPATIBILITY_2026_10_19.md).
 
 ## Intended outcome and scope
 

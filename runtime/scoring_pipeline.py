@@ -1,25 +1,40 @@
 """Station-wide scorer choice inside the serialized retrieval worker."""
 from runtime.native_scoring import NativeScorer
-NAMES={'assembly':'Assembly pipeline','numpy':'NumPy'}
+from runtime.optimized_scoring import OptimizedScorer
+NAMES={'assembly-optimized':'Assembly optimized','assembly':'Assembly original','numpy':'NumPy'}
 
 class Pipeline:
- def __init__(self,vectors):
+ def __init__(self,vectors,preferred='assembly-optimized'):
   import numpy as np
-  self.vectors=vectors;self.native=None;self.error=None;self.requested='assembly';self.ambiguity_fallbacks=0;self.last_used=None
+  self.vectors=vectors;self.native=None;self.optimized=None;self.error=None;self.requested=preferred;self.ambiguity_fallbacks=0;self.last_used=None
+  if preferred not in NAMES:raise ValueError('Invalid preferred pipeline')
   self.max_norm=float(np.max(np.linalg.norm(vectors,axis=1))) if len(vectors) else 0
   # Exact duplicate rows have identical scores under either reduction order.
   packed=np.ascontiguousarray(vectors).view(np.dtype((np.void,vectors.shape[1]*vectors.dtype.itemsize))).reshape(-1)
   self.groups=np.unique(packed,return_inverse=True)[1]
   try:self.native=NativeScorer(vectors)
-  except (OSError,ValueError,RuntimeError,ImportError,KeyError,AssertionError):self.error='Assembly unavailable or validation failed; using NumPy.'
+  except (OSError,ValueError,RuntimeError,ImportError,KeyError,AssertionError,AttributeError):
+   if preferred=='assembly':self.error='Assembly unavailable or validation failed; using NumPy.'
+  try:self.optimized=OptimizedScorer(vectors)
+  except (OSError,ValueError,RuntimeError,ImportError,KeyError,AssertionError,AttributeError):
+   if preferred=='assembly-optimized':self.error='Optimized Assembly unavailable or validation failed; using NumPy.'
+
+ def _backend(self,identifier):
+  return self.native if identifier=='assembly' else self.optimized if identifier=='assembly-optimized' else None
+
+ def close(self):
+  for backend in (self.native,self.optimized):
+   close=getattr(backend,'close',None)
+   if close:close()
+  self.native=None;self.optimized=None
 
  def status(self):
-  return {'active_id':'assembly' if self.requested=='assembly' and self.native is not None else 'numpy',
+  return {'active_id':self.requested if self._backend(self.requested) is not None else 'numpy',
           'requested_id':self.requested,'notice':self.error,'workers':4,'last_used':self.last_used,'ambiguity_fallbacks':self.ambiguity_fallbacks,
-          'pipelines':[{'id':key,'name':name,'available':key=='numpy' or self.native is not None} for key,name in NAMES.items()]}
+          'pipelines':[{'id':key,'name':name,'available':key=='numpy' or self._backend(key) is not None} for key,name in NAMES.items()]}
 
  def select(self,identifier):
-  if identifier not in NAMES or identifier=='assembly' and self.native is None:raise ValueError('Pipeline unavailable')
+  if identifier not in NAMES or identifier!='numpy' and self._backend(identifier) is None:raise ValueError('Pipeline unavailable')
   self.requested=identifier
   self.last_used=None
   return self.status()
@@ -29,22 +44,29 @@ class Pipeline:
   count=min(max(1,limit)+1,len(scores))
   if count<2 or limit>=len(scores):return False
   indices=np.argpartition(scores,len(scores)-count)[-count:]
+  margin=2e-6*self.max_norm*float(np.linalg.norm(query))
+  if self.requested=='assembly-optimized':
+   top=np.sort(scores[indices])
+   # Identical vectors still represent distinct reference IDs at the cutoff.
+   return bool(top[1]-top[0]<=margin)
   indices=indices[np.argsort(scores[indices],kind='stable')];top=scores[indices]
   # Owner-approved approximate ordering. This empirical tolerance is checked
   # at startup and in the benchmark, not a universal floating-point bound.
   # Only close distinct rows at the selected-set cutoff use NumPy.
-  margin=2e-6*self.max_norm*float(np.linalg.norm(query))
   return bool(top[1]-top[0]<=margin and self.groups[indices[1]]!=self.groups[indices[0]])
 
  def score(self,query,limit=18):
-  if self.requested=='assembly' and self.native is not None:
+  backend=self._backend(self.requested)
+  if backend is not None:
    try:
-    scores=self.native.score(query)
-    if not self._ambiguous(scores,query,limit):self.last_used='assembly';return scores
+    scores=backend.score(query)
+    if not self._ambiguous(scores,query,limit):self.last_used=self.requested;return scores
     self.ambiguity_fallbacks+=1
    except (OSError,ValueError,RuntimeError):
-    close=getattr(self.native,'close',None)
+    close=getattr(backend,'close',None)
     if close:close()
-    self.native=None;self.error='Assembly failed; using NumPy.'
+    if self.requested=='assembly':self.native=None
+    else:self.optimized=None
+    self.error='Assembly failed; using NumPy.'
   self.last_used='numpy'
   return self.vectors@query

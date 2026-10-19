@@ -2,7 +2,7 @@
 import json
 import subprocess
 from runtime import isolation
-IDS=('assembly','numpy')
+IDS=('assembly','assembly-optimized','numpy')
 CODE="import json,sys;from runtime.retrieval_worker import call;request={'action':'pipeline'};request.update({'pipeline_id':sys.argv[1]} if len(sys.argv)>1 else {});print(json.dumps(call(request,8)))"
 
 def control(identifier=None):
@@ -23,6 +23,6 @@ def select(handler):
  try:
   body=handler.read_json(256)
   if not isinstance(body,dict) or set(body)!={'pipeline_id'} or body['pipeline_id'] not in IDS:raise ValueError('Choose a pipeline')
- except (ValueError,TypeError):return handler.reply(400,{'error':'Choose Assembly pipeline or NumPy.'})
+ except (ValueError,TypeError):return handler.reply(400,{'error':'Choose Assembly optimized, Assembly original, or NumPy.'})
  try:return handler.reply(200,control(body['pipeline_id']))
  except (OSError,ValueError,KeyError,subprocess.SubprocessError):return handler.reply(503,{'error':'Pipeline switch failed. Check the current selection before retrying.'})

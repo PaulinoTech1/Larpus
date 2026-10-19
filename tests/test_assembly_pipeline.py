@@ -10,7 +10,7 @@ class AssemblyPipelineTests(unittest.TestCase):
  def test_unavailable_native_uses_numpy_and_explains_selection(self):
   vectors=np.eye(3,dtype=np.float32)
   with patch.object(scoring_pipeline,'NativeScorer',side_effect=OSError('missing')):
-   scorer=scoring_pipeline.Pipeline(vectors)
+   scorer=scoring_pipeline.Pipeline(vectors,preferred="assembly")
   self.assertEqual(scorer.status()['active_id'],'numpy')
   self.assertNotIn('error',scorer.status(),'Successful worker responses must not use the reserved transport error key')
   np.testing.assert_array_equal(scorer.score(np.ones(3,dtype=np.float32)),np.ones(3))
@@ -20,7 +20,7 @@ class AssemblyPipelineTests(unittest.TestCase):
   class Native:
    def __init__(self,vectors):self.vectors=vectors
    def score(self,q):return self.vectors@q
-  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(4,dtype=np.float32))
+  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(4,dtype=np.float32),preferred="assembly")
   self.assertEqual(scorer.status()['active_id'],'assembly')
   scorer.select('assembly');self.assertEqual(scorer.status()['active_id'],'assembly')
   scorer.select('numpy');self.assertEqual(scorer.status()['active_id'],'numpy')
@@ -41,7 +41,7 @@ class AssemblyPipelineTests(unittest.TestCase):
   class Native:
    def __init__(self,vectors):pass
    def score(self,q):return np.array([1+1e-7,1],dtype=np.float32)
-  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(2,dtype=np.float32))
+  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(2,dtype=np.float32),preferred="assembly")
   scorer.select('assembly')
   q=np.array([1,1+1e-7],dtype=np.float32)
   np.testing.assert_array_equal(scorer.score(q,limit=1),q)
@@ -52,7 +52,7 @@ class AssemblyPipelineTests(unittest.TestCase):
   class Native:
    def __init__(self,vectors):pass
    def score(self,q):return np.array([1+1e-7,1,0],dtype=np.float32)
-  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(3,dtype=np.float32))
+  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(3,dtype=np.float32),preferred="assembly")
   scorer.select('assembly');q=np.array([1,1+1e-7,0],dtype=np.float32)
   np.testing.assert_allclose(scorer.score(q,limit=2),q,atol=2e-6,rtol=2e-5)
   self.assertEqual(scorer.status()['last_used'],'assembly')
@@ -72,7 +72,7 @@ class AssemblyPipelineTests(unittest.TestCase):
 
  def test_cutoff_guard_uses_empirical_tolerance_and_scales_with_query(self):
   with patch.object(scoring_pipeline,'NativeScorer',side_effect=OSError('missing')):
-   scorer=scoring_pipeline.Pipeline(np.eye(384,dtype=np.float32))
+   scorer=scoring_pipeline.Pipeline(np.eye(384,dtype=np.float32),preferred="assembly")
   scores=np.zeros(384,dtype=np.float32);scores[0]=1;scores[1]=1-1e-5
   query=np.zeros(384,dtype=np.float32);query[0]=1
   self.assertFalse(scorer._ambiguous(scores,query,1))

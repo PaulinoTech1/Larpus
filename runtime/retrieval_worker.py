@@ -39,7 +39,7 @@ def send_frame(stream,value,limit):
 
 def _pipeline_request(request):
     if set(request)=={'action'}:return request
-    if set(request)=={'action','pipeline_id'} and request['pipeline_id'] in ('numpy','assembly'):return request
+    if set(request)=={'action','pipeline_id'} and request['pipeline_id'] in ('numpy','assembly','assembly-optimized'):return request
     raise ValueError('Invalid pipeline selection')
 
 def _rerank_request(request):

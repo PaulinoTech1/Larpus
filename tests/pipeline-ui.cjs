@@ -10,5 +10,8 @@ const {bindPipeline}=require('../web/pipeline.js');
  busy=true;c.controls();assert.equal(element('switch-pipeline').disabled,true);
  busy=false;state={...state,active_id:'numpy',requested_id:'assembly',notice:'Assembly failed; using NumPy.',pipelines:[{id:'assembly',name:'Assembly pipeline',available:false},{id:'numpy',name:'NumPy',available:true}]};
  await c.refresh();assert.match(element('retrieval-pipeline-status').textContent,/Assembly failed/);assert.equal(element('pipeline-select').options[0].disabled,true);
+ state={active_id:'assembly-optimized',requested_id:'assembly-optimized',last_used:'numpy',notice:null,pipelines:[{id:'assembly-optimized',name:'Assembly optimized',available:true},{id:'assembly',name:'Assembly original',available:true},{id:'numpy',name:'NumPy',available:true}]};
+ await c.refresh();assert.match(element('retrieval-pipeline-status').textContent,/Assembly optimized.*NumPy safety check/);
+ element('pipeline-select').value='assembly';element('pipeline-select').onchange();await element('switch-pipeline').onclick();assert.equal(calls.at(-1).pipeline_id,'assembly');
  console.log('Pipeline UI: explicit switching, actual status, busy controls, fallback passed.');
 })();

@@ -191,11 +191,12 @@ for attempt in range(60):
   time.sleep(0.5)
 numpy=call({'action':'pipeline','pipeline_id':'numpy'},8)
 assembly=call({'action':'pipeline','pipeline_id':'assembly'},8)
+optimized=call({'action':'pipeline','pipeline_id':'assembly-optimized'},8)
 restored=call({'action':'pipeline','pipeline_id':initial['active_id']},8)
-print(json.dumps({'initial':initial,'numpy':numpy,'assembly':assembly,'restored':restored}))
+print(json.dumps({'initial':initial,'numpy':numpy,'assembly':assembly,'optimized':optimized,'restored':restored}))
 """
     state=json.loads(podman('exec',profile['agent_name'],'python','-c',code))
-    if state['initial']['active_id'] not in ('numpy','assembly') or (state['numpy']['active_id'],state['assembly']['active_id'],state['restored']['active_id'])!=('numpy','assembly',state['initial']['active_id']):
+    if state['initial']['active_id'] not in ('numpy','assembly','assembly-optimized') or (state['numpy']['active_id'],state['assembly']['active_id'],state['optimized']['active_id'],state['restored']['active_id'])!=('numpy','assembly','assembly-optimized',state['initial']['active_id']):
         raise ValueError('Pipeline switch/restore readiness failed')
     print('Candidate Assembly/NumPy worker switching verified; initial pipeline restored.',flush=True)
 

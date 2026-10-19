@@ -10,7 +10,7 @@ release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
     def test_pipeline_preparation_smoke_switches_and_restores_before_scan(self):
-        response={'initial':{'active_id':'assembly'},'numpy':{'active_id':'numpy'},'assembly':{'active_id':'assembly'},'restored':{'active_id':'assembly'}}
+        response={'initial':{'active_id':'assembly'},'numpy':{'active_id':'numpy'},'assembly':{'active_id':'assembly'},'optimized':{'active_id':'assembly-optimized'},'restored':{'active_id':'assembly'}}
         with patch.object(release,'podman',return_value=json.dumps(response)) as command:
             release.verify_pipeline({'agent_name':'larpus-agent-'+'a'*32})
         self.assertEqual(command.call_args.args[:3],('exec','larpus-agent-'+'a'*32,'python'))
