@@ -1,4 +1,18 @@
 function failureText(data){const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (data.error||'Gateway request failed')+id;}
+// Request preferences never grant tools or alter mandatory security policy.
+function executionRequest(){
+  const profile=document.getElementById('execution-profile')?.value||'verified';
+  const interaction=document.getElementById('execution-interaction')?.value||'conversation';
+  if(profile==='verified'&&interaction==='conversation')return {};
+  return {execution:{profile,interaction,...(profile==='diagnostic'?{base:document.getElementById('execution-base')?.value||'verified'}:{})}};
+}
+function browserClock(){return globalThis.performance?.now()??Date.now();}
+function recordFirstRender(node,started){
+  if('firstDomUpdateMs' in node.dataset)return;
+  node.dataset.firstDomUpdateMs=Math.max(0,browserClock()-started).toFixed(3);
+  // A frame callback is an opportunity to render, not proof of physical paint.
+  requestAnimationFrame(()=>{node.dataset.firstRenderOpportunityMs=Math.max(0,browserClock()-started).toFixed(3);});
+}
 function showModel(tag){tag=window.larpusSelectedModel||tag;$('model').textContent=({'qwen3.5:27b-q4_K_M':'Larpus 3.5 27B Q4','qwen3.8:27b-q4_K_M':'Larpus 3.8 27B Q4','larpus3.8:27b-q4':'Larpus 3.8 27B Q4'})[tag]||tag;$('model').title=tag;}
 const $ = id => document.getElementById(id);
 let history = [], busy = false, personas = [], skills = [];
@@ -65,6 +79,7 @@ $('chat').onsubmit = async e => {
   const next = [...history,{role:'user',content}];
   let reply,full='',complete=false;
   requestController=typeof AbortController==='function'?new AbortController():null;const started=Date.now();
+  const requestExecution=executionRequest(),diagnosticStarted=requestExecution.execution?.profile==='diagnostic'?browserClock():null;
   window.larpusVoice?.beginReply();
   try {
     const ownerQuestion=localMemory?localMemory.context(content):content;
@@ -72,7 +87,7 @@ $('chat').onsubmit = async e => {
     const question=adaptation.question;
     if(conversation?.needs(history,question,lastUsage))await compressConversation();
     const outgoing=conversation?conversation.wire(history,question):[...next.slice(0,-1),{role:'user',content:question}];
-    const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},...(requestController?{signal:requestController.signal}:{}),body:JSON.stringify({persona:$('persona').value,messages:outgoing,skill:$('skill').value||null})});
+    const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},...(requestController?{signal:requestController.signal}:{}),body:JSON.stringify({persona:$('persona').value,messages:outgoing,skill:$('skill').value||null,...requestExecution})});
     sessionResponse(response);
     if(!response.ok)throw Error(failureText(await response.json()));
     pipeline('GENERATING / WAITING FOR CHECKED TEXT');
@@ -87,10 +102,12 @@ $('chat').onsubmit = async e => {
           if(event.type==='error')throw Error(failureText(event));
           if(event.type==='text'){
             if(complete || typeof event.content!=='string' || (full.length+event.content.length)>65536)throw Error('Invalid reply stream');
+            if(!event.content)continue;
             if(!full)$('pipeline-status').textContent=`FIRST CHECKED TEXT / ${((Date.now()-started)/1000).toFixed(1)}s`;
             state('GENERATING');full+=event.content;
             if(!reply){reply=message('assistant','');reply.replay.disabled=true;}
             reply.text.textContent=full;$('messages').scrollTop=$('messages').scrollHeight;
+            if(diagnosticStarted!==null)recordFirstRender(reply.text,diagnosticStarted);
             window.larpusVoice?.enqueueSpeech(event.content);
           }else if(event.type==='done'){
             complete=true;

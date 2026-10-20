@@ -3,6 +3,7 @@ import json
 import os
 import re
 import subprocess
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from runtime.skills import ROOT
@@ -94,10 +95,8 @@ def read_snapshot(names):
     """Fresh observations in one WSL launch; never reuse a prior verdict."""
     if not 1<=len(names)<=4 or len(set(names))!=len(names):raise ValueError('Invalid isolation names')
     if any(not isinstance(n,str) or not re.fullmatch(r'larpus-(?:model|(?:agent|broker|notes)(?:-[a-f0-9]{32})?)',n) for n in names):raise ValueError('Invalid isolation name')
-    from runtime.isolation_probe import CODE
-    result=subprocess.run(wsl_command('python3','-c',CODE,json.dumps(names)),capture_output=True,timeout=75,check=True)
-    if len(result.stdout)>8200000:raise ValueError('Oversized isolation snapshot')
-    value=json.loads(result.stdout)
+    from runtime.execution_preflight import observe
+    value=observe(names,wsl_command,subprocess.run)
     return _validated_snapshot(value,names)
 
 def _validated_snapshot(value,names):
@@ -184,21 +183,16 @@ def validate_container(item,expected_image,is_model,oci=None,gpu_driver=None,bro
     if not is_model and item['Config'].get('User')!='1000:1000':
         raise ValueError('Trusted agent must use non-root container identity')
 
-def preflight():
+def preflight(fast=False,timings=None):
     profile=json.loads(PROFILE.read_text(encoding='utf-8-sig'))
     if profile.get('version')!=1 or profile.get('distro')!=DISTRO or profile.get('user')!=USER:
         raise ValueError('Dedicated deployment profile missing or invalid')
     gpu_driver=profile.get('gpu_driver','')
     if not isinstance(gpu_driver,str) or not re.fullmatch(r'/usr/lib/wsl/drivers/nv_[a-z0-9]+\.inf_amd64_[a-f0-9]{16}',gpu_driver):
         raise ValueError('Narrow NVIDIA driver package pin required')
-    from runtime.security_scan import fingerprint
-    if profile.get('source_fingerprint')!=fingerprint():
+    from runtime.source_integrity import fingerprint
+    if profile.get('source_fingerprint')!=fingerprint(ROOT):
         raise ValueError('Host sources changed since isolated image build; reseal deployment')
-    distro_probe="import pathlib,configparser; c=configparser.ConfigParser();c.read('/etc/wsl.conf');assert not c.getboolean('automount','enabled');assert not c.getboolean('automount','mountFsTab');assert not c.getboolean('interop','enabled');assert not c.getboolean('interop','appendWindowsPath');assert not pathlib.Path('/mnt/c').exists();assert not pathlib.Path('/mnt/e').exists();assert not pathlib.Path('/proc/sys/fs/binfmt_misc/WSLInterop').exists()"
-    subprocess.run(wsl_command('python3','-c',distro_probe),capture_output=True,check=True,timeout=10)
-    info=query('info','--format','json')
-    if info['host']['security']['rootless'] is not True:
-        raise ValueError('Rootful Podman prohibited')
     selected_agent=agent_name(profile)
     broker=profile.get('broker')
     notes=profile.get('notes')
@@ -211,9 +205,12 @@ def preflight():
     validate_selection_source(profile,broker)
     broker_policy=ROOT/'config/inference-broker.json'
     if broker_policy.exists() and json.loads(broker_policy.read_text())['version']==2 and (not broker or broker.get('protocol')!=2):raise ValueError('Scoped broker deployment required')
-    containers=query('inspect',selected_agent,MODEL,*([broker['container']] if broker else []),*([notes['container']] if notes else []))
-    by_name={c['Name'].lstrip('/'):c for c in containers}
-    oci_by_name=dict(zip(by_name,read_oci_batch(list(by_name.values()))))
+    names=[selected_agent,MODEL,*([broker['container']] if broker else []),*([notes['container']] if notes else [])]
+    observations=collect_observations(names,fast,timings=timings)
+    if observations['info']['host']['security']['rootless'] is not True:
+        raise ValueError('Rootful Podman prohibited')
+    by_name={c['Name'].lstrip('/'):c for c in observations['containers']}
+    oci_by_name=_snapshot_oci(observations)
     agent,model=by_name[selected_agent],by_name[MODEL]
     validate_container(agent,profile['agent_image'],False,oci_by_name[selected_agent],broker_volume=broker['volume'] if broker else None)
     validate_container(model,profile['model_image'],True,oci_by_name[MODEL],gpu_driver)
@@ -229,18 +226,18 @@ def preflight():
             if 'OLLAMA_NUM_PARALLEL=1' not in model['Config'].get('Env',[]):raise ValueError('Cancellation fence requires pinned single-slot runner')
     elif not agent.get('Pod') or agent['Pod']!=model.get('Pod'):
         raise ValueError('Inference and guard are not in the same isolated pod')
-    pod=query('pod','inspect',model['Pod'])
+    pod=observations['pod']
     if pod['InfraConfig']['HostNetwork'] or pod['InfraConfig']['Networks']:
         raise ValueError('Pod has external networking')
-    infra=query('inspect',pod['InfraContainerID'])[0]
+    infra=observations['infra']
     if infra['HostConfig']['NetworkMode']!='none':
         raise ValueError('Pod must have network=none')
     if any(c['HostConfig']['NetworkMode']!='container:'+pod['InfraContainerID'] for c in ((guard,model) if broker else (agent,model))):
         raise ValueError('Container network namespace drift')
     return profile
 
-def child_args():
-    profile=preflight()
+def child_args(fast=False,timings=None):
+    profile=preflight(fast=fast,timings=timings) if timings is not None else preflight(fast=fast)
     return wsl_command('podman','exec','--interactive',agent_name(profile),'python','-m','runtime.mcp_server')
 
 def check_behavior():
@@ -266,6 +263,38 @@ def main():
             parser.error('Use quarantine list, inspect ID, or delete ID')
         profile=preflight()
         subprocess.run(wsl_command('podman','exec',agent_name(profile),'python','-m','runtime.dlp',*args.arguments),check=True)
+
+def collect_observations(names,fast,timings=None):
+    if fast:
+        return read_snapshot(names)
+    distro_probe="import pathlib,configparser; c=configparser.ConfigParser();c.read('/etc/wsl.conf');assert not c.getboolean('automount','enabled');assert not c.getboolean('automount','mountFsTab');assert not c.getboolean('interop','enabled');assert not c.getboolean('interop','appendWindowsPath');assert not pathlib.Path('/mnt/c').exists();assert not pathlib.Path('/mnt/e').exists();assert not pathlib.Path('/proc/sys/fs/binfmt_misc/WSLInterop').exists()"
+    started=_observation_clock(timings)
+    # Only independent read operations overlap. No child/inference launch occurs
+    # until preflight has collected and validated every current observation.
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        policy=pool.submit(subprocess.run,wsl_command('python3','-c',distro_probe),capture_output=True,check=True,timeout=10)
+        host=pool.submit(query,'info','--format','json')
+        inspected=pool.submit(query,'inspect',*names)
+        policy.result();info=host.result();containers=inspected.result()
+        _observation_timing(timings,'preflight_initial_reads',started)
+        started=_observation_clock(timings)
+        oci_read=pool.submit(read_oci_batch,containers)
+        model=next(c for c in containers if c['Name'].lstrip('/')==MODEL)
+        pod=query('pod','inspect',model['Pod'])
+        infra=query('inspect',pod['InfraContainerID'])[0]
+        oci=oci_read.result()
+    _observation_timing(timings,'preflight_namespace_reads',started)
+    return {'info':info,'containers':containers,'oci':[{'value':v} for v in oci],'pod':pod,'infra':infra}
+
+def _observation_timing(timings,key,started):
+    if timings is not None and started is not None:
+        try:timings[key]=round(max(0.,min(90.,time.perf_counter()-started))*1000,3)
+        except Exception:pass
+
+def _observation_clock(timings):
+    if timings is not None:
+        try:return time.perf_counter()
+        except Exception:pass
 
 if __name__=='__main__':
     main()

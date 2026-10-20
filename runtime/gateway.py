@@ -5,12 +5,14 @@ import json
 import os
 import ssl
 import threading
+import time
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 from runtime.agents import ROOT, load_personas, messages_for, summaries
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
+from runtime.execution_profiles import resolve, to_wire
 from runtime.mcp_client import chat as mcp_chat, health as mcp_health, stream_chat as mcp_stream
 from runtime.inference_admission import Admission, Busy
 
@@ -19,6 +21,27 @@ PERSONAS = load_personas()
 LOCK = threading.Lock()
 ADMISSION=Admission(ROOT/'data/inference-admission')
 DRAIN=ROOT/'release-state/drain'
+def execution_kwargs(data):
+    context=to_wire(resolve(data.get('execution')))
+    return {'execution':context} if 'execution' in data else {}
+
+def validate_chat_request(data):
+    if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak','execution'}:
+        raise ValueError('Expected persona and messages')
+    if 'speak' in data and type(data['speak']) is not bool:
+        raise ValueError('Invalid speech flag')
+    execution=execution_kwargs(data)
+    persona = PERSONAS.get(data['persona']) if isinstance(data['persona'], str) else None
+    if persona is None:
+        raise ValueError('Unknown persona')
+    messages_for(persona, data['messages'],data.get('skill'))
+    return execution
+
+def add_queue_timing(result,execution,elapsed):
+    if execution.get('execution',{}).get('profile')=='diagnostic':
+        result.setdefault('timing_ms',{})['gateway_queue']=round(elapsed*1000,3)
+    return result
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass  # Do not log prompts or request URLs.
@@ -207,14 +230,7 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < size <= 524288:
                 raise ValueError('Request must be 1-524288 bytes')
             data = json.loads(self.rfile.read(size))
-            if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
-                raise ValueError('Expected persona and messages')
-            if 'speak' in data and type(data['speak']) is not bool:
-                raise ValueError('Invalid speech flag')
-            persona = PERSONAS.get(data['persona']) if isinstance(data['persona'], str) else None
-            if persona is None:
-                raise ValueError('Unknown persona')
-            messages = messages_for(persona, data['messages'],data.get('skill'))
+            execution=validate_chat_request(data)
         except TextHeld as exc:
             return self.reply(503 if exc.unavailable else 422, {
                 'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.',
@@ -225,19 +241,22 @@ class Handler(BaseHTTPRequestHandler):
         if not LOCK.acquire(blocking=False):
             return self.reply(409, {'error': 'Inference busy. Try again shortly.'})
         ticket=ADMISSION.interactive()
+        admission_started=time.perf_counter()
         try:ticket.__enter__()
         except (Busy,OSError):
             LOCK.release()
             return self.reply(503,{'error':'Waiting for local background inference. Retry shortly.'},{'Retry-After':'5'})
+        admission_ms=time.perf_counter()-admission_started
         try:
             if self.path=='/api/chat/stream':
                 self.headers_out(200,'application/x-ndjson',None,{'X-Accel-Buffering':'no'})
                 def event(value):
                     self.wfile.write((json.dumps(value)+'\n').encode());self.wfile.flush()
                 try:
-                    result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}))
+                    result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}),**execution)
+                    add_queue_timing(result,execution,admission_ms)
                     if result.get('status')==200:
-                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms') if key in result}})
+                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms','execution_trace_ms','execution') if key in result}})
                     else:
                         event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code'),'error_id':result.get('error_id')})
                 except (OSError,ValueError,KeyError,TypeError) as exc:
@@ -247,7 +266,8 @@ class Handler(BaseHTTPRequestHandler):
                     except OSError:
                         pass  # Browser disconnected; never start another HTTP response.
                 return
-            result = mcp_chat(data['persona'], data['messages'],data.get('skill'))
+            result = mcp_chat(data['persona'], data['messages'],data.get('skill'),**execution)
+            add_queue_timing(result,execution,admission_ms)
             status = result.pop('status', 502)
             if status == 200 and data.get('speak'):
                 # MCP only returns generated content after isolated output DLP approves it.

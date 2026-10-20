@@ -1,5 +1,33 @@
 # Updates while Larpus remains usable
 
+## 2026-10-20 Verified overlap screen - prepared, not promoted
+
+Prepared `306986ac3d954e7791b2b7a3028838e2` and did not activate it. Selected
+release remains `7df2e957751642d6ace4630fa047fe94`. The only scan-count change
+is the distro probe, still a fresh `subprocess.run`, now submitted to the
+existing three-worker read pool; the scanner reports five isolation call sites
+instead of six. One eight-case round kept a Verified `home-uncertainty` failure.
+Ultra Fast first-text mean/p95 were 4.845/6.391 seconds. The five-second tail
+was not met, and answers were not rubric-reviewed. The station was returned to
+stopped, including Larpus WSL. See [the screen](VERIFIED_LATENCY_2026_10_20.md).
+
+## 2026-10-20 Secure execution profiles - prepared, not accepted
+
+Candidate `dc74ddc8315d4fdaa6349c72fc40bc46` adds strict request-local profiles,
+independent integrity hashing, bounded diagnostics and fresh batched observation
+collection without reducing mandatory security. It excludes unrelated inactive
+checkout features. Preparation completed 70 scan targets with the same 11
+reviewed warnings. Final checkout validation: 457 tests, four skips, 11 UI suites.
+
+The 300-attempt owner-loopback comparison measured Ultra Fast first-approved
+mean/p95 5.718/7.980s versus Verified 6.703/9.045s. Pacing passed, but the
+five-second target failed and agent answer review did not establish quality
+parity. Five attempts failed; all 295 successful answers received blind rubric
+review. This candidate was not activated. Selected release remains
+`7df2e957751642d6ace4630fa047fe94`; the temporary station was stopped afterward,
+including model/voice and Larpus WSL, with notes still Disabled. No commit/push.
+See [acceptance, retained failures and limits](EXECUTION_PROFILES_PERFORMANCE_2026_10_20.md).
+
 
 ## 2026-10-19 MCP Skills - prepared, not activated
 
