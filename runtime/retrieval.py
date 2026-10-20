@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import threading
 import time
-from runtime.skills import ROOT
+from runtime.station_paths import ROOT
 
 CONFIG=ROOT/'config/cpu-retrieval.json'
 MODELS=ROOT/'vendor/retrieval-models'
@@ -20,6 +20,8 @@ MAX_CONFIG=100000
 _LOCK=threading.Lock()
 _ENGINES={}
 _REASONS={}
+_RETRY_NOT_BEFORE={}
+_ENGINE_RETRY_SECONDS=30.0
 
 def sha256_file(path):
     digest=hashlib.sha256()
@@ -187,19 +189,31 @@ def disabled():
     return os.environ.get('LARPUS_CPU_RETRIEVAL','').casefold() in ('0','off','false','disabled')
 
 def engine(directory):
-    """Lazily load once per process and directory; None means use BM25 only."""
+    """Return the cached engine. A failed open is remembered for 30 seconds, then tried again.
+
+    None means this call uses BM25. The reason keeps the exception type only.
+    A ready engine stays cached until reset or process replacement."""
     if disabled():return None
     key=str(Path(directory).resolve())
+    now=time.monotonic()
     with _LOCK:
-        if key not in _ENGINES:
-            try:_ENGINES[key]=RemoteEngine() if worker_mode()=='remote' else Engine(directory);_REASONS[key]='ready ('+worker_mode()+')'
-            except Exception as exc:
-                _ENGINES[key]=None;_REASONS[key]=type(exc).__name__+': '+str(exc)[:200]
-        return _ENGINES[key]
+        loaded=_ENGINES.get(key)
+        if loaded is not None or now<_RETRY_NOT_BEFORE.get(key,0):return loaded
+        try:loaded=RemoteEngine() if worker_mode()=='remote' else Engine(directory)
+        except Exception as exc:
+            _REASONS[key]=type(exc).__name__
+            _RETRY_NOT_BEFORE[key]=now+_ENGINE_RETRY_SECONDS
+            return None
+        _ENGINES[key]=loaded
+        _REASONS[key]='ready ('+worker_mode()+')'
+        _RETRY_NOT_BEFORE.pop(key,None)
+        return loaded
 
 def status(directory):
+    key=str(Path(directory).resolve())
     loaded=engine(directory)
-    return {'cpu_retrieval':'ready' if loaded else 'bm25-only','reason':_REASONS.get(str(Path(directory).resolve()),'disabled by environment')}
+    return {'cpu_retrieval':'ready' if loaded else 'bm25-only','reason':_REASONS.get(key,'disabled by environment'),
+            'failure_cached':loaded is None and key in _RETRY_NOT_BEFORE}
 
 def reset():
-    with _LOCK:_ENGINES.clear();_REASONS.clear()
+    with _LOCK:_ENGINES.clear();_REASONS.clear();_RETRY_NOT_BEFORE.clear()

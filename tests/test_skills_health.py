@@ -65,17 +65,17 @@ class LocalSkillTests(unittest.TestCase):
             with patch.object(skills,'SKILLS',root),patch.object(skills,'REGISTRY',registry):
                 self.assertEqual(set(skills.load_skills()),{'example'})
                 file.write_text('changed',encoding='utf-8')
-                with self.assertRaises(ValueError):
-                    skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertIn('example',skills.skill_rejections())
                 file.write_bytes(b'---\nname: example\ndescription: Test\n---\nHelp plan an evening.\n')
                 (folder/'run.py').write_text('print(1)')
-                with self.assertRaises(ValueError):
-                    skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertEqual(skills.skill_rejections()['example'],'Skills must be prompt-only; ancillary executables are not allowed')
                 (folder/'run.py').unlink()
                 entry['origin']='downloaded'
                 write_json(registry,{'version':1,'skills':[entry]})
-                with self.assertRaises(ValueError):
-                    skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertEqual(skills.skill_rejections()['example'],'Only locally authored skills are allowed')
 
     def test_scanner_wrapper_denies_network_in_real_process(self):
         code="import sys,socket;from scripts.offline_skillspector import deny_network;sys.addaudithook(deny_network);socket.create_connection(('127.0.0.1',9),timeout=1)"

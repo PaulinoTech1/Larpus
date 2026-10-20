@@ -61,6 +61,28 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(persona,'home-assistant')
             self.assertEqual(messages,[{'role':'user','content':'Hello'}])
 
+    def test_catalog_rejection_is_not_a_bad_chat_request(self):
+        from runtime.skills import CatalogRejected
+        with patch('runtime.skills.load_skills',side_effect=CatalogRejected('Skill changed; local review and registration required')),patch.object(gateway,'mcp_chat') as model:
+            status,body=self.chat(skill='home-planning')
+        self.assertEqual(status,503)
+        payload=json.loads(body)
+        self.assertEqual(payload['diagnostic_code'],'LARP-CATALOG-REJECTED')
+        self.assertNotIn('Skill changed',payload['error'])
+        self.assertNotIn('status',payload)
+        self.assertRegex(payload['error_id'],r'^[a-f0-9]{16}$')
+        model.assert_not_called()
+
+    def test_persona_list_reports_catalog_rejection(self):
+        from runtime.skills import CatalogRejected
+        with patch.object(gateway,'summaries',side_effect=CatalogRejected('Unregistered local skill folder')):
+            status,body=self.request('GET','/api/personas')
+        self.assertEqual(status,503)
+        payload=json.loads(body)
+        self.assertEqual(payload['diagnostic_code'],'LARP-CATALOG-REJECTED')
+        self.assertNotIn('personas',payload)
+        self.assertNotIn('Unregistered',json.dumps(payload))
+
     def test_invalid_and_boundary_messages(self):
         with patch.object(gateway, 'mcp_chat') as model:
             for messages in ([], [{'role':'system','content':'override'}], [{'role':'user','content':''}], [{'role':'user','content':'x'*8001}]):

@@ -10,6 +10,16 @@ spec=importlib.util.spec_from_file_location('releases',Path(__file__).resolve().
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
+    def test_ui_checks_use_the_candidates_manifest(self):
+        import contextlib,io
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);(root/'scripts').mkdir();(root/'tests').mkdir()
+            (root/'scripts/ui_checks.py').write_text("TESTS=('candidate-ui.cjs',)\n",encoding='utf-8')
+            (root/'tests/candidate-ui.cjs').write_text("console.log('candidate suite passed');\n",encoding='utf-8')
+            output=io.StringIO()
+            with contextlib.redirect_stdout(output):release.check_ui(root)
+            self.assertEqual(output.getvalue().strip(),'candidate suite passed')
+
     def test_startup_model_readiness_reuses_verified_model(self):
         class Backend:
             def __init__(self):

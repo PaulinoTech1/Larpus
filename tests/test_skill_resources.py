@@ -59,7 +59,8 @@ class SkillResourceTests(unittest.TestCase):
                 item=api.verified_catalog()['example']
                 self.assertEqual(item.frontmatter,{'name':'example','description':'Test'})
                 (root/'example/SKILL.md').write_bytes(b'changed')
-                with self.assertRaises(ValueError):api.verified_catalog()
+                self.assertNotIn('example',api.verified_catalog())
+                self.assertIn('example',skills.skill_rejections())
 
     def test_strict_frontmatter_rejects_ambiguous_or_privilege_fields(self):
         api=self.api()
@@ -86,9 +87,14 @@ class SkillResourceTests(unittest.TestCase):
                 if kind=='duplicate':(root/'registry.json').write_text(json.dumps({'version':1,'skills':[entry,entry]}))
                 if kind=='foreign':entry['origin']='remote';(root/'registry.json').write_text(json.dumps({'version':1,'skills':[entry]}))
                 with patch.object(skills,'SKILLS',root),patch.object(skills,'REGISTRY',root/'registry.json'):
-                    with self.assertRaises((ValueError,OSError)):api.verified_catalog()
+                    if kind in ('extra-root','duplicate'):
+                        with self.assertRaises((ValueError,OSError)):api.verified_catalog()
+                    else:
+                        self.assertEqual(api.verified_catalog(),{})
+                        self.assertIn('example',skills.skill_rejections())
         with patch.object(skills,'inspect_message',side_effect=ValueError('scanner failed')):
-            with self.assertRaises(ValueError):api.verified_catalog()
+            self.assertEqual(api.verified_catalog(),{})
+            self.assertTrue(skills.skill_rejections())
 
     def test_symlinks_reject(self):
         api=self.api()
@@ -101,7 +107,11 @@ class SkillResourceTests(unittest.TestCase):
                 except OSError as exc:
                     self.skipTest('Symlink creation unavailable: '+str(exc))
                 with patch.object(skills,'SKILLS',root),patch.object(skills,'REGISTRY',root/'registry.json'):
-                    with self.assertRaises(ValueError):api.verified_catalog()
+                    if relative=='registry.json':
+                        with self.assertRaises(ValueError):api.verified_catalog()
+                    else:
+                        self.assertNotIn('example',api.verified_catalog())
+                        self.assertIn('example',skills.skill_rejections())
 
     def test_failed_activation_never_reaches_model(self):
         from runtime import inference

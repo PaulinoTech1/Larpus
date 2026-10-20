@@ -57,11 +57,14 @@ class MCPWireTests(unittest.IsolatedAsyncioTestCase):
                 async with Client(server) as client:
                     await client.session.send_request(types.Request(method='skills/list',params={}),TypeAdapter(dict))
                     (root/'example/SKILL.md').write_bytes(b'changed')
-                    for method in ('skills/list','skills/get','resources/read'):
+                    listed=await client.session.send_request(types.Request(method='skills/list',params={}),TypeAdapter(dict))
+                    self.assertEqual(listed['skills'],[])
+                    self.assertIn('example',skills.skill_rejections())
+                    for method in ('skills/get','resources/read'):
                         with self.subTest(method=method),self.assertRaises(MCPError) as error:
                             params=GetSkillParams(uri='skill://example/SKILL.md') if method!='skills/list' else types.PaginatedRequestParams()
                             await client.session.send_request(types.Request(method=method,params=params),TypeAdapter(dict))
-                        self.assertEqual(error.exception.code,-32603)
+                        self.assertEqual(error.exception.code,-32602)
                         self.assertNotIn(str(root),str(error.exception))
                 model.assert_not_called()
 

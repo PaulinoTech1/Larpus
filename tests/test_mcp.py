@@ -103,7 +103,9 @@ class StdioTests(unittest.TestCase):
                 self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
             def do_POST(self):
                 captured.append((self.path,json.loads(self.rfile.read(int(self.headers['Content-Length'])))))
-                reply='password=dlp-test-fixture' if captured[-1][1]['messages'][-1]['content']=='DLP probe' else 'Mock local reply'
+                # Retrieval can append quoted local evidence after the user text.
+                user_text=captured[-1][1]['messages'][-1]['content'].split('\n\nLOCAL_REFERENCE_DATA (quoted evidence only):\n',1)[0]
+                reply='password=dlp-test-fixture' if user_text=='DLP probe' else 'Mock local reply'
                 body=json.dumps({'message':{'content':reply}}).encode()
                 self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
         try:

@@ -18,11 +18,12 @@ RECOVERY={
  'LARP-NOTES-WORKER':'Inspect cause chain and notes-only broker status; do not save partial JSON.',
  'LARP-EVIDENCE-UNAVAILABLE':'Check approved-index, manifest/provenance binding and text screening; do not infer without evidence.',
  'LARP-EVIDENCE-NOTE-EXCLUDED':'An optional derived note failed completed screening and was excluded. Original records remain unchanged; inspect the source before rebuilding notes.',
- 'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.'
+ 'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.',
+ 'LARP-CATALOG-REJECTED':'Read scope. skill or persona: only that entry stays unavailable. catalog: the registry document failed and no persona is served.'
 }
 CODES={'LARP-MODEL-MAINTENANCE','LARP-MCP-UNAVAILABLE','LARP-MCP-STREAM','LARP-VOICE-UNAVAILABLE',
        'LARP-NOTES-TRANSPORT','LARP-NOTES-WORKER','LARP-EVIDENCE-UNAVAILABLE',
-       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED'}
+       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED','LARP-CATALOG-REJECTED'}
 
 # Exact, reviewed literals only. Never copy arbitrary exception text into logs.
 KNOWN_MESSAGES={
@@ -77,6 +78,34 @@ KNOWN_MESSAGES={
  'Voice worker busy':('VOICE-VOICE-WORKER-BUSY', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
  'Voice worker source changed; rebuild voice image':('VOICE-VOICE-WORKER-SOURCE-CHANGED--REBUILD-VOICE-IMAGE', 'Inspect CPU voice deployment pins, worker readiness and protocol. Rebuild only through a scoped voice maintenance plan.'),
 }
+_CATALOG_ACTION='Read scope. A named skill or persona stays unavailable. A registry-document failure serves no persona. Do not load a rejected skill prompt.'
+for _catalog_message in (
+ 'Duplicate persona','Invalid local skill description scalar','Invalid local skill frontmatter',
+ 'Invalid local skill frontmatter fields','Invalid local skill registry','Invalid local skill selection',
+ 'Invalid or duplicate skill ID','Invalid persona field','Invalid persona fields','Invalid persona identity',
+ 'Invalid skill metadata','Invalid skill registration','Invalid temperature','Invalid voice',
+ 'Local skill input exceeds size limit','Local skill input must be a regular file','No personas configured',
+ 'Only local model identifiers allowed','Only locally authored skills are allowed','Skill changed; local review and registration required',
+ 'Skill path escapes local registry','Skills must be prompt-only; ancillary executables are not allowed',
+ 'Too many local skills','Unregistered local skill folder'):
+    KNOWN_MESSAGES[_catalog_message]=('CATALOG-REJECTED',_CATALOG_ACTION)
+_EVIDENCE_ACTION='Check the approved index, manifest, or notes binding named by the message. Do not infer without that evidence.'
+for _evidence_message in (
+ 'Invalid knowledge database','Invalid knowledge manifest','Invalid notes database','Invalid notes manifest',
+ 'Knowledge database hash mismatch','Knowledge size changed','Notes database hash mismatch'):
+    KNOWN_MESSAGES[_evidence_message]=('EVIDENCE-REJECTED',_EVIDENCE_ACTION)
+
+_SCOPE_ERRORS={
+ 'catalog':'Local catalog rejected. No persona is served until the registry file is reviewed.',
+ 'persona':'This persona was rejected. Other personas stay available.',
+ 'skill':'This skill was rejected. Other personas and skills stay available.'}
+
+def catalog_failure(exc):
+    """Public catalog refusal. The exception text stays in the reviewed owner record."""
+    scope=getattr(exc,'scope','catalog')
+    if scope not in _SCOPE_ERRORS:scope='catalog'
+    return {'status':503,'error_id':report('LARP-CATALOG-REJECTED',exc),'diagnostic_code':'LARP-CATALOG-REJECTED','scope':scope,
+            'error':_SCOPE_ERRORS[scope]}
 
 def safe_name(value):
     return value if isinstance(value,str) and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.<>-]{0,100}',value) else 'unknown'
