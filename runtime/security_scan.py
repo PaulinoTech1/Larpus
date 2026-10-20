@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from mcp import Client
 from runtime.mcp_client import child_parameters
-from runtime.skills import ROOT, load_skills
+from runtime.station_paths import ROOT
+from runtime.skills import load_skills
 
 DATA=ROOT/('release-state/security' if (ROOT/'deployment.json').is_file() else 'data/security')
 APPROVED=ROOT/'config/mcp-approved.json'

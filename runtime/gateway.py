@@ -1,5 +1,5 @@
 """Local UI gateway with optional explicitly scoped LAN access."""
-from runtime.diagnostics import report
+from runtime.diagnostics import catalog_failure, report
 import ipaddress
 import json
 import os
@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
-from runtime.agents import ROOT, load_personas, messages_for, summaries
+from runtime.agents import ROOT, CatalogRejected, load_personas, messages_for, persona_rejections, require_persona, skill_rejections, summaries
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
 from runtime.execution_profiles import resolve, to_wire
@@ -31,9 +31,7 @@ def validate_chat_request(data):
     if 'speak' in data and type(data['speak']) is not bool:
         raise ValueError('Invalid speech flag')
     execution=execution_kwargs(data)
-    persona = PERSONAS.get(data['persona']) if isinstance(data['persona'], str) else None
-    if persona is None:
-        raise ValueError('Unknown persona')
+    persona = require_persona(data['persona'])
     messages_for(persona, data['messages'],data.get('skill'))
     return execution
 
@@ -111,7 +109,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/login':
             path = '/login.html'
         if path == '/api/personas':
-            return self.reply(200, {'personas': [{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in PERSONAS.values()],'skills':summaries()})
+            try:current=load_personas();listed=summaries()
+            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
+            return self.reply(200, {'personas': [{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in current.values()],'skills':listed,'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}})
         if path == '/api/health':
             try:
                 self.reply(200, mcp_health())
@@ -161,10 +161,11 @@ class Handler(BaseHTTPRequestHandler):
             from runtime.context import compression_messages
             try:
                 data=self.read_json(262144)
-                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or data['persona'] not in PERSONAS:raise ValueError('Invalid compression request')
+                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or require_persona(data['persona']) is None:raise ValueError('Invalid compression request')
                 messages=compression_messages(data['prior'],data['fragments'])
             except TextHeld:
                 return self.reply(422,{'error':'Compression input held by local filtering. Original chat retained.'})
+            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
             except (ValueError,TypeError,KeyError):
                 return self.reply(400,{'error':'Invalid or oversized compression batch.'})
             if not LOCK.acquire(blocking=False):return self.reply(409,{'error':'Inference busy. Try again shortly.'})
@@ -195,7 +196,7 @@ class Handler(BaseHTTPRequestHandler):
                     inspect_message(text)
                     # Replays are client-supplied text, not trusted agent output.
                     # Fail closed before TTS; generated replies still use isolated DLP.
-                    if inspect_output(text,system_prompt='\n'.join(p['system_prompt'] for p in PERSONAS.values())):
+                    if inspect_output(text,system_prompt='\n'.join(p['system_prompt'] for p in load_personas().values())):
                         return self.reply(422,{'error':'Speech held by local output DLP.'})
                     return self.reply(200,call({'action':'synthesize','text':text}))
                 if not isinstance(data,dict) or set(data)!={'action','audio'} or data['action']!='transcribe' or not isinstance(data['audio'],str):
@@ -208,7 +209,7 @@ class Handler(BaseHTTPRequestHandler):
                 elif phrase=='larpus reset chat':
                     confirmation='Fresh conversation. A clean slate, without the chalk dust.'
                 elif phrase.startswith('larpus switch to '):
-                    selected=next((p for p in PERSONAS.values() if p['name'].lower()==phrase[17:]),None)
+                    selected=next((p for p in load_personas().values() if p['name'].lower()==phrase[17:]),None)
                     if selected:
                         confirmation='Switching to '+selected['name']+'. Let us get into character.'
                 if confirmation:
@@ -219,6 +220,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200,result)
             except TextHeld:
                 return self.reply(422,{'error':'Speech held by local text filter.'})
+            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
             except (ValueError,TypeError):
                 return self.reply(400,{'error':'Invalid voice request. Use mono 16 kHz PCM WAV, at most 30 seconds.'})
             except OSError:
@@ -236,6 +238,7 @@ class Handler(BaseHTTPRequestHandler):
                 'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.',
                 'reason':exc.reason, 'message_index':exc.index,
             })
+        except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
         except (ValueError, TypeError):
             return self.reply(400, {'error': 'Invalid chat request. Use a known persona and alternating messages, up to 8000 characters each.'})
         if not LOCK.acquire(blocking=False):

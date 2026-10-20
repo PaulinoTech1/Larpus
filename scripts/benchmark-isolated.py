@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from runtime.isolation import preflight,wsl_command
 from runtime.security_scan import write_json,timestamp
-from runtime.skills import ROOT
+from runtime.station_paths import ROOT
 
 # The fixed source executes inside the existing no-network agent container. It
 # receives no user-provided paths, URLs, commands, prompts or model identifiers.

@@ -13,6 +13,8 @@ class AssemblyPipelineTests(unittest.TestCase):
    scorer=scoring_pipeline.Pipeline(vectors,preferred="assembly")
   self.assertEqual(scorer.status()['active_id'],'numpy')
   self.assertNotIn('error',scorer.status(),'Successful worker responses must not use the reserved transport error key')
+  self.assertIn('next scorer retry',scorer.status()['notice'])
+  self.assertEqual(scorer.status()['numpy_until'],'retry-30s')
   np.testing.assert_array_equal(scorer.score(np.ones(3,dtype=np.float32)),np.ones(3))
   with self.assertRaises(ValueError):scorer.select('assembly')
 
@@ -28,7 +30,12 @@ class AssemblyPipelineTests(unittest.TestCase):
   with patch.object(scorer.native,'score',side_effect=RuntimeError('bad')):
    np.testing.assert_array_equal(scorer.score(np.ones(4,dtype=np.float32)),np.ones(4))
   self.assertEqual(scorer.status()['active_id'],'numpy')
-  self.assertTrue(scorer.status()['notice'])
+  self.assertIn('next scorer retry',scorer.status()['notice'])
+  self.assertEqual(scorer.status()['numpy_until'],'retry-30s')
+  with patch.object(scoring_pipeline,'NativeScorer',Native),patch.object(scoring_pipeline.time,'monotonic',return_value=scorer._retry_at):
+   np.testing.assert_array_equal(scorer.score(np.ones(4,dtype=np.float32)),np.ones(4))
+  self.assertEqual(scorer.status()['active_id'],'assembly')
+  self.assertIsNone(scorer.status()['numpy_until'])
   with self.assertRaises(ValueError):scorer.select('../other')
 
  def test_control_protocol_is_strict_and_not_a_new_chat_tool(self):
@@ -47,6 +54,7 @@ class AssemblyPipelineTests(unittest.TestCase):
   np.testing.assert_array_equal(scorer.score(q,limit=1),q)
   self.assertEqual(scorer.status()['last_used'],'numpy')
   self.assertEqual(scorer.status()['ambiguity_fallbacks'],1)
+  self.assertIsNone(scorer.status()['numpy_until'])
 
  def test_interior_near_ties_may_reorder_without_numpy_recheck(self):
   class Native:

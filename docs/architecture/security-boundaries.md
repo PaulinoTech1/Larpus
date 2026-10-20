@@ -39,9 +39,11 @@ Relevant existing suites: `tests/test_isolation.py`, `test_isolation_snapshot.py
 
 An absent optional notes tier returns no derived notes, but a present invalid
 manifest rejects (`knowledge.notes_database`). A missing CPU retrieval worker
-can fall back to BM25, while required index/scanner failure cannot. A corrupted
-registered skill rejects the complete catalog (`skills.load_skills`); do not
-silently ignore tampering to make unrelated roles appear available. Owner removal
+can fall back to BM25, while required index/scanner failure cannot. A corrupt
+registry document, an unnamed extra folder, or a duplicate id rejects the whole
+catalog. A named skill file failure rejects that skill only, and a named
+persona file failure rejects that persona only. The rejection is returned in
+`rejected` and the skill prompt is not loaded. Owner removal
 with a consistent newly reviewed registry is different from an unexplained file
 disappearance. Optional evaluator failure cannot currently disable a security
 check because no runtime evaluator hook was found; new separation still requires

@@ -226,8 +226,8 @@ def prepare_selection(dest,profile,identifier):
     return selection_args
 
 def check_ui(root):
-    from scripts.ui_checks import TESTS
-    for test in TESTS:print(run(root,'node.exe','tests/'+test),flush=True)
+    tests=json.loads(run(root,sys.executable,'-c','import json;from scripts.ui_checks import TESTS;print(json.dumps(TESTS))'))
+    for test in tests:print(run(root,'node.exe','tests/'+test),flush=True)
 
 
 def verify_pipeline(profile):
@@ -302,7 +302,7 @@ def prepare(identifier):
     write(dest/'deployment.json',profile)
     if (dest/'runtime/scoring_pipeline.py').exists():verify_pipeline(profile)
     prepare_voice(dest,old,linux)
-    print(run(dest,sys.executable,'scripts/test-local.py'),flush=True)
+    print(run(dest,sys.executable,'scripts/test-local.py',timeout=600),flush=True)
     print(run(dest,sys.executable,'scripts/evaluate-companion.py'),flush=True)
     check_ui(dest)
     print(run(dest,sys.executable,'-m','runtime.isolation','check'),flush=True)

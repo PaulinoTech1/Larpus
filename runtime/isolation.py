@@ -6,7 +6,7 @@ import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from runtime.skills import ROOT
+from runtime.station_paths import ROOT
 
 PROFILE=ROOT/'deployment.json' if (ROOT/'deployment.json').is_file() else ROOT/'data/isolated-deployment.json'
 DISTRO='Larpus'

@@ -56,7 +56,7 @@ accuracy. The selected release remains unchanged.
 | Interface clarity | 3 -> 4 | Frozen strict context, canonical wire contract, independently validated metadata; legacy tools unchanged | High |
 | Independent testability | 3 -> 4 | Import independence, fake-clock, injected observation runner and per-profile fault tests; globals remain | Medium-high |
 | Component replaceability | 3 -> 3 | NumPy/Assembly substitution preserved; ordinary provider remains pinned | Medium-high |
-| Failure containment | 3 -> 3 | Cancellation/truncation recovery and optional-removal/fallback tests; catalog-wide coupling remains | Medium |
+| Failure containment | 3 -> 3 | Cancellation/truncation recovery and optional-removal/fallback tests. The 2026-10-20 checkout scopes a named skill or persona failure to that entry, retries a retrieval open, and retries a failed scorer after 30 seconds. The score stays 3 because a registry-document failure and the broker fence still stop more than one request. | Medium |
 | Security-boundary independence | 3 -> 4 | Shared validators and mutation/fault matrix across profiles; not exhaustive hostile testing | Medium-high |
 | Configuration independence | 2 -> 3 | Request-local immutable selection; deployment environment/global registries still authoritative | Medium-high |
 | Observability | 3 -> 4 | Numeric bounded traces, receipt-pinned benchmark, failures and independent quality records; no physical paint/CPU thermal proof | Medium-high |

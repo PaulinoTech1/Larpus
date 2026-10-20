@@ -52,7 +52,7 @@ class CandidateGuardTests(unittest.TestCase):
   import numpy as np
   from runtime.scoring_pipeline import Pipeline
   p=object.__new__(Pipeline);p.requested='assembly';p.max_norm=1.;p.vectors=np.ones((20,1),dtype='float32')
-  p.groups=np.zeros(20,dtype='int64');p.ambiguity_fallbacks=0
+  p.groups=np.zeros(20,dtype='int64');p.ambiguity_fallbacks=0;p._retry_at=None
   class Native:
    def score(self,q):return np.ones(20,dtype='float32')
   p.native=Native();apply_strict_guard(p)

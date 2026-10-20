@@ -47,7 +47,8 @@ class ExecutionModularityTests(unittest.TestCase):
             with patch.object(skills,'SKILLS',root),patch.object(skills,'REGISTRY',registry):
                 self.assertEqual(set(skills.load_skills()),{'example'})
                 path.write_text('changed')
-                with self.assertRaises(ValueError):skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertIn('example',skills.skill_rejections())
                 # Reviewed removal updates both registration and persona allowlist.
                 registry.write_text(json.dumps({'version':1,'skills':[]}))
                 path.unlink()

@@ -1,5 +1,26 @@
 # Updates while Larpus remains usable
 
+## 2026-10-20 Failure isolation - activated
+
+Activated `042f91c0a1454887a694c945f49237ad`; previous
+`7df2e957751642d6ace4630fa047fe94` is retained for rollback. This is a scoped
+source variant of that production release, retaining its corpus, prompts,
+configuration and transport. Execution profiles and MCP Skills remain
+unpromoted. Frozen preparation passed the 321-test suite, ten UI suites,
+companion contracts, scorer switching, isolation and all 70 scan targets, with
+69 clean skills and the same 11 reviewed MCP warnings. Complexity limits were
+unchanged. Two rejected preparations and their reasons are retained.
+
+Live synthetic broker preemption/recovery, chat, completed streaming, CPU speech,
+full GPU placement and CA-validated unauthenticated LAN rejection passed. Model
+and voice images/start times stayed unchanged. Activation's whole command took
+30.374 seconds; catalog sampling bracketed its two failed requests between
+successes 3.729 seconds apart. This was a brief gateway rebind, not zero downtime.
+LAN tabs need a fresh login. No rollback was required; rendered HUD, physical
+microphone and second-device acceptance remain unverified. See the
+[deployment record and two-minute owner pass](FAILURE_ISOLATION_RELEASE_2026_10_20.md)
+for the exact source delta, validation limits, retained failures and receipts.
+
 ## 2026-10-20 Verified overlap screen - prepared, not promoted
 
 Prepared `306986ac3d954e7791b2b7a3028838e2` and did not activate it. Selected

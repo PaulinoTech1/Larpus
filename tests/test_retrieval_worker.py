@@ -29,7 +29,10 @@ class RetrievalWorkerTests(unittest.TestCase):
     def test_remote_mode_never_loads_models_in_chat_process(self):
         with patch.dict(os.environ,{'LARPUS_RETRIEVAL_WORKER':'remote'}),patch.object(retrieval_worker,'call',side_effect=OSError('no socket')),patch.object(retrieval,'Engine',side_effect=AssertionError('local load')):
             self.assertIsNone(retrieval.engine(knowledge.DIRECTORY))
-            self.assertIn('no socket',retrieval.status(knowledge.DIRECTORY)['reason'])
+            shown=retrieval.status(knowledge.DIRECTORY)
+            self.assertEqual(shown['reason'],'OSError')
+            self.assertNotIn('no socket',shown['reason'])
+            self.assertTrue(shown['failure_cached'])
 
     def test_remote_engine_relays_and_validates(self):
         replies={'status':{'ready':True},'neighbors':{'rowids':[7,8]},'rerank':{'scores':[0.5,None]}}
@@ -48,6 +51,28 @@ class RetrievalWorkerTests(unittest.TestCase):
             engine=retrieval.RemoteEngine()
         with patch.object(knowledge,'_engine',return_value=engine),patch.object(retrieval_worker,'call',side_effect=TimeoutError()):
             self.assertEqual(knowledge._hybrid('q',rows,False),rows)
+
+    def test_open_retries_io_and_waits_for_a_file_change_after_rejection(self):
+        previous=os.environ.get('LARPUS_RETRIEVAL_WORKER')
+        self.addCleanup(lambda: os.environ.pop('LARPUS_RETRIEVAL_WORKER',None) if previous is None else os.environ.__setitem__('LARPUS_RETRIEVAL_WORKER',previous))
+        calls=[]
+        def reject(directory):
+            calls.append(1)
+            raise ValueError('hash mismatch SECRET')
+        def sleep(seconds):
+            self.assertEqual(seconds,retrieval._ENGINE_RETRY_SECONDS)
+            raise RuntimeError('stop')
+        with patch.object(retrieval_worker,'_marker',return_value='same'),patch.object(retrieval,'Engine',reject),patch.object(retrieval_worker.time,'sleep',sleep):
+            with self.assertRaises(RuntimeError):retrieval_worker._load_engine(knowledge.DIRECTORY)
+        self.assertEqual(calls,[1])
+        calls.clear()
+        def retry(directory):
+            calls.append(1)
+            if len(calls)==1:raise OSError('busy SECRET')
+            return 'ready'
+        with patch.object(retrieval_worker,'_marker',return_value='same'),patch.object(retrieval,'Engine',retry),patch.object(retrieval_worker.time,'sleep',lambda _seconds:None):
+            self.assertEqual(retrieval_worker._load_engine(knowledge.DIRECTORY),'ready')
+        self.assertEqual(len(calls),2)
 
     def test_image_runs_worker_and_remote_mode(self):
         containerfile=(ROOT/'deploy/windows-home/Containerfile').read_text(encoding='utf-8')

@@ -36,7 +36,7 @@ class Scheduler:
         self.preemptions=0;self.recoveries=0
     def snapshot(self):
         with self.condition:
-            return {'active':self.active.lane if self.active else None,
+            return {'scope':'broker-admission','active':self.active.lane if self.active else None,
                     'received_frame':bool(self.active and self.active.received),
                     'waiting_chat':self.waiting,'faulted':self.faulted,
                     'preemptions':self.preemptions,'confirmed_recoveries':self.recoveries}

@@ -1,15 +1,15 @@
 """Server-owned inference service shared only through the local MCP interface."""
-from runtime.diagnostics import report
+from runtime.diagnostics import catalog_failure, report
 from runtime.execution_profiles import resolve
 from runtime.execution_trace import Trace
 import json
 import re
 import threading
 import time
-from runtime.agents import ROOT, load_personas, messages_for
+from runtime.agents import ROOT, load_personas, messages_for, require_persona
 from runtime.local_ollama import ollama, chat_stream, BrokerRejected
 from runtime.text_filter import TextHeld
-from runtime.skills import summaries
+from runtime.skills import CatalogRejected, summaries
 from runtime.dlp import gate, stream_pending
 from runtime.knowledge import augment, NOTE_TIER
 from runtime.context import CAPACITY,OUTPUT_LIMIT,INPUT_BOUND,COMPRESS_PREFIX,SUMMARY_SYSTEM,ContextPressure,upper_bound,compression_data,compression_envelope,summary_result,encoded,validate_record
@@ -34,7 +34,13 @@ def gpu_placement(tag):
     return 'GPU' if vram>=size else 'CPU/GPU' if vram else 'CPU'
 
 def personas():
-    return {'personas':[{key:p.get(key,[]) for key in ('id','name','description','model','skills')} for p in PERSONAS.values()],'skills':summaries()}
+    from runtime.agents import persona_rejections
+    from runtime.skills import skill_rejections
+    try:
+        current=load_personas();listed=summaries()
+    except CatalogRejected as exc:return catalog_failure(exc)
+    return {'personas':[{key:p.get(key,[]) for key in ('id','name','description','model','skills')} for p in current.values()],'skills':listed,
+            'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}}
 
 def health():
     try:
@@ -76,14 +82,13 @@ def chat(persona, messages, skill=None, on_chunk=None, execution=None):
     try:
         if len(json.dumps({'persona':persona,'messages':messages}).encode())>524288:
             raise ValueError('Input too large')
-        selected=PERSONAS.get(persona) if isinstance(persona,str) else None
-        if selected is None:
-            raise ValueError('Unknown persona')
+        selected=require_persona(persona)
         prepared=messages_for(selected,messages,skill)
         validate_record(messages)
         compression=compression_envelope(messages)
     except TextHeld as exc:
         return {'status':503 if exc.unavailable else 422,'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.','reason':exc.reason,'message_index':exc.index}
+    except CatalogRejected as exc:return catalog_failure(exc)
     except (ValueError,TypeError):
         return {'status':400,'error':'Invalid persona or conversation'}
     trace.mark('input')
@@ -98,6 +103,7 @@ def chat(persona, messages, skill=None, on_chunk=None, execution=None):
         else:prepared,evidence=augment(prepared,persona)
     except ContextPressure:
         return {'status':413,'code':'context_pressure','error':'Conversation needs compression before continuing. Use COMPRESS or shorten the latest message.'}
+    except CatalogRejected as exc:return catalog_failure(exc)
     except Exception as exc:
         error_id=report('LARP-EVIDENCE-UNAVAILABLE',exc)
         return {'status':503,'error_id':error_id,'diagnostic_code':'LARP-EVIDENCE-UNAVAILABLE','error':'Approved local evidence was unavailable or rejected during screening. Check the library diagnostic; no internet fallback is used.'}
@@ -142,6 +148,7 @@ def chat(persona, messages, skill=None, on_chunk=None, execution=None):
             return {'status':503,'error':'Full GPU model placement unavailable. Free GPU memory and retry; CPU fallback replies are disabled.'}
         content=checked_content(result)
         return release(content,result)
+    except CatalogRejected as exc:return catalog_failure(exc)
     except BrokerRejected as exc:
         status=429 if exc.status==429 else 503
         code=exc.code if exc.code in ('inference_budget','queue_full','admission_timeout','cancellation_unconfirmed','inference_deadline','model_switching') else 'broker_held'

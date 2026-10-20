@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from runtime.isolation import wsl_command
-from runtime.skills import ROOT
+from runtime.station_paths import ROOT
 
 with (ROOT/'data/isolated-source.tar').open('rb') as source:
     subprocess.run(wsl_command('/bin/tar','-xf','-','-C','/home/larpus/build'),stdin=source,check=True,timeout=60)

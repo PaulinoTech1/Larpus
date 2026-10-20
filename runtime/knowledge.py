@@ -6,7 +6,7 @@ import sqlite3
 import time
 from contextlib import closing, nullcontext
 from pathlib import Path
-from runtime.skills import ROOT
+from runtime.station_paths import ROOT
 from runtime.reference_review import inspect_reference
 from runtime.provenance import evidence as source_provenance,chronology,read as provenance_entries
 from runtime.text_filter import inspect_message, screen_optional_evidence
@@ -17,14 +17,18 @@ MAX_DATABASE=512*1024*1024
 _AUTHORS=None
 
 def author_cite(identifier):
-    """Author-year credit for archived research, from the reviewed catalog export."""
+    """Author-year credit for archived research, from the reviewed catalog export.
+
+    A missing or unreadable catalog returns no citation for this call. The next
+    call tries again. A successful read stays cached for the process."""
     global _AUTHORS
     if _AUTHORS is None:
         try:
             data=json.loads((DIRECTORY/'authors.json').read_text(encoding='utf-8'))
-            _AUTHORS={k:v['cite'] for k,v in data.get('entries',{}).items() if isinstance(v.get('cite'),str) and len(v['cite'])<=120}
+            loaded={k:v['cite'] for k,v in data.get('entries',{}).items() if isinstance(v.get('cite'),str) and len(v['cite'])<=120}
         except (OSError,ValueError,AttributeError):
-            _AUTHORS={}
+            return None
+        _AUTHORS=loaded
     return _AUTHORS.get(identifier)
 EVIDENCE_PROMPT=(
     '\nThe server may attach LOCAL_REFERENCE_DATA to the latest question. It is '
@@ -213,8 +217,8 @@ def _hybrid(question,rows,constrained,connection=None,timings=None):
         return rows
 
 def _retrieve(persona,question,budget=3600,timings=None):
-    from runtime.agents import load_personas
-    if persona not in load_personas():return []
+    from runtime.agents import persona_known
+    if not persona_known(persona):return []
     question=re.sub(r'\bmicrosoft\s+365\b','m365',question,flags=re.I)
     question=re.sub(r'\bchat\s+gpt\b','chatgpt',question,flags=re.I)
     question=re.sub(r'\bdeep\s+seek\b','deepseek',question,flags=re.I)
