@@ -65,17 +65,17 @@ class LocalSkillTests(unittest.TestCase):
             with patch.object(skills,'SKILLS',root),patch.object(skills,'REGISTRY',registry):
                 self.assertEqual(set(skills.load_skills()),{'example'})
                 file.write_text('changed',encoding='utf-8')
-                with self.assertRaises(ValueError):
-                    skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertIn('example',skills.skill_rejections())
                 file.write_bytes(b'---\nname: example\ndescription: Test\n---\nHelp plan an evening.\n')
                 (folder/'run.py').write_text('print(1)')
-                with self.assertRaises(ValueError):
-                    skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertEqual(skills.skill_rejections()['example'],'Skills must be prompt-only; ancillary executables are not allowed')
                 (folder/'run.py').unlink()
                 entry['origin']='downloaded'
                 write_json(registry,{'version':1,'skills':[entry]})
-                with self.assertRaises(ValueError):
-                    skills.load_skills()
+                self.assertEqual(skills.load_skills(),{})
+                self.assertEqual(skills.skill_rejections()['example'],'Only locally authored skills are allowed')
 
     def test_scanner_wrapper_denies_network_in_real_process(self):
         code="import sys,socket;from scripts.offline_skillspector import deny_network;sys.addaudithook(deny_network);socket.create_connection(('127.0.0.1',9),timeout=1)"
@@ -95,11 +95,11 @@ class HealthTests(unittest.TestCase):
             tools=[{'name':name} for name in ('chat_local','list_personas','local_status')]
             write_json(approved,{'tools':tools})
             write_json(root/'summary.json',{'fingerprint':'fixture','status':'pass'})
-            with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'discover',return_value=tools),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
+            with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'surface',return_value={'protocol_version':'2026-07-28','tools':tools,'capabilities':{'resources':{},'extensions':{'io.modelcontextprotocol/skills':{}}}}),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
                 report=health.check(False)
                 self.assertEqual(report['status'],'degraded')
                 self.assertTrue(any(c['status']=='unverified' for c in report['checks']))
-                with patch.object(health,'discover',return_value=[{'name':'fetch_url'}]):
+                with patch.object(health,'surface',return_value={'protocol_version':'2026-07-28','tools':[{'name':'fetch_url'}],'capabilities':{}}):
                     report=health.check(False)
                     self.assertEqual(report['status'],'error')
 

@@ -6,7 +6,7 @@ from runtime.isolation import wsl_command
 from scripts import releases
 CLIENT="""import json,sys,urllib.request
 j=json.load(sys.stdin);r=urllib.request.Request('http://127.0.0.1:11434'+j['path'],json.dumps(j['body']).encode() if 'body' in j else None,{'Content-Type':'application/json'})
-with urllib.request.urlopen(r,timeout=300) as v:print(v.read(2000000).decode())
+with urllib.request.urlopen(r,timeout=j['timeout']) as v:print(v.read(2000000).decode())
 """
 class Backend:
  def __init__(self):
@@ -35,11 +35,12 @@ class Backend:
   if not self.cache.exists():return False
   cached=json.loads(self.cache.read_text()).get(identifier,{})
   return cached.get('sha256')==entry['weight_sha256'] and cached.get('qualified_context')==entry['context']
- def call(self,path,body=None):
+ def call(self,path,body=None,timeout=300,process_timeout=None):
+  if type(timeout) is not int or not 1<=timeout<=300:raise ValueError('Invalid fixed local model timeout')
   args=['run','-i','--rm','--pull=never','--pod=larpus-offline','--read-only','--read-only-tmpfs=false','--user=1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=32','--memory=256m','--cpus=1','--log-driver=none','--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=32m','--entrypoint=python',self.profile['agent_image'],'-c',CLIENT]
-  value={'path':path}
+  value={'path':path,'timeout':timeout}
   if body is not None:value['body']=body
-  result=subprocess.run(wsl_command('podman',*args),input=json.dumps(value),capture_output=True,text=True,encoding='utf8',timeout=330)
+  result=subprocess.run(wsl_command('podman',*args),input=json.dumps(value),capture_output=True,text=True,encoding='utf8',timeout=330 if process_timeout is None else process_timeout)
   if result.returncode:raise RuntimeError('Fixed local model operation failed') from subprocess.CalledProcessError(result.returncode,['fixed-local-model-operation'])
   return json.loads(result.stdout)
  def idle(self):
@@ -49,15 +50,24 @@ class Backend:
  def unload(self,identifier):self.call('/api/generate',{'model':selection.model(identifier)['tag'],'keep_alive':0})
  def identity(self,identifier):
   e=selection.model(identifier);show=self.call('/api/show',{'model':e['tag']})
-  if e['weight_sha256'] not in show['modelfile']:raise ValueError('Model weight identity differs')
+  if not isinstance(show,dict) or not isinstance(show.get('modelfile'),str) or e['weight_sha256'] not in show['modelfile']:raise ValueError('Model weight identity differs')
  def load(self,identifier):
   self.identity(identifier);e=selection.model(identifier)
   reply=self.call('/api/chat',{'model':e['tag'],'messages':[{'role':'user','content':'Reply with ready.'}],'stream':False,'think':False,'keep_alive':-1,'options':{'num_gpu':99,'num_ctx':e['context'],'num_predict':16,'temperature':0}})
   if not isinstance(reply,dict) or reply.get('error') or reply.get('done') is not True or not isinstance(reply.get('message'),dict):raise ValueError('Warm-up did not complete')
   content=reply['message'].get('content')
   if not isinstance(content,str) or not content.strip():raise ValueError('Warm-up produced no text')
+ def _loaded_model(self,entry):
+  status=self.call('/api/ps')
+  if not isinstance(status,dict) or not isinstance(status.get('models'),list):raise ValueError('Invalid model process status')
+  matches=[x for x in status['models'] if isinstance(x,dict) and x.get('name')==entry['tag']]
+  if len(matches)!=1:raise ValueError('Selected model is not loaded exactly once')
+  return matches[0]
+ def _verify_placement(self,model,entry):
+  fields=('size','size_vram','context_length')
+  if any(type(model.get(field)) is not int for field in fields):raise ValueError('Invalid model placement report')
+  if model['size']<=0 or model['size_vram']<model['size']:raise releases.ModelPlacementPending('Selected model is not yet fully resident on the GPU')
+  if model['context_length']!=entry['context']:raise ValueError('Model context differs from the approved selection')
  def verify(self,identifier):
-  e=selection.model(identifier);m=next(x for x in self.call('/api/ps')['models'] if x['name']==e['tag'])
-  if m['size']<=0 or m['size_vram']<m['size'] or m['context_length']!=e['context']:raise ValueError('Full GPU/context verification failed')
-  self.identity(identifier)
-  return m
+  entry=selection.model(identifier);model=self._loaded_model(entry);self._verify_placement(model,entry);self.identity(identifier)
+  return model

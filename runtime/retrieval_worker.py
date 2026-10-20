@@ -39,7 +39,7 @@ def send_frame(stream,value,limit):
 
 def _pipeline_request(request):
     if set(request)=={'action'}:return request
-    if set(request)=={'action','pipeline_id'} and request['pipeline_id'] in ('numpy','assembly'):return request
+    if set(request)=={'action','pipeline_id'} and request['pipeline_id'] in ('numpy','assembly','assembly-optimized'):return request
     raise ValueError('Invalid pipeline selection')
 
 def _rerank_request(request):
@@ -74,18 +74,37 @@ def handle(engine,request,loaded_ms):
         return {'rowids':engine.neighbors(request['question'],request['limit'])}
     return {'scores':engine.rerank(request['question'],request['passages'],time.monotonic()+request['budget_ms']/1000)}
 
+def _marker(directory):
+    """Cheap identity of the index files. A content rejection is not reread until this changes."""
+    path=Path(directory)
+    try:
+        return tuple(sorted(item.name+'|'+str(item.stat().st_mtime_ns) for item in path.iterdir() if item.is_file()))
+    except OSError:
+        return None
+
+def _load_engine(directory):
+    """Stay alive when the index cannot be opened. OSError retries; other failures wait for a file change."""
+    from runtime import retrieval
+    os.environ['LARPUS_RETRIEVAL_WORKER']='local'
+    seen=object()
+    while True:
+        marker=_marker(directory)
+        if marker!=seen:
+            try:
+                return retrieval.Engine(directory)
+            except OSError as exc:
+                print('retrieval worker disabled: '+type(exc).__name__,file=sys.stderr,flush=True)
+            except Exception as exc:
+                print('retrieval worker disabled: '+type(exc).__name__,file=sys.stderr,flush=True)
+                seen=marker
+        time.sleep(retrieval._ENGINE_RETRY_SECONDS)
+
 def serve():
     import signal
     signal.signal(signal.SIGTERM,lambda *_:sys.exit(0))  # PID 1: honour podman stop
-    from runtime import retrieval
-    from runtime.knowledge import DIRECTORY
-    os.environ['LARPUS_RETRIEVAL_WORKER']='local'  # this process loads models itself
+    from runtime.station_paths import ROOT
     started=time.monotonic()
-    try:engine=retrieval.Engine(DIRECTORY)  # full hash verification, once
-    except Exception as exc:
-        # Stay alive (the container must not exit) but never listen: clients use BM25.
-        print('retrieval worker disabled: '+type(exc).__name__,file=sys.stderr,flush=True)
-        while True:time.sleep(3600)
+    engine=_load_engine(ROOT/'knowledge')
     loaded_ms=round((time.monotonic()-started)*1000)
     path=Path(SOCKET);path.unlink(missing_ok=True)
     with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as server:

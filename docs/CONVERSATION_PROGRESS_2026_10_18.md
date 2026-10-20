@@ -65,7 +65,33 @@ Four owner-only candidate inference probes completed through the approved broker
 These are a small behavioral sample, not a guarantee against future copied
 phrasing or semantic repetition. The initial result also demonstrates that the
 change does not resolve every source-grounding or conversational-quality issue.
-Activation evidence will be added after release checks.
+The final streamed follow-up after activation also avoided both copied endings
+and stayed within three sentences. It still characterised the feeling as a
+psychological artifact of sunk-cost bias. That unsupported interpretation is a
+remaining quality issue; the update should not be described as solving all tone
+or grounding problems.
+
+## Activation and availability
+
+Release `b029d94bfc9b43f8a3ab30c38ddad78a` completed all 70 scan targets,
+retaining the same 11 reviewed MCP findings and no skill warnings. It was
+activated successfully without rollback. The whole activation command took
+25.079 seconds, including validation, drain, readiness and pruning; this is not
+measured listener downtime or a zero-downtime claim.
+
+Post-activation checks verified both pipeline switches, Assembly selected and
+used by the live reply, CA-validated unauthenticated LAN controls returning 401,
+and passing functional station health. Overall health remains degraded solely by
+the retained scan warning. GPU model and CPU voice container IDs, images and
+start times matched the pre-update receipt. Bindings, authentication, model and
+voice images, dependencies and owner data were unchanged. LAN sessions need a
+fresh login after the gateway change; the existing HUD preserves the transcript
+and draft. These are backend changes and do not require refreshing the HUD.
+
+Availability evidence is in `progress-availability-before.json`,
+`progress-availability-after.json`, `progress-activation.json`,
+`progress-v3-prepare.log`, and `progress-live-followup.json` under
+`data/assembly-linux-build/`.
 
 Owner-local receipts are under `data/assembly-linux-build/`:
 

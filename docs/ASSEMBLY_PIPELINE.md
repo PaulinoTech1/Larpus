@@ -1,24 +1,31 @@
-# Assembly pipeline and NumPy
+# Assembly scoring and NumPy
 
-The HUD's **Retrieval pipeline** selector switches between **Assembly pipeline**
-and **NumPy** without changing the model or clearing the conversation. Choose a
-pipeline, then press **Switch pipeline**. The choice is station-wide and applies
-between serialized retrieval operations. Assembly is the startup default when
-available in the active near-tie release described below; the
-selection lasts until the retrieval service restarts. It does not require a GPU
-model reload.
+The HUD **Retrieval pipeline** selector switches among **Assembly optimized**,
+**Assembly original**, and **NumPy** without changing the model or clearing the
+conversation. Choose a pipeline, then press **Switch pipeline**. The choice is
+station-wide and applies between serialized retrieval operations. Assembly
+optimized is the startup default when its pinned pool loads. If that load or a
+later score fails, the worker uses NumPy and leaves Assembly original selectable
+when that backend loaded. The choice lasts until the retrieval service restarts.
+It does not reload the GPU model.
 
-Assembly pipeline is an experimental Linux x86-64 AVX2/FMA/F16C scorer with four
-persistent workers. It reads the existing float16 index values, converts them
-exactly to float32 in registers, and accumulates float32 scores. NumPy still
-performs top-k selection. The API and context format are unchanged.
+Assembly optimized is a separate sleeping four-worker C pool. It calls the same
+half-precision assembly kernel as Assembly original and scores a 2 MiB aligned
+copy of the matrix. Loading succeeds only when anonymous huge pages back that
+copy. The extra resident matrix is about 55 MiB plus alignment to the next 2 MiB
+boundary. Its cutoff guard also sends duplicate-row ties to NumPy. Assembly
+original keeps the earlier guard and falls back only for close distinct rows.
+NumPy still performs top-k selection. The API and context format are unchanged.
 
 The status shows the selected available pipeline and whether the last query used
-NumPy. An unsupported CPU, missing/mismatched native artifact, or failed startup
-validation makes Assembly unavailable. A scoring failure falls back to NumPy.
-Near-tied references may change order, as explicitly approved by the owner.
-Distinct rows close to the selection cutoff use NumPy; this safety path is
-counted in status rather than being presented as an Assembly speedup.
+NumPy. An unsupported CPU, a missing or mismatched native artifact, missing
+huge-page backing, or failed startup validation makes that Assembly choice
+unavailable. A scoring failure disables the selected Assembly backend and uses
+NumPy. Near-tied references may change order. Close selection cutoffs use NumPy;
+this safety path is counted in status rather than presented as an Assembly speedup.
+
+The measurements below, through the 2026-10-18 activation, describe Assembly
+original. The optimized module is checked separately before a release is prepared.
 
 ## Measurements and limits
 
@@ -162,3 +169,28 @@ working reply path, not a latency improvement. Evidence is in
 Activation is a brief gateway cutover rather than zero downtime; LAN sessions
 need a fresh login while the existing HUD retains its transcript and draft.
 Save/export before refreshing to load the selector. The active choice is Assembly.
+
+The [cache and dispatch follow-up](ASSEMBLY_CACHE_TUNING_2026_10_18.md) records
+small additional scoring gains, rejected prefetch/alignment experiments and
+CPU-quota limits; it does not establish a chat latency improvement.
+
+The separate [1 ms experiment](ASSEMBLY_1MS_EXPERIMENT_2026_10_18.md) tested
+ten handwritten variants and held-out workloads. It missed the target and
+retained the deployed implementation; tied-duplicate reference limits are recorded.
+
+The [hardware counter profile](HARDWARE_COUNTER_PROFILE_2026_10_18.md) now
+measures grouped PMU events and replicated working-set sensitivity. It leaves
+production unchanged and separates memory-hierarchy evidence from silicon-quality claims.
+
+## Assembly optimized, 2026-10-19
+
+Assembly optimized is the startup default in this checkout when its pool loads
+and anonymous huge pages back the aligned matrix. Assembly original and NumPy
+remain selectable. The repeat warm-scoring median was 1.888 ms versus 2.910 ms
+for NumPy, about 35% less scoring time, with a 56 MiB huge-page reservation
+(about 54.7 MiB of matrix payload). Correctness, limits, and the stopped-station
+receipt are in the [module check](ASSEMBLY_OPTIMIZED_2026_10_19.md).
+
+Prepared candidate `341de68e12974563ab8da85c370542cc` is not active. Its
+knowledge index is the consistent index from the active release. Activation
+remains a separate cutover.

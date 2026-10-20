@@ -10,6 +10,7 @@ import re
 import sys
 import urllib.request
 import uuid
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from scripts import performance_metrics as metrics,performance_state as station
 from scripts.performance_transport import probe
 

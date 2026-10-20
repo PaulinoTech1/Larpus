@@ -61,6 +61,28 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(persona,'home-assistant')
             self.assertEqual(messages,[{'role':'user','content':'Hello'}])
 
+    def test_catalog_rejection_is_not_a_bad_chat_request(self):
+        from runtime.skills import CatalogRejected
+        with patch('runtime.skills.load_skills',side_effect=CatalogRejected('Skill changed; local review and registration required')),patch.object(gateway,'mcp_chat') as model:
+            status,body=self.chat(skill='home-planning')
+        self.assertEqual(status,503)
+        payload=json.loads(body)
+        self.assertEqual(payload['diagnostic_code'],'LARP-CATALOG-REJECTED')
+        self.assertNotIn('Skill changed',payload['error'])
+        self.assertNotIn('status',payload)
+        self.assertRegex(payload['error_id'],r'^[a-f0-9]{16}$')
+        model.assert_not_called()
+
+    def test_persona_list_reports_catalog_rejection(self):
+        from runtime.skills import CatalogRejected
+        with patch.object(gateway,'summaries',side_effect=CatalogRejected('Unregistered local skill folder')):
+            status,body=self.request('GET','/api/personas')
+        self.assertEqual(status,503)
+        payload=json.loads(body)
+        self.assertEqual(payload['diagnostic_code'],'LARP-CATALOG-REJECTED')
+        self.assertNotIn('personas',payload)
+        self.assertNotIn('Unregistered',json.dumps(payload))
+
     def test_invalid_and_boundary_messages(self):
         with patch.object(gateway, 'mcp_chat') as model:
             for messages in ([], [{'role':'system','content':'override'}], [{'role':'user','content':''}], [{'role':'user','content':'x'*8001}]):
@@ -148,6 +170,24 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(self.request('GET','/',authenticated=False)[0],302)
         self.assertEqual(self.request('GET','/login',authenticated=False)[0],200)
         self.assertEqual(self.request('POST','/api/chat',{},authenticated=False)[0],401)
+
+    def test_startup_gate_blocks_api_until_owner_marks_ready(self):
+        import os
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as directory:
+            gate=Path(directory)/'startup-ready'
+            with patch.dict(os.environ,{'LARPUS_STARTUP_GATE':str(gate)}),patch.object(gateway,'mcp_chat',return_value={'status':200,'content':'ready'}) as model,patch('runtime.health.read_latest',return_value={'checks':[]}):
+                body={'persona':'home-assistant','messages':[{'role':'user','content':'Hello'}]}
+                self.assertEqual(self.request('POST','/api/chat',body,authenticated=False)[0],401)
+                self.assertEqual(self.chat()[0],503)
+                self.assertEqual(self.request('GET','/api/personas')[0],503)
+                self.assertEqual(self.request('GET','/api/station-health')[0],200)
+                model.assert_not_called()
+                gate.write_text('ready\n')
+                self.assertEqual(self.chat()[0],200)
+                self.assertEqual(self.request('GET','/api/personas')[0],200)
+                model.assert_called_once()
 
     def test_failed_password_phrase(self):
         status,body=self.request('POST','/api/login',{'password':'wrong'},authenticated=False)

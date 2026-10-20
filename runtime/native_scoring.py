@@ -9,12 +9,12 @@ from pathlib import Path
 
 class NativeScorer:
  @staticmethod
- def _library():
+ def _library(manifest_name='manifest.json',library_name='liblarpus_score.so'):
   import numpy as np
   flags=np._core._multiarray_umath.__cpu_features__
   if sys.platform!='linux' or platform.machine()!='x86_64' or not all(flags.get(k) for k in ('AVX2','FMA3','F16C')):
    raise OSError('Assembly requires Linux x86-64 AVX2/FMA/F16C')
-  directory=Path(__file__).parent/'native';manifest=directory/'manifest.json';library=directory/'liblarpus_score.so'
+  directory=Path(__file__).parent/'native';manifest=directory/manifest_name;library=directory/library_name
   if manifest.is_symlink() or library.is_symlink() or manifest.stat().st_size>4096:raise ValueError('Invalid assembly artifact')
   spec=json.loads(manifest.read_text())
   if spec.get('version')!=1 or library.stat().st_size!=spec['bytes'] or hashlib.sha256(library.read_bytes()).hexdigest()!=spec['sha256']:
@@ -31,6 +31,9 @@ class NativeScorer:
   self.function=self.library.larpus_score_half
   self.function.argtypes=[ctypes.c_void_p,ctypes.c_void_p,ctypes.c_void_p,ctypes.c_size_t,ctypes.c_size_t]
   self.function.restype=ctypes.c_int
+  n,d=self.vectors.shape;base=self.vectors.ctypes.data
+  starts=tuple(n*part//4 for part in range(5))
+  self.partitions=tuple((base+start*d*2,start,end-start) for start,end in zip(starts,starts[1:]) if end>start)
   self.pool=ThreadPoolExecutor(max_workers=4,thread_name_prefix='assembly-score')
   try:self._check(vectors)
   except Exception:self.pool.shutdown(wait=True);raise
@@ -59,12 +62,13 @@ class NativeScorer:
   if query.dtype!=np.float32 or query.shape!=(self.vectors.shape[1],) or not query.flags.c_contiguous or not np.isfinite(query).all():
    raise ValueError('Invalid assembly query')
   result=np.empty(len(self.vectors),dtype=np.float32)
-  n,d=self.vectors.shape;futures=[]
-  for part in range(4):
-   start=n*part//4;end=n*(part+1)//4
-   if end>start:futures.append(self.pool.submit(self.function,self.vectors.ctypes.data+start*d*2,query.ctypes.data,result.ctypes.data+start*4,end-start,d))
+  d=self.vectors.shape[1];futures=[];failed=False
+  qptr=query.ctypes.data;optr=result.ctypes.data
+  try:
+   for matrix,start,rows in self.partitions:
+    futures.append(self.pool.submit(self.function,matrix,qptr,optr+start*4,rows,d))
+  except Exception:failed=True
   # Wait for every partition even on errors; buffers remain live until all work ends.
-  failed=False
   for future in futures:
    try:failed|=future.result()!=0
    except Exception:failed=True

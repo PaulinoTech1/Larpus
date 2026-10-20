@@ -219,3 +219,15 @@ The [further 5900X tuning pass](CPU_TUNING_FOLLOWUP_2026_10_18.md) compared work
 counts, dispatch/affinity, loop unrolling, packed rows and a native cutoff heap.
 Its final candidate saved only 1.5–4.2% over deployed Assembly in direct runs;
 the added native complexity was rejected and the existing implementation retained.
+
+The [cache and dispatch follow-up](ASSEMBLY_CACHE_TUNING_2026_10_18.md) records
+small additional scoring gains, rejected prefetch/alignment experiments and
+CPU-quota limits; it does not establish a chat latency improvement.
+
+The separate [1 ms experiment](ASSEMBLY_1MS_EXPERIMENT_2026_10_18.md) tested
+ten handwritten variants and held-out workloads. It missed the target and
+retained the deployed implementation; tied-duplicate reference limits are recorded.
+
+The [hardware counter profile](HARDWARE_COUNTER_PROFILE_2026_10_18.md) now
+measures grouped PMU events and replicated working-set sensitivity. It leaves
+production unchanged and separates memory-hierarchy evidence from silicon-quality claims.

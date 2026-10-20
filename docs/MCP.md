@@ -24,13 +24,21 @@ configs, never caller-supplied model/URL/system instructions.
 
 ## Available operations
 
+The Skills update adds `skills/list`, `skills/get` and prompt-only
+`resources/read`, announced under `capabilities.extensions["io.modelcontextprotocol/skills"]`.
+It adds no tool or listener. Modern Skills methods are restricted to `2026-07-28`;
+legacy `2025-11-25` keeps the original three-tool path. Consumers must inspect
+the observed declaration rather than assume support from installed SDK versions.
+See [Skills](SKILLS.md), [acceptance](MCP_SKILLS_ACCEPTANCE_2026_10_19.md) and
+[measurements](MCP_SKILLS_PERFORMANCE_2026_10_19.md). No production activation is implied.
+
 | Tool | Input | Capability |
 |---|---|---|
 | list_personas | none | read configured persona summaries |
 | local_status | none | fixed local `/api/tags` check |
 | chat_local | persona ID, alternating messages | bounded filtered local inference |
 
-No URL fetch, browser, shell, file access, model pull, model create, remote sampling,
+No URL fetch, browser, shell, arbitrary file access, model pull, model create, remote sampling,
 or dynamic tool execution is exposed. Caller extra tool fields cannot change the
 fixed destination or model; SDK may ignore fields not in a tool signature. Ollama
 receives no tool definitions, and its output is text, never executable commands.
@@ -146,3 +154,10 @@ persona on both sides of the child boundary. Discovery remains three fixed tools
 config/mcp-approved.json is the reviewed descriptor snapshot: the health monitor
 compares actual stdio discovery against it every cycle. See [health](HEALTH.md)
 for source scanning and [skills](SKILLS.md) for the local authoring policy.
+
+The 2026-10-19 implementation adds the opt-in Skills extension and standard
+resource reads on this same server, preserving the three tool descriptors.
+It does not activate a skill by reading it. See the
+[Skills acceptance matrix](MCP_SKILLS_ACCEPTANCE_2026_10_19.md) for current
+sealed-runtime evidence and the prepared, inactive candidate. Earlier counts
+and unrun-gate statements above describe the original MCP implementation.

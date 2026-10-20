@@ -1,5 +1,24 @@
 # Locally authored Larpus skills
 
+The MCP Skills implementation publishes these reviewed files through
+`io.modelcontextprotocol/skills` at revision `2026-07-28`: `skills/list`,
+`skills/get` and standard `resources/read`. The canonical address is exactly
+`skill://<registered-id>/SKILL.md`. These are protocol methods, not new tools.
+Reading a file does not select it or append it to chat. The existing HUD/persona
+allowlist still controls activation. See [acceptance status](MCP_SKILLS_ACCEPTANCE_2026_10_19.md)
+for the distinction between implementation, preparation and production activation.
+
+Entries carry the file's exact two-field frontmatter and a complete one-file
+SHA-256/byte-size manifest. Only plain `name` and `description` scalars in the
+reviewed format are supported; executable fields, ambiguous YAML and ancillary
+files fail closed. Lists contain at most 16 entries per page. Each operation
+freshly verifies the full local registry; cache hints are `ttlMs=0` and
+`cacheScope=private`. Metadata freshness hints do not substitute for raw-byte verification.
+
+A consuming host must bind approval to its own server identity **and** URI,
+then verify the complete manifest, raw digest/size and frontmatter before use.
+A same-named or same-URI skill from a different server has no local authority.
+
 Only project-authored prompt skills are accepted. There is no remote skill catalog,
 URL importer, executable skill code or automatic installer. The initial skills are
 home planning, IT interview practice, fictional character preparation and scenario

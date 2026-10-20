@@ -10,9 +10,11 @@ class AssemblyPipelineTests(unittest.TestCase):
  def test_unavailable_native_uses_numpy_and_explains_selection(self):
   vectors=np.eye(3,dtype=np.float32)
   with patch.object(scoring_pipeline,'NativeScorer',side_effect=OSError('missing')):
-   scorer=scoring_pipeline.Pipeline(vectors)
+   scorer=scoring_pipeline.Pipeline(vectors,preferred="assembly")
   self.assertEqual(scorer.status()['active_id'],'numpy')
   self.assertNotIn('error',scorer.status(),'Successful worker responses must not use the reserved transport error key')
+  self.assertIn('next scorer retry',scorer.status()['notice'])
+  self.assertEqual(scorer.status()['numpy_until'],'retry-30s')
   np.testing.assert_array_equal(scorer.score(np.ones(3,dtype=np.float32)),np.ones(3))
   with self.assertRaises(ValueError):scorer.select('assembly')
 
@@ -20,7 +22,7 @@ class AssemblyPipelineTests(unittest.TestCase):
   class Native:
    def __init__(self,vectors):self.vectors=vectors
    def score(self,q):return self.vectors@q
-  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(4,dtype=np.float32))
+  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(4,dtype=np.float32),preferred="assembly")
   self.assertEqual(scorer.status()['active_id'],'assembly')
   scorer.select('assembly');self.assertEqual(scorer.status()['active_id'],'assembly')
   scorer.select('numpy');self.assertEqual(scorer.status()['active_id'],'numpy')
@@ -28,7 +30,12 @@ class AssemblyPipelineTests(unittest.TestCase):
   with patch.object(scorer.native,'score',side_effect=RuntimeError('bad')):
    np.testing.assert_array_equal(scorer.score(np.ones(4,dtype=np.float32)),np.ones(4))
   self.assertEqual(scorer.status()['active_id'],'numpy')
-  self.assertTrue(scorer.status()['notice'])
+  self.assertIn('next scorer retry',scorer.status()['notice'])
+  self.assertEqual(scorer.status()['numpy_until'],'retry-30s')
+  with patch.object(scoring_pipeline,'NativeScorer',Native),patch.object(scoring_pipeline.time,'monotonic',return_value=scorer._retry_at):
+   np.testing.assert_array_equal(scorer.score(np.ones(4,dtype=np.float32)),np.ones(4))
+  self.assertEqual(scorer.status()['active_id'],'assembly')
+  self.assertIsNone(scorer.status()['numpy_until'])
   with self.assertRaises(ValueError):scorer.select('../other')
 
  def test_control_protocol_is_strict_and_not_a_new_chat_tool(self):
@@ -41,18 +48,19 @@ class AssemblyPipelineTests(unittest.TestCase):
   class Native:
    def __init__(self,vectors):pass
    def score(self,q):return np.array([1+1e-7,1],dtype=np.float32)
-  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(2,dtype=np.float32))
+  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(2,dtype=np.float32),preferred="assembly")
   scorer.select('assembly')
   q=np.array([1,1+1e-7],dtype=np.float32)
   np.testing.assert_array_equal(scorer.score(q,limit=1),q)
   self.assertEqual(scorer.status()['last_used'],'numpy')
   self.assertEqual(scorer.status()['ambiguity_fallbacks'],1)
+  self.assertIsNone(scorer.status()['numpy_until'])
 
  def test_interior_near_ties_may_reorder_without_numpy_recheck(self):
   class Native:
    def __init__(self,vectors):pass
    def score(self,q):return np.array([1+1e-7,1,0],dtype=np.float32)
-  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(3,dtype=np.float32))
+  with patch.object(scoring_pipeline,'NativeScorer',Native):scorer=scoring_pipeline.Pipeline(np.eye(3,dtype=np.float32),preferred="assembly")
   scorer.select('assembly');q=np.array([1,1+1e-7,0],dtype=np.float32)
   np.testing.assert_allclose(scorer.score(q,limit=2),q,atol=2e-6,rtol=2e-5)
   self.assertEqual(scorer.status()['last_used'],'assembly')
@@ -72,7 +80,7 @@ class AssemblyPipelineTests(unittest.TestCase):
 
  def test_cutoff_guard_uses_empirical_tolerance_and_scales_with_query(self):
   with patch.object(scoring_pipeline,'NativeScorer',side_effect=OSError('missing')):
-   scorer=scoring_pipeline.Pipeline(np.eye(384,dtype=np.float32))
+   scorer=scoring_pipeline.Pipeline(np.eye(384,dtype=np.float32),preferred="assembly")
   scores=np.zeros(384,dtype=np.float32);scores[0]=1;scores[1]=1-1e-5
   query=np.zeros(384,dtype=np.float32);query[0]=1
   self.assertFalse(scorer._ambiguous(scores,query,1))

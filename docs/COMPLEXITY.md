@@ -66,6 +66,7 @@ Unreviewed exception messages, absolute paths, source lines, locals, request/mod
 | LARP-NOTES-WORKER | Inspect cause chain and notes-only broker status; do not save partial JSON. |
 | LARP-EVIDENCE-UNAVAILABLE | Check approved-index, manifest/provenance binding and text screening; do not infer without evidence. |
 | LARP-INFERENCE-UNAVAILABLE | Check selected broker readiness and pinned model; no direct or cloud fallback. |
+| LARP-CATALOG-REJECTED | Read scope. skill or persona: only that entry stays unavailable. catalog: the registry document failed and no persona is served. Checkout-only as of 2026-10-20; not in the selected release. |
 
 
 On a stream failure, retain the browser transcript, mark partial output incomplete and investigate the ID before retrying. Notes transport retries retain the pending window and preserve worker IDs. Never bypass the broker or switch to a cloud service to recover.

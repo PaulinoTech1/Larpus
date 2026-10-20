@@ -1,5 +1,143 @@
 # Updates while Larpus remains usable
 
+## 2026-10-20 Failure isolation - activated
+
+Activated `042f91c0a1454887a694c945f49237ad`; previous
+`7df2e957751642d6ace4630fa047fe94` is retained for rollback. This is a scoped
+source variant of that production release, retaining its corpus, prompts,
+configuration and transport. Execution profiles and MCP Skills remain
+unpromoted. Frozen preparation passed the 321-test suite, ten UI suites,
+companion contracts, scorer switching, isolation and all 70 scan targets, with
+69 clean skills and the same 11 reviewed MCP warnings. Complexity limits were
+unchanged. Two rejected preparations and their reasons are retained.
+
+Live synthetic broker preemption/recovery, chat, completed streaming, CPU speech,
+full GPU placement and CA-validated unauthenticated LAN rejection passed. Model
+and voice images/start times stayed unchanged. Activation's whole command took
+30.374 seconds; catalog sampling bracketed its two failed requests between
+successes 3.729 seconds apart. This was a brief gateway rebind, not zero downtime.
+LAN tabs need a fresh login. No rollback was required; rendered HUD, physical
+microphone and second-device acceptance remain unverified. See the
+[deployment record and two-minute owner pass](FAILURE_ISOLATION_RELEASE_2026_10_20.md)
+for the exact source delta, validation limits, retained failures and receipts.
+
+## 2026-10-20 Verified overlap screen - prepared, not promoted
+
+Prepared `306986ac3d954e7791b2b7a3028838e2` and did not activate it. Selected
+release remains `7df2e957751642d6ace4630fa047fe94`. The only scan-count change
+is the distro probe, still a fresh `subprocess.run`, now submitted to the
+existing three-worker read pool; the scanner reports five isolation call sites
+instead of six. One eight-case round kept a Verified `home-uncertainty` failure.
+Ultra Fast first-text mean/p95 were 4.845/6.391 seconds. The five-second tail
+was not met, and answers were not rubric-reviewed. The station was returned to
+stopped, including Larpus WSL. See [the screen](VERIFIED_LATENCY_2026_10_20.md).
+
+## 2026-10-20 Secure execution profiles - prepared, not accepted
+
+Candidate `dc74ddc8315d4fdaa6349c72fc40bc46` adds strict request-local profiles,
+independent integrity hashing, bounded diagnostics and fresh batched observation
+collection without reducing mandatory security. It excludes unrelated inactive
+checkout features. Preparation completed 70 scan targets with the same 11
+reviewed warnings. Final checkout validation: 457 tests, four skips, 11 UI suites.
+
+The 300-attempt owner-loopback comparison measured Ultra Fast first-approved
+mean/p95 5.718/7.980s versus Verified 6.703/9.045s. Pacing passed, but the
+five-second target failed and agent answer review did not establish quality
+parity. Five attempts failed; all 295 successful answers received blind rubric
+review. This candidate was not activated. Selected release remains
+`7df2e957751642d6ace4630fa047fe94`; the temporary station was stopped afterward,
+including model/voice and Larpus WSL, with notes still Disabled. No commit/push.
+See [acceptance, retained failures and limits](EXECUTION_PROFILES_PERFORMANCE_2026_10_20.md).
+
+
+## 2026-10-19 MCP Skills - prepared, not activated
+
+Candidate `c7a16c1c9fbc408199b1d05a57d15244` adds read-only standard Skills
+list/get and resource reads for the 69 reviewed local skills. The three tools,
+explicit persona selection, instruction bytes, model/voice pins and security
+boundaries remain unchanged. Main integration passed 398 tests (four skips),
+all ten UI suites and prompt pins; sealed Linux protocol/resource checks passed
+13 tests without skips. Preparation completed 70 scan targets, retaining the
+same 11 reviewed MCP findings.
+
+Focused timings were mixed: initial Home first-text median +11.8%; the registered
+confirmation showed Home -3.1% but math +11.9%, with pacing variation. AI answer
+review also found existing and candidate arithmetic/attribution issues, and
+reference selection varied. This does not establish stable performance or
+unchanged answer quality. No optimization C or automatic activation was adopted.
+The eight-case comparison and its single confirmation also remained mixed;
+all 244 benchmark calls delivered replies and 192 measured answers received AI
+rubric review. Successful delivery is not factual correctness.
+The station still selects `7df2e957751642d6ace4630fa047fe94`.
+See [acceptance](MCP_SKILLS_ACCEPTANCE_2026_10_19.md) and
+[measurements](MCP_SKILLS_PERFORMANCE_2026_10_19.md) for receipts and limits.
+
+Owner startup also avoids whole-pod start, which revived retained historical
+containers during the controlled restart check. It starts only the model and
+selected services, retaining broker/model readiness before gateway admission.
+See [startup evidence](BROKER_COLD_START_RECOVERY_2026_10_19.md).
+
+
+## 2026-10-19 Response consistency experiment - not promoted
+
+Prepared `ddf716bcc1f04df891de7545f2052b64` with a single fresh WSL security collector. First-text median/p95 improved about 13.4 percent in 24 paired cases, with unchanged evidence and all frozen gates passing. However, a separate pacing confirmation failed the registered median chunk-gap criterion. The candidate was not activated, and the checkout default was restored to the existing preflight. Current release `7df2e957751642d6ace4630fa047fe94` remains selected. All results, including the failed criterion, are retained in [the consistency report](RESPONSE_CONSISTENCY_2026_10_19.md). No security checks were removed or cached.
+
+## 2026-10-19 Response latency
+
+Activated `7df2e957751642d6ace4630fa047fe94` after clean paired checks and frozen preparation. Reuse of verified request-local SQLite connections, bounded read-only mapping and batched fresh OCI reads reduce first approved text from 5.869 to 5.457 seconds in the 16-pair sample. Evidence matched in every pair; model, prompts and budgets stayed unchanged. Assembly optimized is selected. Existing quality limitations remain. Live health and streaming passed; the temporary test station is stopped, including all LARPUS containers and WSL. See [measurement scope and retained evidence](RESPONSE_LATENCY_2026_10_19.md).
+
+## 2026-10-19 Assembly optimized candidate
+
+Assembly optimized is a separate selectable module: the tested four-worker pool,
+the unchanged half-precision kernel, and a huge-page-backed aligned matrix.
+Assembly original and NumPy stay selectable. Loading or scoring failure uses
+NumPy. A stopped-station repeat measured about 35% lower warm scoring time than
+NumPy and a 56 MiB huge-page reservation. See the
+[module check](ASSEMBLY_OPTIMIZED_2026_10_19.md).
+
+Prepared `341de68e12974563ab8da85c370542cc` and did not activate it. The active
+release remains `f08b98ea2f34407cb77dc79aa7d7866a`. This candidate ships the
+scoring module with that release's consistent knowledge index. The checkout's
+newer catalog stays in the working tree; its embedding manifest does not match
+its database, so it was not included. Frozen preparation passed pipeline
+switching, the local suite, UI checks, isolation, and all 70 scan targets with
+the same 11 reviewed MCP findings. The gateway stayed down. The shared model
+ran only for the isolation check and was stopped afterward, along with voice
+and the candidate containers. Earlier snapshots
+`1d36d849aa1d401d80c5a3e69708d437` and `46248d8a37ec424ca39dfc748314f1c0` were
+not prepared.
+
+## 2026-10-18 Assembly dispatch/cache follow-up
+
+Activated `f08b98ea2f34407cb77dc79aa7d7866a` with cached immutable matrix partitions and
+safe joining after partial task submission failure. Pressure/post-embedding
+scoring medians improve by tens of microseconds; other results are mixed and
+no overall chat latency gain is established. The native kernel and model/voice
+settings are unchanged. Local suite: 320 tests, two skips. Frozen preparation
+completed all 70 scan targets with the same 11 reviewed MCP findings. Live
+switching, reply, functional health and LAN authentication checks passed;
+model/voice IDs, images and start times stayed unchanged. Activation succeeded
+without rollback; 25.837 seconds is whole command
+time, not measured port downtime. See the
+[cache tuning report](ASSEMBLY_CACHE_TUNING_2026_10_18.md).
+
+## 2026-10-18 Conversation progress and tuning follow-up
+
+Activated `b029d94bfc9b43f8a3ab30c38ddad78a` after prompt-only repetition
+attempts were rejected. Ordinary chat now has bounded broker-owned repetition
+controls and shared continuity guidance; persona humour is optional. The tested
+follow-up avoided the copied closing, while broader tone/grounding limitations
+remain documented. The local suite passed 317 tests with two skips; the candidate
+passed its frozen checks and all 70 scan targets with the same 11 reviewed MCP
+findings. Model and CPU voice IDs, images and start times stayed unchanged.
+Activation succeeded without rollback; the 25.079-second whole command is not
+measured port downtime. See [conversation progress](CONVERSATION_PROGRESS_2026_10_18.md).
+
+Further hardware experiments yielded only 1.5â€“4.2% incremental scoring savings
+over deployed Assembly in direct runs. Those native changes were rejected and
+the existing Assembly implementation retained. See the
+[5900X tuning follow-up](CPU_TUNING_FOLLOWUP_2026_10_18.md).
+
 ## 2026-10-18 Assembly pipeline
 
 Activated `d604dfcd7ebd4c0199cdec395b6c61cf` after the owner approved near-tie

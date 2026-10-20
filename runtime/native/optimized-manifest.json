@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "sha256": "a94dc275053858b9f9fb65e543c4c919624ffa05edf23744eeef28ed418b2759",
+  "bytes": 18040,
+  "compiler": "Zig 0.17.0",
+  "compiler_sha256": "7c61539af19fa4082c94848f1c2b57b89e76dc6cfd5bd4c57764c3caf8f82272",
+  "target": "x86_64-linux-gnu",
+  "workers": 4,
+  "mode": "aligned-half",
+  "sources": {
+    "pool.c": "a470d7502aa207131d1bf1a4af32ed025d6fe3e993dc706bef2f87f69fe232e9",
+    "score_half.S": "a62d16d7b9f8e0ffd3a42d4424e9d5d7be4de9e9654ffe4569f42c7afb7a0b27",
+    "score_float.S": "811e8b5be7192defd35ededb9b85e3592e3d743291c47f160d2c645461fc75e1"
+  },
+  "arguments": [
+    "cc",
+    "-target",
+    "x86_64-linux-gnu",
+    "-mcpu=znver3",
+    "-O3",
+    "-fPIC",
+    "-shared",
+    "-pthread",
+    "-Wl,--build-id=none,-z,now,-z,relro,-z,noexecstack",
+    "/home/larpus/native-assembly-build/optimized-v1/pool.c",
+    "/home/larpus/native-assembly-build/optimized-v1/score_half.S",
+    "/home/larpus/native-assembly-build/optimized-v1/score_float.S",
+    "-o",
+    "/home/larpus/native-assembly-build/optimized-v1/liblarpus_pool.so"
+  ],
+  "wsl_disk": "E:\\WSL\\Larpus\\ext4.vhdx"
+}

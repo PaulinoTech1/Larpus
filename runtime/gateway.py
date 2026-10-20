@@ -1,15 +1,18 @@
 """Local UI gateway with optional explicitly scoped LAN access."""
-from runtime.diagnostics import report
+from runtime.diagnostics import catalog_failure, report
 import ipaddress
 import json
 import os
 import ssl
 import threading
+import time
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
-from runtime.agents import ROOT, load_personas, messages_for, summaries
+from runtime.agents import ROOT, CatalogRejected, load_personas, messages_for, persona_rejections, require_persona, skill_rejections, summaries
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
+from runtime.execution_profiles import resolve, to_wire
 from runtime.mcp_client import chat as mcp_chat, health as mcp_health, stream_chat as mcp_stream
 from runtime.inference_admission import Admission, Busy
 
@@ -18,6 +21,25 @@ PERSONAS = load_personas()
 LOCK = threading.Lock()
 ADMISSION=Admission(ROOT/'data/inference-admission')
 DRAIN=ROOT/'release-state/drain'
+def execution_kwargs(data):
+    context=to_wire(resolve(data.get('execution')))
+    return {'execution':context} if 'execution' in data else {}
+
+def validate_chat_request(data):
+    if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak','execution'}:
+        raise ValueError('Expected persona and messages')
+    if 'speak' in data and type(data['speak']) is not bool:
+        raise ValueError('Invalid speech flag')
+    execution=execution_kwargs(data)
+    persona = require_persona(data['persona'])
+    messages_for(persona, data['messages'],data.get('skill'))
+    return execution
+
+def add_queue_timing(result,execution,elapsed):
+    if execution.get('execution',{}).get('profile')=='diagnostic':
+        result.setdefault('timing_ms',{})['gateway_queue']=round(elapsed*1000,3)
+    return result
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass  # Do not log prompts or request URLs.
@@ -62,19 +84,34 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def startup_ready(self):
+        gate=os.environ.get('LARPUS_STARTUP_GATE')
+        if not gate:return True
+        path=Path(gate)
+        return not path.is_symlink() and path.is_file()
+
+    def authorize_get(self,path):
+        if path in ('/login','/login.js','/style.css'):return True
+        if not self.authorized():
+            if path.startswith('/api/'):self.reply(401,{'error':'Password required'})
+            else:self.headers_out(302,'text/plain',0,{'Location':'/login'})
+            return False
+        if path.startswith('/api/') and path!='/api/station-health' and not self.startup_ready():
+            self.reply(503,{'error':'Station startup checks are still running.'},{'Retry-After':'5'})
+            return False
+        return True
+
     def do_GET(self):
         if not self.trusted():
             return
         path = urlsplit(self.path).path
-        if path not in ('/login','/login.js','/style.css') and not self.authorized():
-            if path.startswith('/api/'):
-                return self.reply(401, {'error':'Password required'})
-            self.headers_out(302,'text/plain',0,{'Location':'/login'})
-            return
+        if not self.authorize_get(path):return
         if path == '/login':
             path = '/login.html'
         if path == '/api/personas':
-            return self.reply(200, {'personas': [{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in PERSONAS.values()],'skills':summaries()})
+            try:current=load_personas();listed=summaries()
+            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
+            return self.reply(200, {'personas': [{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in current.values()],'skills':listed,'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}})
         if path == '/api/health':
             try:
                 self.reply(200, mcp_health())
@@ -133,10 +170,11 @@ class Handler(BaseHTTPRequestHandler):
             from runtime.context import compression_messages
             try:
                 data=self.read_json(262144)
-                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or data['persona'] not in PERSONAS:raise ValueError('Invalid compression request')
+                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or require_persona(data['persona']) is None:raise ValueError('Invalid compression request')
                 messages=compression_messages(data['prior'],data['fragments'])
             except TextHeld:
                 return self.reply(422,{'error':'Compression input held by local filtering. Original chat retained.'})
+            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
             except (ValueError,TypeError,KeyError):
                 return self.reply(400,{'error':'Invalid or oversized compression batch.'})
             if not LOCK.acquire(blocking=False):return self.reply(409,{'error':'Inference busy. Try again shortly.'})
@@ -156,9 +194,11 @@ class Handler(BaseHTTPRequestHandler):
                 LOCK.release()
         if self.path == '/api/voice':
             from runtime.voice_routes import handle
-            try:data=self.read_json(1400000)
-            except (ValueError,TypeError):data=None
-            return self.reply(*handle(data,PERSONAS))
+            try:
+                try:data=self.read_json(1400000)
+                except (ValueError,TypeError):data=None
+                return self.reply(*handle(data,PERSONAS))
+            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
         try:
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 raise ValueError('JSON required')
@@ -166,37 +206,34 @@ class Handler(BaseHTTPRequestHandler):
             if not 0 < size <= 524288:
                 raise ValueError('Request must be 1-524288 bytes')
             data = json.loads(self.rfile.read(size))
-            if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
-                raise ValueError('Expected persona and messages')
-            if 'speak' in data and type(data['speak']) is not bool:
-                raise ValueError('Invalid speech flag')
-            persona = PERSONAS.get(data['persona']) if isinstance(data['persona'], str) else None
-            if persona is None:
-                raise ValueError('Unknown persona')
-            messages = messages_for(persona, data['messages'],data.get('skill'))
+            execution=validate_chat_request(data)
         except TextHeld as exc:
             return self.reply(503 if exc.unavailable else 422, {
                 'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.',
                 'reason':exc.reason, 'message_index':exc.index,
             })
+        except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
         except (ValueError, TypeError):
             return self.reply(400, {'error': 'Invalid chat request. Use a known persona and alternating messages, up to 8000 characters each.'})
         if not LOCK.acquire(blocking=False):
             return self.reply(409, {'error': 'Inference busy. Try again shortly.'})
         ticket=ADMISSION.interactive()
+        admission_started=time.perf_counter()
         try:ticket.__enter__()
         except (Busy,OSError):
             LOCK.release()
             return self.reply(503,{'error':'Waiting for local background inference. Retry shortly.'},{'Retry-After':'5'})
+        admission_ms=time.perf_counter()-admission_started
         try:
             if self.path=='/api/chat/stream':
                 self.headers_out(200,'application/x-ndjson',None,{'X-Accel-Buffering':'no'})
                 def event(value):
                     self.wfile.write((json.dumps(value)+'\n').encode());self.wfile.flush()
                 try:
-                    result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}))
+                    result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}),**execution)
+                    add_queue_timing(result,execution,admission_ms)
                     if result.get('status')==200:
-                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms') if key in result}})
+                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms','execution_trace_ms','execution') if key in result}})
                     else:
                         event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code'),'error_id':result.get('error_id')})
                 except (OSError,ValueError,KeyError,TypeError) as exc:
@@ -206,7 +243,8 @@ class Handler(BaseHTTPRequestHandler):
                     except OSError:
                         pass  # Browser disconnected; never start another HTTP response.
                 return
-            result = mcp_chat(data['persona'], data['messages'],data.get('skill'))
+            result = mcp_chat(data['persona'], data['messages'],data.get('skill'),**execution)
+            add_queue_timing(result,execution,admission_ms)
             status = result.pop('status', 502)
             if status == 200 and data.get('speak'):
                 # MCP only returns generated content after isolated output DLP approves it.

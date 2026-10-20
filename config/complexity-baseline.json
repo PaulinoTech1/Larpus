@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reason": "Initial reviewed inventory preserves visible existing debt while rejecting future decision, function length and import growth.",
+  "reason": "Initial reviewed inventory preserves visible existing debt. Secure profiles explicitly add gateway +1 profile dependency, inference +2 profile/trace dependencies and mcp_client +1 profile dependency; global and function ceilings are unchanged. See docs/architecture/module-contracts.md. Stock-lab supervisor and runner keep their measured sizes.",
   "new_function": {
     "decisions": 12,
     "lines": 80
@@ -14,15 +14,15 @@
     "runtime.context": 4,
     "runtime.diagnostics": 4,
     "runtime.dlp": 4,
-    "runtime.gateway": 11,
+    "runtime.gateway": 12,
     "runtime.health": 10,
-    "runtime.inference": 8,
+    "runtime.inference": 10,
     "runtime.inference_admission": 4,
     "runtime.inference_broker": 4,
     "runtime.isolation": 4,
     "runtime.knowledge": 8,
     "runtime.local_ollama": 4,
-    "runtime.mcp_client": 4,
+    "runtime.mcp_client": 5,
     "runtime.mcp_server": 4,
     "runtime.models": 4,
     "runtime.namespace_probe": 4,
@@ -62,6 +62,18 @@
     "scripts.verify-broker-live": 4
   },
   "functions": {
+    "scripts/assembly_lab.py:main": {
+      "decisions": 47,
+      "lines": 108
+    },
+    "scripts/assembly_lab_metrics.py:correlate": {
+      "decisions": 13,
+      "lines": 18
+    },
+    "scripts/assembly_lab_runner.py:main": {
+      "decisions": 71,
+      "lines": 129
+    },
     "runtime/agents.py:load_personas": {
       "decisions": 23,
       "lines": 80

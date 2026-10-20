@@ -61,8 +61,9 @@ class StreamingTests(unittest.TestCase):
         async def check():
             chunks=[]
             async def progress(p,total,message):chunks.append(message)
-            def chat(persona,messages,skill,on_chunk=None):
+            def chat(persona,messages,skill,on_chunk=None,execution=None):
                 self.assertIsNotNone(on_chunk)
+                self.assertEqual(execution,{'profile':'verified','interaction':'conversation'})
                 on_chunk('Checked sentence. ')
                 return {'status':200,'content':'Checked sentence. '}
             with patch.object(inference,'chat',side_effect=chat):

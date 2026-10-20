@@ -34,6 +34,7 @@ def extra_get(handler,path):
  return False
 def before_post(handler,drain):
  if drain.exists():handler.reply(503,{'error':'Finishing an update. Please retry shortly.'},{'Retry-After':'5'});return True
+ if not handler.startup_ready():handler.reply(503,{'error':'Station startup checks are still running.'},{'Retry-After':'5'});return True
  if handler.path=='/api/model-selection':switch(handler);return True
  if handler.path=='/api/retrieval-pipeline':
   from runtime.pipeline_routes import select

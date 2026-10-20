@@ -10,7 +10,7 @@ class Handler:
 class PipelineRoutesTests(unittest.TestCase):
  def test_model_status_route_remains_callable_and_html_ids_are_unique(self):
   from runtime import model_routes
-  from runtime.skills import ROOT
+  from runtime.station_paths import ROOT
   h=Handler()
   with patch.object(model_routes,'status') as status:
    self.assertTrue(model_routes.extra_get(h,'/api/model-selection'));status.assert_called_once_with(h)

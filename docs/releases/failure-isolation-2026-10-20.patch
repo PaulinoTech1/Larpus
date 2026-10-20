@@ -1,0 +1,833 @@
+--- a/runtime/agents.py
++++ b/runtime/agents.py
+@@ -6 +6,4 @@
+-from runtime.skills import load_skills, selected_prompt, summaries
++from runtime.skills import CatalogRejected, PersonaRejected, load_skills, selected_prompt, skill_rejections, summaries
++
++_KNOWN_PERSONAS=None
++_REJECTED_PERSONAS={}
+@@ -25,0 +29,32 @@
++def _persona_identity(p):
++    required={'version','id','name','description','system_prompt','model','temperature','voice'}
++    if not isinstance(p,dict) or not required.issubset(p) or set(p)-required-{'skills'}:
++        raise PersonaRejected('Invalid persona fields')
++    if p['version']!=1 or not isinstance(p['id'],str) or not re.fullmatch(r'[a-z][a-z0-9-]{0,63}',p['id']):
++        raise PersonaRejected('Invalid persona identity')
++    return p
++
++def _persona_values(p):
++    for key in ('name','description','system_prompt','model'):
++        if not isinstance(p[key],str) or not p[key].strip():
++            raise PersonaRejected('Invalid persona field')
++    if not re.fullmatch(r'[A-Za-z0-9_.:-]+',p['model']) or p['model'].endswith('-cloud'):
++        raise PersonaRejected('Only local model identifiers allowed')
++    if type(p['temperature']) not in (int,float) or not 0<=p['temperature']<=1:
++        raise PersonaRejected('Invalid temperature')
++    if p['voice'] is not None and not isinstance(p['voice'],str):
++        raise PersonaRejected('Invalid voice')
++    return p
++
++def _persona_skills(p,skills):
++    selected=p.get('skills',[])
++    if not isinstance(selected,list) or any(not isinstance(item,str) for item in selected) or len(set(selected))!=len(selected):
++        raise PersonaRejected('Invalid local skill selection')
++    rejected=skill_rejections()
++    if any(item not in skills and item not in rejected for item in selected):
++        raise PersonaRejected('Invalid local skill selection')
++    return {**p,'skills':[item for item in selected if item in skills]}
++
++def _stem(path):
++    return path.stem if re.fullmatch(r'[a-z][a-z0-9-]{0,63}',path.stem) else None
++
+@@ -26,0 +62 @@
++    global _KNOWN_PERSONAS
+@@ -28,22 +64,16 @@
+-    personas = {}
+-    for path in sorted((ROOT / 'agents/personas').glob('*.json')):
+-        p = json.loads(path.read_text(encoding='utf-8'))
+-        required={'version', 'id', 'name', 'description', 'system_prompt', 'model', 'temperature', 'voice'}
+-        if not required.issubset(p) or set(p)-required-{'skills'}:
+-            raise ValueError(f'Invalid persona fields: {path.name}')
+-        if p['version'] != 1 or not isinstance(p['id'], str) or not re.fullmatch(r'[a-z][a-z0-9-]{0,63}', p['id']):
+-            raise ValueError('Invalid persona identity')
+-        for key in ('name', 'description', 'system_prompt', 'model'):
+-            if not isinstance(p[key], str) or not p[key].strip():
+-                raise ValueError(f'Invalid {key}')
+-        if not re.fullmatch(r'[A-Za-z0-9_.:-]+', p['model']) or p['model'].endswith('-cloud'):
+-            raise ValueError('Only local model identifiers allowed')
+-        if type(p['temperature']) not in (int, float) or not 0 <= p['temperature'] <= 1:
+-            raise ValueError('Invalid temperature')
+-        if p['voice'] is not None and not isinstance(p['voice'], str):
+-            raise ValueError('Invalid voice')
+-        if not isinstance(p.get('skills',[]),list) or any(not isinstance(s,str) or s not in skills for s in p.get('skills',[])) or len(set(p.get('skills',[])))!=len(p.get('skills',[])):
+-            raise ValueError('Invalid local skill selection')
+-        if p['id'] in personas:
+-            raise ValueError('Duplicate persona')
+-        personas[p['id']] = p
++    personas={};rejected={}
++    for path in sorted((ROOT/'agents/personas').glob('*.json')):
++        try:
++            persona=_persona_skills(_persona_values(_persona_identity(json.loads(path.read_text(encoding='utf-8')))),skills)
++        except PersonaRejected as exc:
++            stem=_stem(path)
++            if stem is None:raise CatalogRejected('Invalid persona identity') from exc
++            rejected[stem]=exc.args[0];continue
++        except (json.JSONDecodeError,UnicodeError,OSError):
++            stem=_stem(path)
++            if stem is None:raise CatalogRejected('Invalid persona fields')
++            rejected[stem]='Invalid persona fields';continue
++        if persona['id']!=path.stem or persona['id'] in personas or persona['id'] in rejected:
++            _REJECTED_PERSONAS.clear()
++            raise CatalogRejected('Duplicate persona')
++        personas[persona['id']]=persona
+@@ -51 +81,4 @@
+-        raise ValueError('No personas configured')
++        _REJECTED_PERSONAS.clear()
++        raise CatalogRejected('No personas configured')
++    _KNOWN_PERSONAS=set(personas)
++    _REJECTED_PERSONAS.clear();_REJECTED_PERSONAS.update(rejected)
+@@ -52,0 +86,15 @@
++
++def persona_known(identifier):
++    """True when a fresh load accepts the persona. A catalog-document failure still raises."""
++    return identifier in load_personas()
++
++def persona_rejections():
++    return dict(_REJECTED_PERSONAS)
++
++def require_persona(identifier):
++    current=load_personas()
++    if isinstance(identifier,str) and identifier in current:
++        return current[identifier]
++    reason=_REJECTED_PERSONAS.get(identifier) if isinstance(identifier,str) else None
++    if reason:raise PersonaRejected(reason)
++    raise ValueError('Unknown persona')
+@@ -56 +104 @@
+-        raise ValueError('Send 1â€“40 conversation messages')
++        raise ValueError('Send 1–40 conversation messages')
+@@ -64 +112 @@
+-            raise ValueError('Message must contain 1â€“8000 characters')
++            raise ValueError('Message must contain 1–8000 characters')
+--- a/runtime/broker_scheduler.py
++++ b/runtime/broker_scheduler.py
+@@ -39 +39 @@
+-            return {'active':self.active.lane if self.active else None,
++            return {'scope':'broker-admission','active':self.active.lane if self.active else None,
+--- a/runtime/diagnostics.py
++++ b/runtime/diagnostics.py
+@@ -21 +21,2 @@
+- 'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.'
++ 'LARP-INFERENCE-UNAVAILABLE':'Check selected broker readiness and pinned model; no direct or cloud fallback.',
++ 'LARP-CATALOG-REJECTED':'Read scope. skill or persona: only that entry stays unavailable. catalog: the registry document failed and no persona is served.'
+@@ -25 +26 @@
+-       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED'}
++       'LARP-INFERENCE-UNAVAILABLE','LARP-EVIDENCE-NOTE-EXCLUDED','LARP-CATALOG-REJECTED'}
+@@ -79,0 +81,28 @@
++_CATALOG_ACTION='Read scope. A named skill or persona stays unavailable. A registry-document failure serves no persona. Do not load a rejected skill prompt.'
++for _catalog_message in (
++ 'Duplicate persona','Invalid local skill description scalar','Invalid local skill frontmatter',
++ 'Invalid local skill frontmatter fields','Invalid local skill registry','Invalid local skill selection',
++ 'Invalid or duplicate skill ID','Invalid persona field','Invalid persona fields','Invalid persona identity',
++ 'Invalid skill metadata','Invalid skill registration','Invalid temperature','Invalid voice',
++ 'Local skill input exceeds size limit','Local skill input must be a regular file','No personas configured',
++ 'Only local model identifiers allowed','Only locally authored skills are allowed','Skill changed; local review and registration required',
++ 'Skill path escapes local registry','Skills must be prompt-only; ancillary executables are not allowed',
++ 'Too many local skills','Unregistered local skill folder'):
++    KNOWN_MESSAGES[_catalog_message]=('CATALOG-REJECTED',_CATALOG_ACTION)
++_EVIDENCE_ACTION='Check the approved index, manifest, or notes binding named by the message. Do not infer without that evidence.'
++for _evidence_message in (
++ 'Invalid knowledge database','Invalid knowledge manifest','Invalid notes database','Invalid notes manifest',
++ 'Knowledge database hash mismatch','Knowledge size changed','Notes database hash mismatch'):
++    KNOWN_MESSAGES[_evidence_message]=('EVIDENCE-REJECTED',_EVIDENCE_ACTION)
++
++_SCOPE_ERRORS={
++ 'catalog':'Local catalog rejected. No persona is served until the registry file is reviewed.',
++ 'persona':'This persona was rejected. Other personas stay available.',
++ 'skill':'This skill was rejected. Other personas and skills stay available.'}
++
++def catalog_failure(exc):
++    """Public catalog refusal. The exception text stays in the reviewed owner record."""
++    scope=getattr(exc,'scope','catalog')
++    if scope not in _SCOPE_ERRORS:scope='catalog'
++    return {'status':503,'error_id':report('LARP-CATALOG-REJECTED',exc),'diagnostic_code':'LARP-CATALOG-REJECTED','scope':scope,
++            'error':_SCOPE_ERRORS[scope]}
+--- a/runtime/dlp.py
++++ b/runtime/dlp.py
+@@ -12 +12 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+--- a/runtime/gateway.py
++++ b/runtime/gateway.py
+@@ -2 +2 @@
+-from runtime.diagnostics import report
++from runtime.diagnostics import catalog_failure, report
+@@ -10 +10 @@
+-from runtime.agents import ROOT, load_personas, messages_for, summaries
++from runtime.agents import ROOT, CatalogRejected, load_personas, messages_for, persona_rejections, require_persona, skill_rejections, summaries
+@@ -20,0 +21,13 @@
++def catalog_payload():
++    current=load_personas();listed=summaries()
++    return {'personas':[{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in current.values()],
++            'skills':listed,'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}}
++
++def validate_chat_request(data):
++    if not isinstance(data,dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
++        raise ValueError('Expected persona and messages')
++    if 'speak' in data and type(data['speak']) is not bool:
++        raise ValueError('Invalid speech flag')
++    persona=require_persona(data['persona'])
++    messages_for(persona,data['messages'],data.get('skill'))
++
+@@ -77 +90,3 @@
+-            return self.reply(200, {'personas': [{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in PERSONAS.values()],'skills':summaries()})
++            try:listed=catalog_payload()
++            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
++            return self.reply(200,listed)
+@@ -127 +142 @@
+-                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or data['persona'] not in PERSONAS:raise ValueError('Invalid compression request')
++                if not isinstance(data,dict) or set(data)!={'persona','prior','fragments'} or require_persona(data['persona']) is None:raise ValueError('Invalid compression request')
+@@ -130,0 +146 @@
++            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
+@@ -161 +177 @@
+-                    if inspect_output(text,system_prompt='\n'.join(p['system_prompt'] for p in PERSONAS.values())):
++                    if inspect_output(text,system_prompt='\n'.join(p['system_prompt'] for p in load_personas().values())):
+@@ -174 +190 @@
+-                    selected=next((p for p in PERSONAS.values() if p['name'].lower()==phrase[17:]),None)
++                    selected=next((p for p in load_personas().values() if p['name'].lower()==phrase[17:]),None)
+@@ -184,0 +201 @@
++            except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
+@@ -196,8 +213 @@
+-            if not isinstance(data, dict) or not {'persona','messages'}.issubset(data) or set(data)-{'persona','messages','skill','speak'}:
+-                raise ValueError('Expected persona and messages')
+-            if 'speak' in data and type(data['speak']) is not bool:
+-                raise ValueError('Invalid speech flag')
+-            persona = PERSONAS.get(data['persona']) if isinstance(data['persona'], str) else None
+-            if persona is None:
+-                raise ValueError('Unknown persona')
+-            messages = messages_for(persona, data['messages'],data.get('skill'))
++            validate_chat_request(data)
+@@ -208,0 +219 @@
++        except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
+--- a/runtime/inference.py
++++ b/runtime/inference.py
+@@ -2 +2 @@
+-from runtime.diagnostics import report
++from runtime.diagnostics import catalog_failure, report
+@@ -7 +7 @@
+-from runtime.agents import load_personas, messages_for
++from runtime.agents import load_personas, messages_for, require_persona
+@@ -10 +10 @@
+-from runtime.skills import summaries
++from runtime.skills import CatalogRejected, summaries
+@@ -35 +35,7 @@
+-    return {'personas':[{key:p.get(key,[]) for key in ('id','name','description','model','skills')} for p in PERSONAS.values()],'skills':summaries()}
++    from runtime.agents import persona_rejections
++    from runtime.skills import skill_rejections
++    try:
++        current=load_personas();listed=summaries()
++    except CatalogRejected as exc:return catalog_failure(exc)
++    return {'personas':[{key:p.get(key,[]) for key in ('id','name','description','model','skills')} for p in current.values()],'skills':listed,
++            'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}}
+@@ -74,3 +80 @@
+-        selected=PERSONAS.get(persona) if isinstance(persona,str) else None
+-        if selected is None:
+-            raise ValueError('Unknown persona')
++        selected=require_persona(persona)
+@@ -81,0 +86 @@
++    except CatalogRejected as exc:return catalog_failure(exc)
+@@ -93,0 +99 @@
++    except CatalogRejected as exc:return catalog_failure(exc)
+@@ -133,0 +140 @@
++    except CatalogRejected as exc:return catalog_failure(exc)
+--- a/runtime/isolation.py
++++ b/runtime/isolation.py
+@@ -8 +8 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+--- a/runtime/knowledge.py
++++ b/runtime/knowledge.py
+@@ -9 +9 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+@@ -19 +19,4 @@
+-    """Author-year credit for archived research, from the reviewed catalog export."""
++    """Author-year credit for archived research, from the reviewed catalog export.
++
++    A missing or unreadable catalog returns no citation for this call. The next
++    call tries again. A successful read stays cached for the process."""
+@@ -24 +27 @@
+-            _AUTHORS={k:v['cite'] for k,v in data.get('entries',{}).items() if isinstance(v.get('cite'),str) and len(v['cite'])<=120}
++            loaded={k:v['cite'] for k,v in data.get('entries',{}).items() if isinstance(v.get('cite'),str) and len(v['cite'])<=120}
+@@ -26 +29,2 @@
+-            _AUTHORS={}
++            return None
++        _AUTHORS=loaded
+@@ -201,2 +205,2 @@
+-    from runtime.agents import load_personas
+-    if persona not in load_personas():return []
++    from runtime.agents import persona_known
++    if not persona_known(persona):return []
+--- a/runtime/models.py
++++ b/runtime/models.py
+@@ -5 +5 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+--- a/runtime/retrieval.py
++++ b/runtime/retrieval.py
+@@ -14 +14 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+@@ -22,0 +23,2 @@
++_RETRY_NOT_BEFORE={}
++_ENGINE_RETRY_SECONDS=30.0
+@@ -190 +192,4 @@
+-    """Lazily load once per process and directory; None means use BM25 only."""
++    """Return the cached engine. A failed open is remembered for 30 seconds, then tried again.
++
++    None means this call uses BM25. The reason keeps the exception type only.
++    A ready engine stays cached until reset or process replacement."""
+@@ -192,0 +198 @@
++    now=time.monotonic()
+@@ -194,5 +200,11 @@
+-        if key not in _ENGINES:
+-            try:_ENGINES[key]=RemoteEngine() if worker_mode()=='remote' else Engine(directory);_REASONS[key]='ready ('+worker_mode()+')'
+-            except Exception as exc:
+-                _ENGINES[key]=None;_REASONS[key]=type(exc).__name__+': '+str(exc)[:200]
+-        return _ENGINES[key]
++        loaded=_ENGINES.get(key)
++        if loaded is not None or now<_RETRY_NOT_BEFORE.get(key,0):return loaded
++        try:loaded=RemoteEngine() if worker_mode()=='remote' else Engine(directory)
++        except Exception as exc:
++            _REASONS[key]=type(exc).__name__
++            _RETRY_NOT_BEFORE[key]=now+_ENGINE_RETRY_SECONDS
++            return None
++        _ENGINES[key]=loaded
++        _REASONS[key]='ready ('+worker_mode()+')'
++        _RETRY_NOT_BEFORE.pop(key,None)
++        return loaded
+@@ -200,0 +213 @@
++    key=str(Path(directory).resolve())
+@@ -202 +215,2 @@
+-    return {'cpu_retrieval':'ready' if loaded else 'bm25-only','reason':_REASONS.get(str(Path(directory).resolve()),'disabled by environment')}
++    return {'cpu_retrieval':'ready' if loaded else 'bm25-only','reason':_REASONS.get(key,'disabled by environment'),
++            'failure_cached':loaded is None and key in _RETRY_NOT_BEFORE}
+@@ -205 +219 @@
+-    with _LOCK:_ENGINES.clear();_REASONS.clear()
++    with _LOCK:_ENGINES.clear();_REASONS.clear();_RETRY_NOT_BEFORE.clear()
+--- a/runtime/retrieval_worker.py
++++ b/runtime/retrieval_worker.py
+@@ -76,0 +77,25 @@
++def _marker(directory):
++    """Cheap identity of the index files. A content rejection is not reread until this changes."""
++    path=Path(directory)
++    try:
++        return tuple(sorted(item.name+'|'+str(item.stat().st_mtime_ns) for item in path.iterdir() if item.is_file()))
++    except OSError:
++        return None
++
++def _load_engine(directory):
++    """Stay alive when the index cannot be opened. OSError retries; other failures wait for a file change."""
++    from runtime import retrieval
++    os.environ['LARPUS_RETRIEVAL_WORKER']='local'
++    seen=object()
++    while True:
++        marker=_marker(directory)
++        if marker!=seen:
++            try:
++                return retrieval.Engine(directory)
++            except OSError as exc:
++                print('retrieval worker disabled: '+type(exc).__name__,file=sys.stderr,flush=True)
++            except Exception as exc:
++                print('retrieval worker disabled: '+type(exc).__name__,file=sys.stderr,flush=True)
++                seen=marker
++        time.sleep(retrieval._ENGINE_RETRY_SECONDS)
++
+@@ -80,3 +105 @@
+-    from runtime import retrieval
+-    from runtime.knowledge import DIRECTORY
+-    os.environ['LARPUS_RETRIEVAL_WORKER']='local'  # this process loads models itself
++    from runtime.station_paths import ROOT
+@@ -84,5 +107 @@
+-    try:engine=retrieval.Engine(DIRECTORY)  # full hash verification, once
+-    except Exception as exc:
+-        # Stay alive (the container must not exit) but never listen: clients use BM25.
+-        print('retrieval worker disabled: '+type(exc).__name__,file=sys.stderr,flush=True)
+-        while True:time.sleep(3600)
++    engine=_load_engine(ROOT/'knowledge')
+--- a/runtime/scoring_pipeline.py
++++ b/runtime/scoring_pipeline.py
+@@ -1,0 +2 @@
++import time
+@@ -4,0 +6,2 @@
++SCORER_RETRY_SECONDS=30.0
++NUMPY_UNTIL='NumPy until the next scorer retry.'
+@@ -9 +12 @@
+-  self.vectors=vectors;self.native=None;self.optimized=None;self.error=None;self.requested=preferred;self.ambiguity_fallbacks=0;self.last_used=None
++  self.vectors=vectors;self.native=None;self.optimized=None;self.error=None;self._retry_at=None;self.requested=preferred;self.ambiguity_fallbacks=0;self.last_used=None
+@@ -17 +20 @@
+-   if preferred=='assembly':self.error='Assembly unavailable or validation failed; using NumPy.'
++   if preferred=='assembly':self.error='Assembly unavailable or validation failed. '+NUMPY_UNTIL;self._retry_at=time.monotonic()+SCORER_RETRY_SECONDS
+@@ -20 +23 @@
+-   if preferred=='assembly-optimized':self.error='Optimized Assembly unavailable or validation failed; using NumPy.'
++   if preferred=='assembly-optimized':self.error='Optimized Assembly unavailable or validation failed. '+NUMPY_UNTIL;self._retry_at=time.monotonic()+SCORER_RETRY_SECONDS
+@@ -33 +36,2 @@
+-          'requested_id':self.requested,'notice':self.error,'workers':4,'last_used':self.last_used,'ambiguity_fallbacks':self.ambiguity_fallbacks,
++          'requested_id':self.requested,'notice':self.error,'numpy_until':'retry-30s' if self.error else None,
++          'workers':4,'last_used':self.last_used,'ambiguity_fallbacks':self.ambiguity_fallbacks,
+@@ -36,0 +41 @@
++  self._consider_retry()
+@@ -57,0 +63,12 @@
++ def _consider_retry(self):
++  if self._retry_at is None or time.monotonic()<self._retry_at or self._backend(self.requested) is not None or self.requested=='numpy':return
++  self._open(self.requested)
++
++ def _open(self,identifier):
++  try:backend=NativeScorer(self.vectors) if identifier=='assembly' else OptimizedScorer(self.vectors) if identifier=='assembly-optimized' else None
++  except (OSError,ValueError,RuntimeError,ImportError,KeyError,AssertionError,AttributeError):
++   self._retry_at=time.monotonic()+SCORER_RETRY_SECONDS;return
++  if identifier=='assembly':self.native=backend
++  elif identifier=='assembly-optimized':self.optimized=backend
++  if backend is not None:self.error=None;self._retry_at=None
++
+@@ -58,0 +76 @@
++  self._consider_retry()
+@@ -70 +88,2 @@
+-    self.error='Assembly failed; using NumPy.'
++    self.error='Assembly scoring failed. '+NUMPY_UNTIL
++    self._retry_at=time.monotonic()+SCORER_RETRY_SECONDS
+--- a/runtime/security_scan.py
++++ b/runtime/security_scan.py
+@@ -13 +13,2 @@
+-from runtime.skills import ROOT, load_skills
++from runtime.station_paths import ROOT
++from runtime.skills import load_skills
+--- a/runtime/skills.py
++++ b/runtime/skills.py
+@@ -6 +6 @@
+-from runtime.text_filter import inspect_message
++from runtime.text_filter import TextHeld, inspect_message
+@@ -11,0 +12,76 @@
++class CatalogRejected(ValueError):
++    """The registry document itself is unusable. No persona is served."""
++    scope='catalog'
++
++class SkillRejected(CatalogRejected):
++    """One named skill failed. Other skills stay available."""
++    scope='skill'
++
++class PersonaRejected(CatalogRejected):
++    """One persona file or its skill selection failed. Other personas stay available."""
++    scope='persona'
++
++_REJECTED={}
++_SKILL_REASONS={
++ 'Invalid local skill description scalar','Invalid local skill frontmatter','Invalid local skill frontmatter fields',
++ 'Invalid skill metadata','Local skill input exceeds size limit','Local skill input must be a regular file',
++ 'Only locally authored skills are allowed','Skill changed; local review and registration required',
++ 'Skill path escapes local registry','Skills must be prompt-only; ancillary executables are not allowed'}
++
++def _regular_bytes(path, limit):
++    if path.is_symlink() or getattr(path.lstat(),'st_file_attributes',0)&1024 or not path.is_file():
++        raise CatalogRejected('Local skill input must be a regular file')
++    with path.open('rb') as stream:
++        raw=stream.read(limit+1)
++    if len(raw)>limit:
++        raise CatalogRejected('Local skill input exceeds size limit')
++    return raw
++
++def parse_frontmatter(raw, identifier):
++    """Accept only the two plain scalar fields used by reviewed local skills."""
++    text=raw.decode('utf-8')
++    parts=text.split('\n---\n',1)
++    if len(parts)!=2 or not parts[0].startswith('---\n') or '\r' in parts[0]:
++        raise CatalogRejected('Invalid local skill frontmatter')
++    lines=parts[0][4:].split('\n')
++    if len(lines)!=2 or lines[0]!='name: '+identifier or not lines[1].startswith('description: '):
++        raise CatalogRejected('Invalid local skill frontmatter fields')
++    description=lines[1][13:]
++    if (not re.fullmatch(r'[A-Za-z][^\r\n]*',description) or description!=description.strip()
++            or re.search(r':\s|\s#|[\x00-\x1f\x7f]',description)
++            or description.lower() in {'true','false','null','yes','no','on','off'}):
++        raise CatalogRejected('Invalid local skill description scalar')
++    return {'name':identifier,'description':description}
++
++def _fail_catalog(message):
++    _REJECTED.clear()
++    raise CatalogRejected(message)
++
++def _skill_files(entry,identifier):
++    if entry['origin']!='local-authored':
++        raise SkillRejected('Only locally authored skills are allowed')
++    folder=SKILLS/identifier
++    path=folder/'SKILL.md'
++    if folder.is_symlink() or getattr(folder.lstat(),'st_file_attributes',0)&1024 or not path.resolve().is_relative_to(SKILLS.resolve()):
++        raise SkillRejected('Skill path escapes local registry')
++    if {item.name for item in folder.iterdir()}!={'SKILL.md'}:
++        raise SkillRejected('Skills must be prompt-only; ancillary executables are not allowed')
++    return path
++
++def _skill_text(entry,identifier,path):
++    try:
++        raw=_regular_bytes(path,16000)
++        if len(raw)>16000 or hashlib.sha256(raw).hexdigest()!=entry['sha256']:
++            raise SkillRejected('Skill changed; local review and registration required')
++        text=raw.decode('utf-8')
++        inspect_message(text)
++        parse_frontmatter(raw,identifier)
++    except SkillRejected:
++        raise
++    except (CatalogRejected,UnicodeError,ValueError,TextHeld) as exc:
++        message=exc.args[0] if isinstance(exc,CatalogRejected) and exc.args and isinstance(exc.args[0],str) and exc.args[0] in _SKILL_REASONS else 'Skill changed; local review and registration required'
++        raise SkillRejected(message) from exc
++    if any(not isinstance(entry[key],str) or not entry[key].strip() for key in ('name','description')):
++        raise SkillRejected('Invalid skill metadata')
++    return {**entry,'text':text}
++
+@@ -13 +89,4 @@
+-    registry=json.loads(REGISTRY.read_text(encoding='utf-8'))
++    try:
++        registry=json.loads(_regular_bytes(REGISTRY,1000000).decode('utf-8'))
++    except (CatalogRejected,UnicodeError,json.JSONDecodeError) as exc:
++        _fail_catalog('Invalid local skill registry')
+@@ -15 +94 @@
+-        raise ValueError('Invalid local skill registry')
++        _fail_catalog('Invalid local skill registry')
+@@ -17,2 +96,2 @@
+-        raise ValueError('Too many local skills')
+-    result={}
++        _fail_catalog('Too many local skills')
++    result={};rejected={}
+@@ -21 +100 @@
+-            raise ValueError('Invalid skill registration')
++            _fail_catalog('Invalid skill registration')
+@@ -23,22 +102,12 @@
+-        if not isinstance(identifier,str) or not re.fullmatch(r'[a-z][a-z0-9-]{0,63}',identifier) or identifier in result:
+-            raise ValueError('Invalid or duplicate skill ID')
+-        if entry['origin']!='local-authored':
+-            raise ValueError('Only locally authored skills are allowed')
+-        folder=SKILLS/identifier
+-        path=folder/'SKILL.md'
+-        if folder.is_symlink() or path.is_symlink() or not path.resolve().is_relative_to(SKILLS.resolve()):
+-            raise ValueError('Skill path escapes local registry')
+-        if {p.name for p in folder.iterdir()}!={'SKILL.md'}:
+-            raise ValueError('Skills must be prompt-only; ancillary executables are not allowed')
+-        raw=path.read_bytes()
+-        if len(raw)>16000 or hashlib.sha256(raw).hexdigest()!=entry['sha256']:
+-            raise ValueError('Skill changed; local review and registration required')
+-        text=raw.decode('utf-8')
+-        inspect_message(text)
+-        if not text.startswith('---\nname: '+identifier+'\n'):
+-            raise ValueError('Skill identity mismatch')
+-        if any(not isinstance(entry[key],str) or not entry[key].strip() for key in ('name','description')):
+-            raise ValueError('Invalid skill metadata')
+-        result[identifier]={**entry,'text':text}
+-    if {p.name for p in SKILLS.iterdir() if p.is_dir()}!=set(result):
+-        raise ValueError('Unregistered local skill folder')
++        if not isinstance(identifier,str) or not re.fullmatch(r'[a-z][a-z0-9-]{0,63}',identifier) or identifier in result or identifier in rejected:
++            _fail_catalog('Invalid or duplicate skill ID')
++        try:
++            result[identifier]=_skill_text(entry,identifier,_skill_files(entry,identifier))
++        except SkillRejected as exc:
++            rejected[identifier]=exc.args[0]
++        except OSError:
++            rejected[identifier]='Skill path escapes local registry'
++    names={item.name for item in SKILLS.iterdir()}
++    if not names<=set(result)|set(rejected)|{'registry.json'}:
++        _fail_catalog('Unregistered local skill folder')
++    _REJECTED.clear();_REJECTED.update(rejected)
+@@ -45,0 +115,4 @@
++
++def skill_rejections():
++    """Names rejected by the last successful load_skills. Empty after a catalog-level failure."""
++    return dict(_REJECTED)
+@@ -50 +123 @@
+-    if not isinstance(identifier,str) or identifier not in persona.get('skills',[]):
++    if not isinstance(identifier,str):
+@@ -52,0 +126,4 @@
++    if identifier in _REJECTED:
++        raise SkillRejected(_REJECTED[identifier])
++    if identifier not in persona.get('skills',[]):
++        raise ValueError('Skill not allowed for this persona')
+--- /dev/null
++++ b/runtime/station_paths.py
+@@ -0,0 +1,4 @@
++"""Repository root for runtime modules. Not a skill, evidence, or model authority."""
++from pathlib import Path
++
++ROOT=Path(__file__).resolve().parents[1]
+--- a/scripts/benchmark-isolated.py
++++ b/scripts/benchmark-isolated.py
+@@ -9 +9 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+--- a/scripts/releases.py
++++ b/scripts/releases.py
+@@ -179,2 +179,2 @@
+-    from scripts.ui_checks import TESTS
+-    for test in TESTS:print(run(root,'node.exe','tests/'+test),flush=True)
++    tests=json.loads(run(root,sys.executable,'-c','import json;from scripts.ui_checks import TESTS;print(json.dumps(TESTS))'))
++    for test in tests:print(run(root,'node.exe','tests/'+test),flush=True)
+@@ -254 +254 @@
+-    print(run(dest,sys.executable,'scripts/test-local.py'),flush=True)
++    print(run(dest,sys.executable,'scripts/test-local.py',timeout=600),flush=True)
+--- a/scripts/transfer-isolation-source.py
++++ b/scripts/transfer-isolation-source.py
+@@ -7 +7 @@
+-from runtime.skills import ROOT
++from runtime.station_paths import ROOT
+--- a/tests/test_assembly_pipeline.py
++++ b/tests/test_assembly_pipeline.py
+@@ -15,0 +16,2 @@
++  self.assertIn('next scorer retry',scorer.status()['notice'])
++  self.assertEqual(scorer.status()['numpy_until'],'retry-30s')
+@@ -31 +33,6 @@
+-  self.assertTrue(scorer.status()['notice'])
++  self.assertIn('next scorer retry',scorer.status()['notice'])
++  self.assertEqual(scorer.status()['numpy_until'],'retry-30s')
++  with patch.object(scoring_pipeline,'NativeScorer',Native),patch.object(scoring_pipeline.time,'monotonic',return_value=scorer._retry_at):
++   np.testing.assert_array_equal(scorer.score(np.ones(4,dtype=np.float32)),np.ones(4))
++  self.assertEqual(scorer.status()['active_id'],'assembly')
++  self.assertIsNone(scorer.status()['numpy_until'])
+@@ -49,0 +57 @@
++  self.assertIsNone(scorer.status()['numpy_until'])
+--- /dev/null
++++ b/tests/test_failure_isolation.py
+@@ -0,0 +1,134 @@
++import io
++import json
++import contextlib
++import tempfile
++import unittest
++from pathlib import Path
++from unittest.mock import patch
++from runtime import diagnostics, inference, knowledge, retrieval
++from runtime.agents import load_personas, messages_for, persona_known
++from runtime.skills import CatalogRejected
++
++HISTORY=[{'role':'user','content':'Hello'}]
++
++class CatalogIsolationTests(unittest.TestCase):
++    def test_non_object_persona_is_rejected_without_removing_valid_personas(self):
++        from runtime import agents
++        valid=agents.ROOT/'agents/personas/home-assistant.json'
++        with tempfile.TemporaryDirectory() as temporary:
++            root=Path(temporary);folder=root/'agents/personas';folder.mkdir(parents=True)
++            (folder/'home-assistant.json').write_bytes(valid.read_bytes())
++            for value in (None,[],[{}],True,7,'persona'):
++                with self.subTest(value=value),patch.object(agents,'ROOT',root):
++                    (folder/'broken.json').write_text(json.dumps(value),encoding='utf-8')
++                    self.assertEqual(set(agents.load_personas()),{'home-assistant'})
++                    self.assertEqual(agents.persona_rejections(),{'broken':'Invalid persona fields'})
++
++    def test_skill_catalog_failure_is_not_a_bad_request_or_an_evidence_failure(self):
++        sink=io.StringIO()
++        with patch('runtime.skills.load_skills',side_effect=CatalogRejected('Skill changed; local review and registration required')),contextlib.redirect_stderr(sink):
++            rejected=inference.chat('home-assistant',HISTORY,'home-planning')
++        self.assertEqual(rejected['status'],503)
++        self.assertEqual(rejected['diagnostic_code'],'LARP-CATALOG-REJECTED')
++        self.assertNotIn('Skill changed',rejected['error'])
++        record=json.loads(sink.getvalue())
++        self.assertEqual(record['code'],'LARP-CATALOG-REJECTED')
++        self.assertEqual(record['causes'][0]['reason'],'CATALOG-REJECTED')
++        self.assertEqual(record['causes'][0]['message_source'],'reviewed-literal')
++        malformed=inference.chat('home-assistant',[{'role':'user','content':''}])
++        self.assertEqual(malformed['status'],400)
++        self.assertNotIn('diagnostic_code',malformed)
++        denied=inference.chat('home-assistant',HISTORY,'it-interview')
++        self.assertEqual(denied['status'],400)
++        with patch('runtime.inference.summaries',side_effect=CatalogRejected('Unregistered local skill folder')):
++            listed=inference.personas()
++        self.assertEqual(listed['diagnostic_code'],'LARP-CATALOG-REJECTED')
++        self.assertNotIn('personas',listed)
++        self.assertNotIn('Unregistered',listed['error'])
++
++    def test_evidence_exception_keeps_its_own_code(self):
++        with patch('runtime.inference.augment',side_effect=RuntimeError('index missing SECRET')):
++            failed=inference.chat('home-assistant',HISTORY)
++        self.assertEqual(failed['diagnostic_code'],'LARP-EVIDENCE-UNAVAILABLE')
++        self.assertNotIn('SECRET',failed['error'])
++        with patch('runtime.inference.augment',side_effect=CatalogRejected('Invalid local skill registry')):
++            catalog=inference.chat('home-assistant',HISTORY)
++        self.assertEqual(catalog['diagnostic_code'],'LARP-CATALOG-REJECTED')
++        self.assertNotEqual(catalog['diagnostic_code'],'LARP-EVIDENCE-UNAVAILABLE')
++
++    def test_unreviewed_catalog_text_is_not_copied(self):
++        sink=io.StringIO()
++        with contextlib.redirect_stderr(sink):
++            body=diagnostics.catalog_failure(CatalogRejected('SECRET path C:/owner/skill'))
++        self.assertNotIn('SECRET',sink.getvalue()+json.dumps(body))
++        self.assertEqual(json.loads(sink.getvalue())['causes'][0]['reason'],'UNCLASSIFIED')
++
++    def test_one_rejected_skill_does_not_remove_the_persona(self):
++        from runtime import agents, skills as skills_module
++        real=agents.require_persona('home-assistant')
++        kept=next(item for item in real['skills'] if item!='home-planning')
++        saved=skills_module.load_skills()
++        def partial():
++            skills_module._REJECTED.clear()
++            skills_module._REJECTED['home-planning']='Skill changed; local review and registration required'
++            return {key:value for key,value in saved.items() if key!='home-planning'}
++        with patch('runtime.skills.load_skills',side_effect=partial),patch('runtime.agents.load_skills',side_effect=partial):
++            persona=agents.require_persona('home-assistant')
++            self.assertNotIn('home-planning',persona['skills'])
++            self.assertIn(kept,persona['skills'])
++            self.assertEqual(skills_module.skill_rejections()['home-planning'],'Skill changed; local review and registration required')
++            rejected=inference.chat('home-assistant',HISTORY,'home-planning')
++            prepared=messages_for(persona,HISTORY)
++        self.assertEqual(rejected['status'],503)
++        self.assertEqual(rejected['scope'],'skill')
++        self.assertNotIn('Skill changed',rejected['error'])
++        self.assertIn(persona['system_prompt'],prepared[0]['content'])
++        self.assertFalse(persona_known('not-a-persona'))
++        self.assertEqual(knowledge._retrieve('not-a-persona','hello there',100),[])
++
++    def test_evidence_literal_is_reviewed(self):
++        detail=diagnostics.describe(ValueError('Knowledge database hash mismatch'))
++        self.assertEqual(detail['reason'],'EVIDENCE-REJECTED')
++        self.assertEqual(detail['message_source'],'reviewed-literal')
++
++class RetrievalAndCitationTests(unittest.TestCase):
++    def setUp(self):retrieval.reset()
++    def tearDown(self):retrieval.reset()
++
++    def test_remote_miss_retries_after_thirty_seconds_without_the_exception_text(self):
++        self.assertEqual(retrieval._ENGINE_RETRY_SECONDS,30.0)
++        clock={'now':1000.0}
++        calls=[]
++        class Ready:
++            pass
++        def flaky():
++            calls.append(1)
++            if len(calls)==1:raise OSError('SECRET socket /mnt/e/private')
++            return Ready()
++        with patch.dict('os.environ',{'LARPUS_RETRIEVAL_WORKER':'remote'}),patch.object(retrieval,'RemoteEngine',side_effect=flaky),patch('runtime.retrieval.time.monotonic',side_effect=lambda:clock['now']):
++            self.assertIsNone(retrieval.engine(knowledge.DIRECTORY))
++            shown=retrieval.status(knowledge.DIRECTORY)
++            self.assertEqual(shown['reason'],'OSError')
++            self.assertNotIn('SECRET',json.dumps(shown))
++            self.assertTrue(shown['failure_cached'])
++            self.assertEqual(len(calls),1)
++            clock['now']=1029.9
++            self.assertIsNone(retrieval.engine(knowledge.DIRECTORY))
++            self.assertEqual(len(calls),1)
++            clock['now']=1030.0
++            self.assertIsInstance(retrieval.engine(knowledge.DIRECTORY),Ready)
++            self.assertEqual(len(calls),2)
++            self.assertFalse(retrieval.status(knowledge.DIRECTORY)['failure_cached'])
++            self.assertEqual(retrieval.status(knowledge.DIRECTORY)['reason'],'ready (remote)')
++            self.assertEqual(len(calls),2)
++
++    def test_author_catalog_failure_does_not_stick(self):
++        with tempfile.TemporaryDirectory() as directory:
++            root=Path(directory)
++            with patch.object(knowledge,'DIRECTORY',root),patch.object(knowledge,'_AUTHORS',None):
++                self.assertIsNone(knowledge.author_cite('x'))
++                (root/'authors.json').write_text(json.dumps({'entries':{'x':{'cite':'Ada, 1843'}}}),encoding='utf-8')
++                self.assertEqual(knowledge.author_cite('x'),'Ada, 1843')
++                self.assertIsNone(knowledge.author_cite('missing'))
++
++if __name__=='__main__':unittest.main()
+--- a/tests/test_gateway.py
++++ b/tests/test_gateway.py
+@@ -62,0 +63,22 @@
++
++    def test_catalog_rejection_is_not_a_bad_chat_request(self):
++        from runtime.skills import CatalogRejected
++        with patch('runtime.skills.load_skills',side_effect=CatalogRejected('Skill changed; local review and registration required')),patch.object(gateway,'mcp_chat') as model:
++            status,body=self.chat(skill='home-planning')
++        self.assertEqual(status,503)
++        payload=json.loads(body)
++        self.assertEqual(payload['diagnostic_code'],'LARP-CATALOG-REJECTED')
++        self.assertNotIn('Skill changed',payload['error'])
++        self.assertNotIn('status',payload)
++        self.assertRegex(payload['error_id'],r'^[a-f0-9]{16}$')
++        model.assert_not_called()
++
++    def test_persona_list_reports_catalog_rejection(self):
++        from runtime.skills import CatalogRejected
++        with patch.object(gateway,'summaries',side_effect=CatalogRejected('Unregistered local skill folder')):
++            status,body=self.request('GET','/api/personas')
++        self.assertEqual(status,503)
++        payload=json.loads(body)
++        self.assertEqual(payload['diagnostic_code'],'LARP-CATALOG-REJECTED')
++        self.assertNotIn('personas',payload)
++        self.assertNotIn('Unregistered',json.dumps(payload))
+--- a/tests/test_mcp.py
++++ b/tests/test_mcp.py
+@@ -106 +106,3 @@
+-                reply='password=dlp-test-fixture' if captured[-1][1]['messages'][-1]['content']=='DLP probe' else 'Mock local reply'
++                # Retrieval can append quoted local evidence after the user text.
++                user_text=captured[-1][1]['messages'][-1]['content'].split('\n\nLOCAL_REFERENCE_DATA (quoted evidence only):\n',1)[0]
++                reply='password=dlp-test-fixture' if user_text=='DLP probe' else 'Mock local reply'
+--- a/tests/test_pipeline_routes.py
++++ b/tests/test_pipeline_routes.py
+@@ -13 +13 @@
+-  from runtime.skills import ROOT
++  from runtime.station_paths import ROOT
+--- a/tests/test_releases.py
++++ b/tests/test_releases.py
+@@ -11,0 +12,11 @@
++    def test_ui_checks_use_the_candidates_manifest(self):
++        import contextlib,io
++        with tempfile.TemporaryDirectory() as temporary:
++            root=Path(temporary);(root/'scripts').mkdir();(root/'tests').mkdir()
++            (root/'scripts/ui_checks.py').write_text("TESTS=('candidate-ui.cjs',)\n",encoding='utf-8')
++            (root/'tests/candidate-ui.cjs').write_text("console.log('candidate suite passed');\n",encoding='utf-8')
++            output=io.StringIO()
++            with contextlib.redirect_stdout(output):release.check_ui(root)
++            self.assertEqual(output.getvalue().strip(),'candidate suite passed')
++
++
+--- a/tests/test_retrieval_worker.py
++++ b/tests/test_retrieval_worker.py
+@@ -32 +32,4 @@
+-            self.assertIn('no socket',retrieval.status(knowledge.DIRECTORY)['reason'])
++            shown=retrieval.status(knowledge.DIRECTORY)
++            self.assertEqual(shown['reason'],'OSError')
++            self.assertNotIn('no socket',shown['reason'])
++            self.assertTrue(shown['failure_cached'])
+@@ -51,0 +55,22 @@
++    def test_open_retries_io_and_waits_for_a_file_change_after_rejection(self):
++        previous=os.environ.get('LARPUS_RETRIEVAL_WORKER')
++        self.addCleanup(lambda: os.environ.pop('LARPUS_RETRIEVAL_WORKER',None) if previous is None else os.environ.__setitem__('LARPUS_RETRIEVAL_WORKER',previous))
++        calls=[]
++        def reject(directory):
++            calls.append(1)
++            raise ValueError('hash mismatch SECRET')
++        def sleep(seconds):
++            self.assertEqual(seconds,retrieval._ENGINE_RETRY_SECONDS)
++            raise RuntimeError('stop')
++        with patch.object(retrieval_worker,'_marker',return_value='same'),patch.object(retrieval,'Engine',reject),patch.object(retrieval_worker.time,'sleep',sleep):
++            with self.assertRaises(RuntimeError):retrieval_worker._load_engine(knowledge.DIRECTORY)
++        self.assertEqual(calls,[1])
++        calls.clear()
++        def retry(directory):
++            calls.append(1)
++            if len(calls)==1:raise OSError('busy SECRET')
++            return 'ready'
++        with patch.object(retrieval_worker,'_marker',return_value='same'),patch.object(retrieval,'Engine',retry),patch.object(retrieval_worker.time,'sleep',lambda _seconds:None):
++            self.assertEqual(retrieval_worker._load_engine(knowledge.DIRECTORY),'ready')
++        self.assertEqual(len(calls),2)
++
+--- a/tests/test_skills_health.py
++++ b/tests/test_skills_health.py
+@@ -68,2 +68,2 @@
+-                with self.assertRaises(ValueError):
+-                    skills.load_skills()
++                self.assertEqual(skills.load_skills(),{})
++                self.assertIn('example',skills.skill_rejections())
+@@ -72,2 +72,2 @@
+-                with self.assertRaises(ValueError):
+-                    skills.load_skills()
++                self.assertEqual(skills.load_skills(),{})
++                self.assertEqual(skills.skill_rejections()['example'],'Skills must be prompt-only; ancillary executables are not allowed')
+@@ -77,2 +77,2 @@
+-                with self.assertRaises(ValueError):
+-                    skills.load_skills()
++                self.assertEqual(skills.load_skills(),{})
++                self.assertEqual(skills.skill_rejections()['example'],'Only locally authored skills are allowed')
+--- a/web/app.js
++++ b/web/app.js
+@@ -205 +205 @@
+-  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas.find(p=>p.id==='home-assistant')||personas[0]; $('persona').value=p.id; $('description').textContent=p.description; showModel(p.model);refreshSkills(p);bindMemory();bindHandoff();
++  try { const data = await api('/api/personas'); personas = data.personas; skills=data.skills||[]; const rejected=[...Object.keys((data.rejected||{}).skills||{}),...Object.keys((data.rejected||{}).personas||{})]; if(rejected.length)$('notice').textContent=rejected.length+' local catalog entries were rejected. The others stay available.'; $('persona').replaceChildren(...personas.map(p=>new Option(p.name,p.id))); $('persona').disabled=false; const p=personas.find(p=>p.id==='home-assistant')||personas[0]; $('persona').value=p.id; $('description').textContent=p.description; showModel(p.model);refreshSkills(p);bindMemory();bindHandoff();
