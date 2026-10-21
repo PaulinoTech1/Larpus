@@ -393,6 +393,32 @@ changed; no commit or push was made. Existing frozen scan receipts and their
 reviewed warnings were not modified. Failure containment remains 3; no
 dimension is 5. Unrelated working changes were preserved.
 
+### Re-check after the handoff edits
+
+The checkout already contained the seven `station_paths.ROOT` imports and the
+MCP mock change. This re-check did not stop the running gateway. At the start,
+port 8080 was held by pid 27572 for selected release
+`042f91c0a1454887a694c945f49237ad`, and port 11434 had no listener. After the
+tests, pid 27572 was still listening on 8080 and 11434 was free again.
+
+`python scripts/complexity.py check` passed: 758 functions, 105 modules. The
+baseline and new-function cap were not changed. `station_paths.ROOT` equals
+`skills.ROOT` (`E:\speedzone_MS\LARPUS`). `runtime/health.py` still imports
+`skills.ROOT`; that alias was outside this handoff.
+
+From the checkout root:
+
+```text
+python -m unittest tests.test_dlp tests.test_dlp_ci_overrides tests.test_isolation tests.test_isolation_snapshot tests.test_model_selection tests.test_source_integrity tests.test_broker_scan_review tests.test_pipeline_routes tests.test_mcp tests.test_failure_isolation tests.test_skills_health tests.test_skill_resources tests.test_gateway tests.test_assembly_pipeline tests.test_retrieval_worker
+```
+
+That run reported 100 tests, 2 skipped, exit 0. The output did not contain the
+occupied-port skip, so the MCP DLP case ran against the loopback mock. With
+`PYTHONPATH` set to the checkout and its `tests` directory,
+`tests.test_execution_modularity` reported 4 tests, exit 0. The full suite,
+scanner, latency screen, and rendered HUD were not run. No release, commit, or
+push was made.
+
 The scoped section names what was tested. This document does not rerun the station, the scanner, the latency screen, or a live HUD. It does not claim the frozen release `7df2e957751642d6ace4630fa047fe94` contains these checkout edits. A bad registry at import was not launched as its own process.
 
 `describe` still returns `UNCLASSIFIED` for raises whose text is not an exact reviewed literal. Knowledge and notes manifest messages listed in `diagnostics.py` are reviewed. Other bare raises are not. The standard in section 2.4 is the bar for closing each one.
