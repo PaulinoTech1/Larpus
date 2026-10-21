@@ -153,10 +153,17 @@ def scan_gate(summary,report,baseline,targets=None,reviewed=None,source_hashes=N
         if reviewed_signatures(reviewed['previous'])!=issue_signatures(baseline) or reviewed_signatures(reviewed['approved'])!=issue_signatures(report):
             raise ValueError('MCP finding inventory differs from reviewed transition')
 
+def check_catalog_counts(root):
+    # Older retained releases predate this gate and remain valid rollback targets.
+    if (root/'scripts/knowledge_counts.py').is_file():
+        from scripts.knowledge_counts import reconcile
+        reconcile(root)
+
 def validate(root):
     meta=read(root/'release.json')
     if meta.get('version')!=1 or meta.get('id')!=root.name:raise ValueError('Invalid release metadata')
     if not meta.get('files') or payload(root)!=meta['files']:raise ValueError('Frozen release files changed')
+    check_catalog_counts(root)
     fingerprint=run(root,sys.executable,'-c','from runtime.security_scan import fingerprint;print(fingerprint())')
     if fingerprint!=meta['source_fingerprint'] or read(root/'deployment.json')['source_fingerprint']!=fingerprint:raise ValueError('Release fingerprint mismatch')
     if not meta.get('bootstrap'):
@@ -171,6 +178,8 @@ def stage(source=None):
     source=ROOT if source is None else Path(source)
     if source.is_symlink() or not source.is_dir():raise ValueError('Invalid staging source')
     source=source.resolve()
+    from scripts.knowledge_counts import reconcile
+    reconcile(source)
     if (source/'knowledge/provenance.json').exists():run(source,sys.executable,'scripts/source-provenance.py','check')
     import _winapi
     identifier=uuid.uuid4().hex;dest=release_path(identifier)

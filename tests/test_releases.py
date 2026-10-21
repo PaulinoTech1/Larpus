@@ -235,11 +235,20 @@ class ReleaseTests(unittest.TestCase):
             (root/'runtime/one.py').write_text('unrelated owner edit')
             (source/'runtime/one.py').write_text('scoped candidate')
             junction=Mock()
-            with patch.object(release,'ROOT',root),patch.object(release,'STORE',store),patch.object(release,'DIRECTORIES',('runtime',)),patch.object(release,'FILES',()),patch.object(release,'run',return_value='a'*64),patch.dict('sys.modules',{'_winapi':SimpleNamespace(CreateJunction=junction)}):
+            with patch.object(release,'ROOT',root),patch.object(release,'STORE',store),patch.object(release,'DIRECTORIES',('runtime',)),patch.object(release,'FILES',()),patch.object(release,'run',return_value='a'*64),patch('scripts.knowledge_counts.reconcile'),patch.dict('sys.modules',{'_winapi':SimpleNamespace(CreateJunction=junction)}):
                 identifier=release.stage(source)
             self.assertEqual((store/identifier/'runtime/one.py').read_text(),'scoped candidate')
             self.assertEqual((root/'runtime/one.py').read_text(),'unrelated owner edit')
             self.assertEqual(junction.call_args_list[0].args,(str((root/'data').resolve()),str(store/identifier/'data')))
+
+    def test_staging_rejects_catalog_index_mismatch_before_copy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source=Path(directory)/'source';source.mkdir()
+            store=Path(directory)/'releases'
+            with patch.object(release,'STORE',store),patch('scripts.knowledge_counts.reconcile',side_effect=ValueError('catalog mismatch')):
+                with self.assertRaisesRegex(ValueError,'catalog mismatch'):
+                    release.stage(source)
+            self.assertFalse(store.exists())
 
     def test_readiness_uses_functional_station_health(self):
         import io

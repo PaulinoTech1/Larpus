@@ -951,3 +951,43 @@ Release `346773e17fd54b7784fd3148b07a4b0e` was activated at 3:47:06 PM ET and
 passed `data/broker-live-346773e1-activated-20261021.json`. Rollback target:
 `03959f0891764772a962726bea4309d7`. The frozen release still carries the old
 copy of `scripts/verify-broker-live.py`; it is not used at runtime.
+
+## Pair declared passage counts with the selected index (2026-10-21)
+
+The owner approved correcting the Unit 42 count in a new release candidate and
+checking declared catalog counts against each candidate's selected database.
+The rebuilt checkout index has two overlapping Unit 42 chunks; the active
+release retained one older row containing the entire reviewed brief. Its
+catalog copied the checkout's count of two, so the mismatch is metadata, not
+missing reviewed text. The checkout count remains two because its database
+really has two chunks.
+
+`scripts/knowledge_counts.py` now checks each declared `indexed_passages`
+against distinct `(locator, text)` pairs for the catalog's `(id, url)` in the
+selected read-only SQLite index. The URL distinction matters because the Qubes
+catalog and research archive reuse a source ID for different documents. The
+check ignores duplicate role rows and leaves entries without a declared count
+alone. Staging rejects mismatches before copying, and validation rechecks new
+frozen releases. An explicit `--write` command reconciles counts in a separate
+candidate source tree; staging never silently rewrites a reviewed catalog.
+This is a consistency gate, not a source-support or answer-quality check.
+
+The candidate source was copied from the live release payload. Its Unit 42
+count is one; its approved database, vectors, manifest and reviewed brief are
+byte-identical to live. The only intended payload changes are
+`knowledge/sources.json`, `scripts/knowledge_counts.py`, `scripts/releases.py`,
+and their two focused test files. The check was moved into a small helper to
+stay within the existing complexity limit. The first two staging attempts,
+`1fecc97e3f1147fabf380751c4c14a7a` and
+`b5d3044767e24bfb98793d1265a9cced`, used the wrong CLI syntax: the source
+path was passed as a positional argument instead of `--source`, so they
+snapshotted the checkout and failed its complexity gate. Neither was prepared
+or activated; they remain for diagnosis. The correctly scoped candidate
+`1d49ff55f92f41d6a941e15e9d2f0eea` was staged with `--source` and its
+five-file diff and byte-identical index, vectors and brief were verified before
+frozen preparation. Preparation passed the isolated suite, UI contracts,
+isolation probes, complexity check and scan gate. The scan had 69 passing
+targets and one existing reviewed warning; it was not a clean scan. The
+candidate is prepared but not activated. Active remains `346773e1`, with
+`03959f08` retained as its rollback target. Activation is separate and not
+authorized by this decision.
