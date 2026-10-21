@@ -227,7 +227,7 @@ def prepare_selection(dest,profile,identifier):
 
 def check_ui(root):
     tests=json.loads(run(root,sys.executable,'-c','import json;from scripts.ui_checks import TESTS;print(json.dumps(TESTS))'))
-    for test in tests:print(run(root,'node.exe','tests/'+test),flush=True)
+    for test in tests:print(run(root,'node.exe' if os.name=='nt' else 'node','tests/'+test),flush=True)
 
 
 def verify_pipeline(profile):
