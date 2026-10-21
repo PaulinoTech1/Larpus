@@ -1,5 +1,10 @@
 # larpus
 
+Owner tooling candidate: [verification, status, encrypted synthetic restores,
+quality evidence and timing](docs/OWNER_OPERATIONS.md). Run
+`python scripts/verify.py` for the shared offline verification pipeline.
+This checkout/worktree is distinct from the active frozen release.
+
 ## TL;DR
 
 A local-first home AI station: voice-driven home assistant with an MCP agent pipeline, DLP output filtering, and local inference on commodity GPU hardware. Goal: a private AI assistant that never sends your data to the cloud.

@@ -78,11 +78,14 @@ class StreamingTests(unittest.TestCase):
 
     def test_ndjson_transport_requires_done_and_caps_frames(self):
         from io import BytesIO
-        for raw in (b'{"message":{"content":"Hello"}}\n',b'x'*65537):
-            with patch('runtime.local_ollama.HTTP.open',return_value=BytesIO(raw)):
-                with self.assertRaises(ValueError):list(chat_stream({'model':'local'}))
-        with patch('runtime.local_ollama.HTTP.open',return_value=BytesIO(b'{"message":{"content":"Hello"}}\n{"done":true}\n')):
-            self.assertEqual(len(list(chat_stream({'model':'local'}))),2)
+        with patch.dict('os.environ',{'LARPUS_ISOLATION':'host'}):
+            for raw in (b'{"message":{"content":"Hello"}}\n',b'x'*65537):
+                with patch('runtime.local_ollama.HTTP.open',return_value=BytesIO(raw)):
+                    with self.assertRaises(ValueError):list(chat_stream({'model':'local'}))
+            with patch('runtime.local_ollama.HTTP.open',return_value=BytesIO(b'{"message":{"content":"Hello"}}\n{"done":true}\n')):
+                self.assertEqual(len(list(chat_stream({'model':'local'}))),2)
+        with patch.dict('os.environ',{'LARPUS_ISOLATION':'sealed'}):
+            with self.assertRaises(ValueError):list(chat_stream({'model':'local'}))
 
     def test_gateway_flushes_before_completion_and_reports_later_hold(self):
         server=ThreadingHTTPServer(('127.0.0.1',0),gateway.Handler)

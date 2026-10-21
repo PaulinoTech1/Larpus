@@ -34,7 +34,7 @@ class PolicyTests(unittest.TestCase):
 
     def test_isolated_client_never_uses_tcp_when_socket_missing(self):
         with patch.dict('os.environ',{'LARPUS_ISOLATION':'wsl-podman'}),patch.object(local_ollama.os,'lstat',side_effect=FileNotFoundError),patch.object(local_ollama.HTTP,'open') as tcp:
-            with self.assertRaises(FileNotFoundError):local_ollama.ollama('/api/tags')
+            with self.assertRaises(ValueError):local_ollama.ollama('/api/tags')
             tcp.assert_not_called()
 
 class TransportTests(unittest.TestCase):

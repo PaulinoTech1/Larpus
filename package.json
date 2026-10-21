@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "start": "python -m runtime.gateway",
-    "test": "python scripts/test-local.py",
+    "test": "python scripts/verify.py",
     "vendor": "node scripts/vendor.cjs",
     "test:voice-ui": "node tests/voice-ui.cjs",
     "test:chat-ui": "node tests/chat-stream-ui.cjs"

@@ -1,5 +1,39 @@
 # Updates while Larpus remains usable
 
+## 2026-10-21 Recovery and owner tools — prepared, not activated
+
+Prepared `b6dffca22d244953acb3a8574c232e69` from a scoped variant of the active
+payload. Frozen tests, ten UI suites, complexity, isolation and prepared pins
+passed. Fresh scans completed all 70 targets with the same 11 reviewed MCP
+warnings. One rejected frozen candidate and its fixture correction are retained.
+Selected release remains `042f91c0a1454887a694c945f49237ad`; gateway identity,
+active payload hashes and model/voice images and start times stayed unchanged.
+Execution profiles/MCP Skills were excluded. Recovery remains disabled and
+backups synthetic-only. No activation or push occurred. See the
+[preparation record](RECOVERY_PREPARATION_2026_10_21.md) for exact scope and limits.
+
+## 2026-10-20 Six improvements — worktree candidate only
+
+The recovery worktree closes independent review of final death-count handling,
+adds encrypted synthetic SQLite restores, hash-bound quality review accounting,
+a read-only owner snapshot, one shared verification command and separate timing
+clock groups with offline quality-gated admission. No latency optimization, live
+quality comparison, owner-data backup, production observation, arming or activation
+is claimed. Backup destination is D: with three-calendar-month retention, remaining
+synthetic-only until key custody is decided. See
+[implementation evidence](SIX_IMPROVEMENTS_2026_10_20.md) and
+[owner commands and limits](OWNER_OPERATIONS.md).
+
+## 2026-10-20 Independent recovery - implementation candidate
+
+The isolated `feat/recovery-supervisor` worktree adds an owner-side supervisor,
+durable attempt journal, generation-bound health receipts and disposable failure
+drills. It is disabled by default. No supervisor installation, production
+observation window, arming or release activation accompanies this implementation.
+See [RECOVERY_SUPERVISOR.md](RECOVERY_SUPERVISOR.md) for commands, evidence scope
+and the separate observation/rollout proposal. Existing production release files,
+pins, scan receipts, model and CPU voice are not modified by this work.
+
 ## 2026-10-20 Failure isolation - activated
 
 Activated `042f91c0a1454887a694c945f49237ad`; previous

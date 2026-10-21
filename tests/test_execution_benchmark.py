@@ -7,6 +7,12 @@ from unittest.mock import patch
 
 
 class ExecutionBenchmarkTests(unittest.TestCase):
+    def test_clock_groups_are_separate_and_accept_only_allowlisted_numbers(self):
+        from scripts.benchmark_execution_profiles import clock_stages
+        value=clock_stages({'execution_stages_ms':{'input':1.,'private':'secret'},
+                            'mcp_parent_stages_ms':{'preflight':2.,'connect':float('nan')}})
+        self.assertEqual(value,{'inference':{'input':1.},'mcp_parent':{'preflight':2.}})
+
     def test_candidate_measurement_does_not_change_active_selection(self):
         from scripts import benchmark_execution_profiles as benchmark
         with tempfile.TemporaryDirectory() as temporary:

@@ -2,6 +2,18 @@ import unittest
 from runtime.execution_trace import Trace
 
 class ExecutionTraceTests(unittest.TestCase):
+    def test_exclusive_stages_never_sum_overlapping_measurements(self):
+        from runtime.execution_trace import exclusive_stages
+        events={'input':10.,'retrieval':30.,'model_selection':35.,'model_first_text':45.,'first_approved':50.,'complete':80.,'gate_total':12.}
+        result=exclusive_stages(events)
+        self.assertEqual(sum(result.values()),80.)
+        self.assertEqual(result['retrieval'],20.)
+        self.assertEqual(result['generation_to_approved'],15.)
+        self.assertNotIn('gate_total',result)
+        self.assertEqual(exclusive_stages({'input':10.,'retrieval':9.}),{})
+        self.assertEqual(exclusive_stages({'input':float('nan')}),{})
+        self.assertEqual(exclusive_stages({'input':True}),{})
+
     def test_relative_bounded_numeric_marks(self):
         values=iter([1.,1.1,1.2])
         trace=Trace(True,lambda:next(values));trace.mark('input');trace.mark('retrieval')
