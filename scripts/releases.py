@@ -331,6 +331,14 @@ def running(state):
     actual=process(state['pid'])
     return actual==state['process'] if actual else False
 
+def _drop_unrecorded(child):
+    """Close the exact process handle when its identity was never stored."""
+    if child.poll() is not None:return
+    child.terminate()
+    try:child.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        child.kill();child.wait(timeout=15)
+
 def launch(identifier,settings):
     root=release_path(identifier);validate(root)
     gate=_startup_gate(identifier)
@@ -339,9 +347,16 @@ def launch(identifier,settings):
     env=os.environ.copy();env.update(LARPUS_HOST=settings['host'],LARPUS_LAN_CIDR=settings['subnet'],LARPUS_PORT=str(settings['port']),LARPUS_ISOLATION='wsl-podman',LARPUS_STARTUP_GATE=str(gate),PYTHONUTF8='1',PYTHONDONTWRITEBYTECODE='1')
     code='import sys,runpy;sys.path.insert(0,'+repr(str(root))+');runpy.run_module("runtime.gateway",run_name="__main__")'
     with (STORE/(identifier+'.gateway.log')).open('ab') as log:child=subprocess.Popen([sys.executable,'-c',code],cwd=root,env=env,stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW)
-    identity=process(child.pid)
-    if not identity:raise RuntimeError('Gateway exited before startup')
-    return {**settings,'version':1,'id':identifier,'pid':child.pid,'process':identity}
+    try:found=process(child.pid)
+    except (OSError,ValueError,subprocess.SubprocessError):
+        try:_drop_unrecorded(child)
+        except (OSError,subprocess.SubprocessError):raise RuntimeError('Unrecorded gateway still running') from None
+        raise
+    if not found:
+        try:_drop_unrecorded(child)
+        except (OSError,subprocess.SubprocessError):raise RuntimeError('Unrecorded gateway still running') from None
+        raise RuntimeError('Gateway exited before startup')
+    return {**settings,'version':1,'id':identifier,'pid':child.pid,'process':found}
 
 def stop(state):
     actual=process(state['pid'])

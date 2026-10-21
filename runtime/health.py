@@ -14,6 +14,11 @@ from runtime.security_scan import APPROVED, DATA, discover, fingerprint, scan, t
 from runtime.text_filter import inspect_message, TextHeld
 
 LATEST=ROOT/('release-state/health/latest.json' if (ROOT/'deployment.json').is_file() else 'data/health/latest.json')
+RECOVERY_RECEIPT_VERSION=1
+
+def producer(generation,started):
+    if generation is None:return {}
+    return {'producer':{'version':RECOVERY_RECEIPT_VERSION,**generation,'started':started,'finished':time.monotonic()}}
 
 def model_checks(status,record):
     if status.get('switching'):
@@ -29,7 +34,8 @@ def model_checks(status,record):
         full_gpu=all(processors.get(tag)=='GPU' for tag in configured)
         record('model_gpu','pass' if full_gpu else 'warning','Configured model fully GPU-resident (Ollama placement verified)' if full_gpu else 'Model unloaded, CPU-offloaded or placement unavailable; GPU residency is unverified')
 
-def check(scan_if_changed=True):
+def check(scan_if_changed=True,*,generation=None):
+    started=time.monotonic()
     checks=[]
     def record(name,status,message):
         checks.append({'name':name,'status':status,'message':message})
@@ -130,7 +136,7 @@ def check(scan_if_changed=True):
     except Exception:
         record('voice','warning','Voice worker unavailable or boundary check failed; no cloud fallback')
     report={'generated_at':timestamp(),'status':'error' if any(c['status']=='error' for c in checks) else 'degraded' if any(c['status']!='pass' for c in checks) else 'healthy','checks':checks,'interval_seconds':60}
-    write_json(LATEST,report)
+    report.update(producer(generation,started));write_json(LATEST,report)
     return report
 
 def read_latest():
@@ -143,18 +149,18 @@ def read_latest():
     except (OSError,ValueError):
         return {'status':'error','checks':[],'message':'Health report unavailable'}
 
-def watch(stop,interval=60):
+def watch(stop,interval=60,*,generation=None):
     while not stop.is_set():
         try:
-            check()
+            check(generation=generation)
         except Exception:
             # Do not report a stale pass when a monitor cycle crashes.
             write_json(LATEST,{'generated_at':timestamp(),'status':'error','checks':[],'message':'Monitor cycle failed'})
         stop.wait(interval)
 
-def start_monitor():
+def start_monitor(*,generation=None):
     stop=threading.Event()
-    worker=threading.Thread(target=watch,args=(stop,),daemon=True,name='larpus-health')
+    worker=threading.Thread(target=watch,args=(stop,),kwargs={'generation':generation},daemon=True,name='larpus-health')
     worker.start()
     return stop
 

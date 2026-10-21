@@ -89,14 +89,18 @@ class HealthTests(unittest.TestCase):
         fixture_mode.start();self.addCleanup(fixture_mode.stop)
 
     def test_unverified_is_never_green_and_mcp_drift_errors(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory() as temp,patch('runtime.knowledge.status',return_value={'documents':1,'passages':1}):
             root=Path(temp);password=root/'password.json';approved=root/'approved.json'
             write_json(password,password_record('test-password-only'))
             tools=[{'name':name} for name in ('chat_local','list_personas','local_status')]
             write_json(approved,{'tools':tools})
             write_json(root/'summary.json',{'fingerprint':'fixture','status':'pass'})
             with patch.object(health,'PASSWORD_FILE',password),patch.object(health,'APPROVED',approved),patch.object(health,'LATEST',root/'health.json'),patch.object(health,'DATA',root),patch.object(health,'surface',return_value={'protocol_version':'2026-07-28','tools':tools,'capabilities':{'resources':{},'extensions':{'io.modelcontextprotocol/skills':{}}}}),patch.object(health,'model_health',return_value={'ollama':'online','models':['qwen3.5:27b-q4_K_M']}),patch.object(health,'fingerprint',return_value='fixture'),patch.object(health.shutil,'which',return_value=None):
-                report=health.check(False)
+                generation={'release_id':'a'*32,'pid':123,'token':'b'*32}
+                report=health.check(False,generation=generation)
+                self.assertEqual(report['producer']['release_id'],generation['release_id'])
+                self.assertEqual(report['producer']['pid'],123)
+                self.assertLessEqual(report['producer']['started'],report['producer']['finished'])
                 self.assertEqual(report['status'],'degraded')
                 self.assertTrue(any(c['status']=='unverified' for c in report['checks']))
                 with patch.object(health,'surface',return_value={'protocol_version':'2026-07-28','tools':[{'name':'fetch_url'}],'capabilities':{}}):

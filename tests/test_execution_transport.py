@@ -9,6 +9,11 @@ from runtime import mcp_server,mcp_client,inference
 from runtime import gateway
 
 class ExecutionTransportTests(unittest.TestCase):
+    def test_parent_clock_stages_are_disjoint_and_invalid_values_are_unknown(self):
+        self.assertEqual(mcp_client.parent_stages(20.,30.,100.),{'preflight':20.,'connect':30.,'call_and_metadata':50.})
+        self.assertEqual(mcp_client.parent_stages(20.,30.,40.),{})
+        self.assertEqual(mcp_client.parent_stages(float('nan'),30.,100.),{})
+
     def test_host_attests_source_after_isolated_child_response(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary)

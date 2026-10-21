@@ -17,7 +17,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 PROFILES=('verified','ultra-fast','diagnostic')
 NUMERIC=('first_seconds','total_seconds','max_gap_seconds','characters')
-FIELDS=set(NUMERIC)|{'ok','case','profile','round','session','warmup','stage_ms','failure','telemetry','quality_recorded'}
+FIELDS=set(NUMERIC)|{'ok','case','profile','round','session','warmup','stage_ms','clock_stages_ms','failure','telemetry','quality_recorded'}
 
 def validate_url(value):
     parsed=urlsplit(value)
@@ -140,7 +140,7 @@ def probe(opener,url,case,profile,expected,review=None):
     elapsed=time.perf_counter()-started
     return {'ok':True,'first_seconds':first,'total_seconds':elapsed,
             'max_gap_seconds':max(gaps,default=0.),'characters':characters,'stage_ms':stages,
-            'telemetry':None,'quality_recorded':capture.emit(case['id'],profile,final)}
+            'clock_stages_ms':clock_stages(final),'telemetry':None,'quality_recorded':capture.emit(case['id'],profile,final)}
 
 def require_complete(complete,first):
     if not complete or first is None:raise ValueError('Incomplete benchmark response')
@@ -149,6 +149,19 @@ def numeric_stages(value):
     names=('input','retrieval','model_selection','model_first_frame','first_checked_text',
            'inference_total','preflight','mcp_connect','mcp_total')
     return {key:item for key,item in value.items() if key in names and type(item) in (int,float) and math.isfinite(item) and item>=0}
+
+def clock_stages(event):
+    fields={'inference':('execution_stages_ms',{'input','retrieval','model_selection','generation_to_approved','after_first_approved'}),
+            'mcp_parent':('mcp_parent_stages_ms',{'preflight','connect','call_and_metadata'})}
+    result={}
+    for group,(field,names) in fields.items():
+        values=event.get(field,{})
+        if not isinstance(values,dict):values={}
+        result[group]={name:value for name,value in values.items() if _stage_number(name,value,names)}
+    return result
+
+def _stage_number(name,value,names):
+    return name in names and type(value) in (int,float) and math.isfinite(value) and 0<=value<=940000
 
 def pinned_inputs(identifier=None):
     active=json.loads((ROOT/'data/releases/active.json').read_text(encoding='utf-8'))['id']

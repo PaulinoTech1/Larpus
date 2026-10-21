@@ -1,0 +1,2 @@
+# Owner-side encrypted backup tooling only; not an agent/model dependency.
+cryptography==50.0.2

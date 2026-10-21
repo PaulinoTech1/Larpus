@@ -3,6 +3,7 @@ from runtime.diagnostics import catalog_failure, report
 import ipaddress
 import json
 import os
+import secrets
 import ssl
 import threading
 import time
@@ -259,7 +260,7 @@ class Handler(BaseHTTPRequestHandler):
                     result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}),**execution)
                     add_queue_timing(result,execution,admission_ms)
                     if result.get('status')==200:
-                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms','execution_trace_ms','execution') if key in result}})
+                        event({'type':'done','sources':result.get('sources',[]),**{key:result[key] for key in ('context','citation_check','timing_ms','execution_trace_ms','execution_stages_ms','mcp_parent_stages_ms','execution') if key in result}})
                     else:
                         event({'type':'error','error':result.get('error','Response withheld.'),'code':result.get('code'),'error_id':result.get('error_id')})
                 except (OSError,ValueError,KeyError,TypeError) as exc:
@@ -353,7 +354,7 @@ def main():
         scheme = 'https' if server.tls else 'http'
         print(f'larpus: {scheme}://{host}:{port}', flush=True)
         from runtime.health import start_monitor
-        stop_monitor = start_monitor()
+        stop_monitor = start_monitor(generation={'release_id':ROOT.name,'pid':os.getpid(),'token':secrets.token_hex(16)})
         def drain_when_requested():
             while not stop_monitor.wait(.25):
                 if DRAIN.exists():

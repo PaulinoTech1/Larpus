@@ -6,7 +6,8 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from scripts.ui_checks import TESTS as UI_TESTS
+# Compatibility export for existing callers; execution still uses verify.py.
+from scripts.verify import UI_TESTS
 
 PRIVATE_NAMES={'provenance.json','github-manifest.json','embeddings-manifest.json','notes-manifest.json'}
 
@@ -32,9 +33,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--inventory-only',action='store_true');args=parser.parse_args()
     inventory()
     if args.inventory_only:return 0
-    execute([sys.executable,'scripts/test-local.py'])
-    for test in UI_TESTS:execute(['node','tests/'+test])
-    execute([sys.executable,'scripts/broker-prompts.py','--check'])
+    execute([sys.executable,'scripts/verify.py'])
     execute([sys.executable,'scripts/evaluate-companion.py'])
     execute([sys.executable,'scripts/evaluate-stegdetect.py'])
     print('Public contracts passed. No deployment or live-system acceptance claimed.',flush=True)
