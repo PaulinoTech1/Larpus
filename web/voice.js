@@ -7,7 +7,7 @@ window.larpusVoice = (() => {
   let playback=null, playToken=0, lastText='', lastAudio=null;
   let speechQueue=[],queueActive=false,queueRunning=false,queueToken=0;
   let preparedSpeech=null,interruptFrames=[],interruptDuration=0,replyStarted=0;
-  let synthesisTail=Promise.resolve();
+  let synthesisTail=Promise.resolve(),skippedSpeech=0;
   function timing(result,start,kind){const t=result.timing||{};el('voice-latency').textContent=`${kind}: ${((performance.now()-start)/1000).toFixed(2)}s request${Number.isFinite(t.worker_ms)?` / ${(t.worker_ms/1000).toFixed(2)}s worker / ${t.model_cached?'warm model':'first model use'}`:''}. Playback timing excludes physical speaker delay.`;}
   function pipeline(value){if(typeof window.larpusPipeline==='function')window.larpusPipeline(value);}
   const speed=()=>Number(el('voice-speed').value);
@@ -183,17 +183,32 @@ window.larpusVoice = (() => {
     while(text.length>2000){let cut=text.lastIndexOf(' ',2000);if(cut<1)cut=2000;out.push(text.slice(0,cut));text=text.slice(cut).trimStart();}
     if(text.trim())out.push(text);return out.filter(part=>/[\p{L}\p{N}]/u.test(part));
   }
-  function beginReply(){replyStarted=performance.now();stopPlayback();queueActive=el('voice-output').checked;labels();}
+  function beginReply(){replyStarted=performance.now();skippedSpeech=0;stopPlayback();queueActive=el('voice-output').checked;labels();}
   function enqueueSpeech(text){
     if(!queueActive || !el('voice-output').checked)return;
     speechQueue.push(...parts(text));pumpSpeech();
     if(playback)prepareSpeech();
   }
   function finishReply(text){lastText=text;lastAudio=null;queueActive=false;labels();}
+  const cancelled=()=>Object.assign(new Error('Speech cancelled.'),{name:'AbortError'});
+  const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  // Speech never rides the chat AbortController (abortable:false). A 429/503
+  // gets exactly one retry after Retry-After, capped at 5 s so speech never stalls.
+  async function synthesizeOnce(text,token){
+    const request=()=>api('/api/voice',{action:'synthesize',text},{abortable:false});
+    try{return await request();}
+    catch(error){
+      if(error?.status!==429 && error?.status!==503)throw error;
+      await delay(Math.min(Math.max(Number(error.retryAfter)||1,0.25),5)*1000);
+      if(token!==playToken)throw cancelled();
+      return request();
+    }
+  }
+  function skipNotice(prefix,count,error){notice.textContent=`${prefix}${count} spoken part${count===1?'':'s'} skipped (${error?.message||'speech unavailable'}).`;}
   function requestSpeech(text,token){
     const request=synthesisTail.then(()=>{
-      if(token!==playToken)throw Object.assign(new Error('Speech cancelled.'),{name:'AbortError'});
-      return api('/api/voice',{action:'synthesize',text});
+      if(token!==playToken)throw cancelled();
+      return synthesizeOnce(text,token);
     });
     synthesisTail=request.catch(()=>{});
     return request;
@@ -215,11 +230,12 @@ window.larpusVoice = (() => {
         prepareSpeech();const pending=preparedSpeech;preparedSpeech=null;
         const {result,error}=await pending.promise;
         if(token!==playToken)return;
-        if(error)throw error;
+        // Skip-and-continue: one held or failed sentence never ends the reply.
+        if(error){skippedSpeech++;skipNotice('Reply is shown; ',skippedSpeech,error);continue;}
         const playing=audioPlay(result.audio,token);prepareSpeech();
         await playing;
       }
-    }catch(error){if(token===playToken){speechQueue=[];preparedSpeech=null;notice.textContent='Reply is shown; '+error.message;}}
+    }catch(error){if(token===playToken){skippedSpeech++;skipNotice('Reply is shown; ',skippedSpeech,error);}}
     finally{
       queueRunning=false;
       // A new reply may have queued text while an old synthesis was cancelled.
@@ -229,16 +245,19 @@ window.larpusVoice = (() => {
   }
   async function repeat(text=lastText){
     if(!text)return;
-    stopPlayback();const token=playToken;
+    stopPlayback();const token=playToken;let skipped=0,lastError=null;
     try{
       if(text===lastText && lastAudio){await audioPlay(lastAudio,token);return;}
       status('Preparing replay locally...');
       for(const part of parts(text)){
-        const start=performance.now(),result=await requestSpeech(part,token);timing(result,start,'Replay synthesis');
+        let result;
+        try{const start=performance.now();result=await requestSpeech(part,token);timing(result,start,'Replay synthesis');}
+        catch(error){if(token!==playToken)return;skipped++;lastError=error;continue;}
         if(token!==playToken)return;
         await audioPlay(result.audio,token);
         if(token!==playToken)return;
       }
+      if(skipped)skipNotice('Replay: ',skipped,lastError);
     }catch(error){if(token===playToken)notice.textContent=error.message;}
     finally{labels();}
   }

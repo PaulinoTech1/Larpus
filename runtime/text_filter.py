@@ -17,6 +17,19 @@ class TextHeld(ValueError):
         self.scan_complete=scan_complete
         super().__init__('Input held by local text filter')
 
+def hidden_format(text):
+    """Reason code for hidden control/format characters, else None.
+
+    Contextual Unicode findings still recognize valid emoji joining sequences
+    (ZWNJ/ZWJ); isolated format controls and C0/C1 controls are held."""
+    for char in text:
+        category=unicodedata.category(char)
+        if category=='Cc' and char not in '\n\r\t':
+            return 'hidden_control'
+        if category=='Cf' and char not in '\u200c\u200d':
+            return 'hidden_format'
+    return None
+
 def inspect_message(text):
     try:
         report=inspect_text(text,policy=Policy.CONTEXTUAL,limits=LIMITS)
@@ -25,14 +38,8 @@ def inspect_message(text):
     complete=bool(report.status=='complete' and report.scan_complete)
     if not complete or report.action!='allow' or report.candidate_text!=text:
         raise TextHeld('unicode_carrier_or_incomplete_scan',scan_complete=complete)
-    # Reject control hiding; contextual Unicode findings still recognize valid
-    # emoji joining sequences. Isolated format controls remain held here.
-    for char in text:
-        category=unicodedata.category(char)
-        if category=='Cc' and char not in '\n\r\t':
-            raise TextHeld('hidden_control')
-        if category=='Cf' and char not in '\u200c\u200d':
-            raise TextHeld('hidden_format')
+    hidden=hidden_format(text)
+    if hidden:raise TextHeld(hidden)
     # Bound normalization work on adversarial combining runs before NFKC.
     run=0
     for char in text:

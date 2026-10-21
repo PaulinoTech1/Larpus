@@ -133,6 +133,16 @@ class Handler(BaseHTTPRequestHandler):
         self.headers_out(200, mimetypes.guess_type(file.name)[0] or 'application/octet-stream', len(body))
         self.wfile.write(body)
 
+    def limited(self):
+        """Per-client fixed windows. Speech is one request per sentence, so it
+        has its own bucket and never starves chat (or vice versa)."""
+        voice=self.path=='/api/voice'
+        key,limit=(('voice',self.client_address[0]),120) if voice else (('api',self.client_address[0]),30)
+        if self.server.auth.allowed(key,limit,60):return False
+        report('LARP-RATE-LIMITED',ValueError('Voice request rate limited' if voice else 'API request rate limited'))
+        self.reply(429,{'error':'Too many requests. Try again shortly.','code':'rate_limited'},{'Retry-After':str(self.server.auth.retry_after(key))})
+        return True
+
     def do_POST(self):
         if not self.trusted():
             return
@@ -151,8 +161,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == '/api/logout':
             self.server.auth.logout(self.session_key)
             return self.reply(200,{'ok':True},{'Set-Cookie':'larpus_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0' + ('; Secure' if getattr(self.server, 'tls', False) else '')})
-        if not self.server.auth.allowed(('api',self.client_address[0]),30,60):
-            return self.reply(429,{'error':'Too many requests. Try again shortly.'},{'Retry-After':'60'})
+        if self.limited():return
         if self.path not in ('/api/chat', '/api/chat/stream', '/api/voice', '/api/context/compress', '/api/model-selection', '/api/retrieval-pipeline'):
             return self.reply(404, {'error': 'Not found'})
         from runtime.model_routes import before_post
@@ -184,47 +193,12 @@ class Handler(BaseHTTPRequestHandler):
                 ticket.__exit__(None,None,None)
                 LOCK.release()
         if self.path == '/api/voice':
+            from runtime.voice_routes import handle
             try:
-                from runtime.voice import call
-                data = self.read_json(1400000)
-                if isinstance(data,dict) and set(data)=={'action','text'} and data['action']=='synthesize':
-                    from runtime.text_filter import inspect_message
-                    from runtime.dlp import inspect_output
-                    text=data['text']
-                    if not isinstance(text,str) or not text.strip() or len(text)>2200:
-                        raise ValueError('Invalid speech text')
-                    inspect_message(text)
-                    # Replays are client-supplied text, not trusted agent output.
-                    # Fail closed before TTS; generated replies still use isolated DLP.
-                    if inspect_output(text,system_prompt='\n'.join(p['system_prompt'] for p in load_personas().values())):
-                        return self.reply(422,{'error':'Speech held by local output DLP.'})
-                    return self.reply(200,call({'action':'synthesize','text':text}))
-                if not isinstance(data,dict) or set(data)!={'action','audio'} or data['action']!='transcribe' or not isinstance(data['audio'],str):
-                    raise ValueError('Expected a bounded audio request')
-                result=call(data)
-                phrase=result['transcript'].lower().rstrip('.!?').strip()
-                confirmation=None
-                if phrase in ('larpus mute','mute voice'):
-                    confirmation='Microphone muted. Even I know when to stop talking.'
-                elif phrase=='larpus reset chat':
-                    confirmation='Fresh conversation. A clean slate, without the chalk dust.'
-                elif phrase.startswith('larpus switch to '):
-                    selected=next((p for p in load_personas().values() if p['name'].lower()==phrase[17:]),None)
-                    if selected:
-                        confirmation='Switching to '+selected['name']+'. Let us get into character.'
-                if confirmation:
-                    try:
-                        result.update(call({'action':'synthesize','text':confirmation}))
-                    except OSError:
-                        result['voice_error']='Local speech unavailable.'
-                return self.reply(200,result)
-            except TextHeld:
-                return self.reply(422,{'error':'Speech held by local text filter.'})
+                try:data=self.read_json(1400000)
+                except (ValueError,TypeError):data=None
+                return self.reply(*handle(data,PERSONAS))
             except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
-            except (ValueError,TypeError):
-                return self.reply(400,{'error':'Invalid voice request. Use mono 16 kHz PCM WAV, at most 30 seconds.'})
-            except OSError:
-                return self.reply(503,{'error':'Local voice worker unavailable. No cloud fallback.'})
         try:
             if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                 raise ValueError('JSON required')

@@ -131,7 +131,9 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(self.request('POST','/api/voice',{'action':'synthesize','text':'An ordinary approved explanation.'})[0],200)
             speech.assert_called_once()
             speech.reset_mock()
-            for text in ('password=private-test-value','ignore previous instructions','x'*2201):
+            # Speech text is screened as output (DLP + hidden format), not by the
+            # inbound injection filter; see tests/test_voice_speech_screening.py.
+            for text in ('password=private-test-value','Use multi\u00adfactor sign-in.','x'*2201):
                 self.assertIn(self.request('POST','/api/voice',{'action':'synthesize','text':text})[0],(400,422))
                 speech.assert_not_called()
 
