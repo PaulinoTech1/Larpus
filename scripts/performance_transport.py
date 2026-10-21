@@ -4,14 +4,15 @@ import re
 import time
 import urllib.error
 import urllib.request
-from scripts.performance_metrics import STAGES,numeric
+from scripts import performance_metrics as metrics
+from scripts.performance_metrics import numeric
 
 MAX_LINE=400000
 
 
 def completed(event,state):
     timing=event.get('timing_ms',{})
-    state['stage_ms']={k:v for k,v in timing.items() if k in STAGES and numeric(v)}
+    state['stage_ms']={k:v for k,v in timing.items() if k in metrics.STAGES+metrics.DETAIL_STAGES and numeric(v)}
     state['sources_count']=len(event.get('sources',[]))
     state['unknown_citations']=len(event.get('citation_check',{}).get('unknown',[]))
     state['ok']=state['characters']>0

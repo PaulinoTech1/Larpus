@@ -13,7 +13,7 @@ PROFILES={
 }
 
 def stage_timings(event):
-    allowed=('input','retrieval','model_selection','model_first_frame','first_checked_text','inference_total','preflight','mcp_connect','mcp_total')
+    allowed=('input','retrieval','model_selection','model_first_frame','first_checked_text','inference_total','preflight','mcp_connect','mcp_total','preflight_initial_reads','preflight_namespace_reads','preflight_validation','retrieval_base','retrieval_notes','retrieval_provenance','retrieval_engine','mcp_child_import')
     return {k:v for k,v in event.get('timing_ms',{}).items() if k in allowed and type(v) in (int,float) and math.isfinite(v) and v>=0}
 
 

@@ -60,14 +60,16 @@ async def call_async(tool, arguments=None, on_chunk=None, execution=None):
         if tool=='chat_local' and value.get('status')==200:
             attach_source_receipt(value)
             value['timing_ms']={**value.get('timing_ms',{}),**details,'preflight':preflight_ms,'mcp_connect':connect_ms,'mcp_total':round((time.perf_counter()-started)*1000,3)}
-            if resolve(execution).profile=='diagnostic':
+            if resolve(execution).profile!='ultra-fast':
                 value['mcp_parent_stages_ms']=parent_stages(preflight_ms,connect_ms,value['timing_ms']['mcp_total'])
         return value
 
 def profile_parameters(execution):
     details={}
-    if resolve(execution).profile=='diagnostic':return child_parameters(execution,timings=details),details
-    return (child_parameters(execution) if execution is not None else child_parameters()),details
+    # Ultra Fast keeps its snapshot path. Verified and Diagnostic record fresh
+    # read and validation durations without changing the approval decision.
+    if resolve(execution).profile=='ultra-fast':return child_parameters(execution),details
+    return child_parameters(execution,timings=details),details
 
 def call(tool, arguments=None, execution=None):
     try:

@@ -24,6 +24,10 @@ class PerformanceSuiteTests(unittest.TestCase):
         self.assertEqual(result['first_text_seconds']['median'],3)
         self.assertEqual(result['first_text_seconds']['p90'],4)
         self.assertEqual(result['stages_ms']['retrieval']['n'],1)
+        self.assertEqual(result['stages_ms']['preflight_validation']['n'],0)
+        self.assertIsNone(result['stages_ms']['preflight_validation']['median'])
+        self.assertEqual(result['first_after_idle_seconds']['n'],0)
+        self.assertIsNone(result['first_after_idle_seconds']['median'])
         self.assertEqual(result['failures'],{'stream_rejected':1})
 
     def test_transport_rejects_truncation_but_keeps_partial_observation(self):

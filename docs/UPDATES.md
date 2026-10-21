@@ -1,5 +1,25 @@
 # Updates while Larpus remains usable
 
+## 2026-10-21 Verified timing spans — activated
+
+Activated `03959f0891764772a962726bea4309d7`; previous
+`b6dffca22d244953acb3a8574c232e69` is retained. The candidate uses the current
+checkout code and that previous release's knowledge corpus. The checkout corpus
+was not shipped: its embedding index did not match the approved database.
+Ultra Fast does not collect the new preflight, retrieval, or child-import
+spans. Verified and Diagnostic do. This is not a measured latency improvement
+and does not meet the 5.9 s / 6.8 s first-text target.
+
+Preparation passed pipeline switching, the frozen suite, UI checks, isolation,
+and complexity at 941 functions / 117 modules. The scan kept the prior warnings
+except the static `isolation.py` subprocess count, which is 5 rather than 6
+because the distro probe is submitted to the existing read pool. That count
+change is source-pinned in `config/mcp-scan-reviewed.json`. It is not a clean
+scan. `security_scan` remains a warning. Fresh local health checks otherwise
+pass. The gateway process is pid 27656. Cutover rebinds the port and LAN tabs
+need a fresh login. Two earlier snapshots, `eb3bee8407624c349680ae5a6050df92`
+and `ee739ab5a5cf44e697bae7cdef1ae8ec`, were not activated.
+
 ## 2026-10-21 Recovery and owner tools — activated
 
 Activated `b6dffca22d244953acb3a8574c232e69`; previous

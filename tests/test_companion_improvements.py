@@ -36,7 +36,7 @@ class CompanionTests(unittest.TestCase):
         from runtime import inference
         source={'id':'safe-source','title':'A reference','url':'https://example.com','snapshot':'2026-10-09','locator':'page 1','text':'private preview'}
         frame={'message':{'content':'A useful reply [safe-source].'}}
-        with patch.object(inference,'augment',side_effect=lambda p,r:(p,[source])),patch.object(inference,'gpu_placement',return_value='GPU'),patch.object(inference,'ollama',return_value=frame),patch.object(inference,'gate',side_effect=[{'status':200,'content':frame['message']['content']},{'status':422,'error':'held'}]):
+        with patch.object(inference,'augment',side_effect=lambda p,r,timings=None:(p,[source])),patch.object(inference,'gpu_placement',return_value='GPU'),patch.object(inference,'ollama',return_value=frame),patch.object(inference,'gate',side_effect=[{'status':200,'content':frame['message']['content']},{'status':422,'error':'held'}]):
             result=inference.chat('home-assistant',[{'role':'user','content':'Hello'}])
         self.assertEqual(result['status'],200)
         self.assertEqual(result['citation_check']['status'],'identified')

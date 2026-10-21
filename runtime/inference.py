@@ -99,7 +99,7 @@ def chat(persona, messages, skill=None, on_chunk=None, execution=None):
             prepared[0]['content']=SUMMARY_SYSTEM
             evidence=[]
             if upper_bound(prepared)>INPUT_BOUND:raise ContextPressure('Compression batch exceeds context')
-        elif trace.enabled:prepared,evidence=augment(prepared,persona,timings=timing)
+        elif context.profile!='ultra-fast':prepared,evidence=augment(prepared,persona,timings=timing)
         else:prepared,evidence=augment(prepared,persona)
     except ContextPressure:
         return {'status':413,'code':'context_pressure','error':'Conversation needs compression before continuing. Use COMPRESS or shorten the latest message.'}

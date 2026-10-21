@@ -19,7 +19,7 @@ CALLS=0
 IMPORT_MS=round(max(0.,min(90.,time.perf_counter()-IMPORT_STARTED))*1000,3)
 
 def startup_timing(result,execution):
-    if execution['profile']=='diagnostic' and result.get('status')==200:
+    if execution.get('profile') in ('verified','diagnostic') and result.get('status')==200:
         result['timing_ms']={**result.get('timing_ms',{}),'mcp_child_import':IMPORT_MS}
     return result
 

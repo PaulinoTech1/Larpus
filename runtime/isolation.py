@@ -207,6 +207,7 @@ def preflight(fast=False,timings=None):
     if broker_policy.exists() and json.loads(broker_policy.read_text())['version']==2 and (not broker or broker.get('protocol')!=2):raise ValueError('Scoped broker deployment required')
     names=[selected_agent,MODEL,*([broker['container']] if broker else []),*([notes['container']] if notes else [])]
     observations=collect_observations(names,fast,timings=timings)
+    validate_started=_observation_clock(timings)
     if observations['info']['host']['security']['rootless'] is not True:
         raise ValueError('Rootful Podman prohibited')
     by_name={c['Name'].lstrip('/'):c for c in observations['containers']}
@@ -234,6 +235,7 @@ def preflight(fast=False,timings=None):
         raise ValueError('Pod must have network=none')
     if any(c['HostConfig']['NetworkMode']!='container:'+pod['InfraContainerID'] for c in ((guard,model) if broker else (agent,model))):
         raise ValueError('Container network namespace drift')
+    _observation_timing(timings,'preflight_validation',validate_started)
     return profile
 
 def child_args(fast=False,timings=None):
