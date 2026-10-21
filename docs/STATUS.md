@@ -1,5 +1,15 @@
 # Operational status
 
+## 2026-10-21 active recovery/owner tools release
+
+Selected `b6dffca22d244953acb3a8574c232e69` is running; previous
+`042f91c0a1454887a694c945f49237ad` is retained and no cutover is pending.
+Required readiness and idle broker checks pass. The same 11 reviewed MCP scan
+warnings keep health degraded. Model/CPU voice images and start times match
+the pre-update snapshot. Recovery remains disabled; backups synthetic-only.
+See [activation evidence and limits](RECOVERY_ACTIVATION_2026_10_21.md).
+Earlier sections are dated historical snapshots.
+
 ## 2026-10-21 prepared candidate
 
 Recovery/owner tools candidate `b6dffca22d244953acb3a8574c232e69` is prepared,

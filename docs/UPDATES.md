@@ -1,5 +1,17 @@
 # Updates while Larpus remains usable
 
+## 2026-10-21 Recovery and owner tools — activated
+
+Activated `b6dffca22d244953acb3a8574c232e69`; previous
+`042f91c0a1454887a694c945f49237ad` is retained. Fresh readiness, broker and
+prepared-pin checks pass. Model/CPU voice images and start times are unchanged.
+The same 11 reviewed MCP warnings remain visible. Recovery stays disabled,
+backups synthetic-only; execution profiles/MCP Skills remain excluded.
+Whole-command time was 29.016 seconds; an unsupported sampler URL prevents a
+reliable interruption measurement. LAN tabs need a fresh login. See the
+[activation record](RECOVERY_ACTIVATION_2026_10_21.md) for retained evidence and
+the gates that still prevent expanding scope. Earlier entries are historical.
+
 ## 2026-10-21 Recovery and owner tools — prepared, not activated
 
 Prepared `b6dffca22d244953acb3a8574c232e69` from a scoped variant of the active
