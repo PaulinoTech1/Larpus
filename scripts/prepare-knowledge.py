@@ -181,9 +181,35 @@ def passages(text):
         boundary=text.find(' ',overlap,end)
         offset=boundary+1 if boundary>=0 else overlap
 
+OWNER_REFERENCE='owner-reviewed-local-reference'
+
+def owner_reference(entry):
+    # Owner-supplied references are admitted through config/reference-reviews.json,
+    # not this web-snapshot builder. Keep their reviewed catalog status.
+    return entry.get('status')==OWNER_REFERENCE
+
+def load_documents(catalog,fetch_docs):
+    documents=[]
+    for entry in catalog['documents']:
+        if owner_reference(entry):
+            print(entry['id']+': '+entry['status'],flush=True);continue
+        try:
+            if fetch_docs:raw,mime=fetch(entry)
+            elif entry.get('kind')=='reviewed-local-brief':raw,mime=fetch(entry)
+            else:
+                raw=(CACHE/'originals'/(entry['id']+'.raw')).read_bytes();mime=entry['content_type']
+                if hashlib.sha256(raw).hexdigest()!=entry['sha256']:raise ValueError('Snapshot hash mismatch')
+            documents.append((entry,raw,mime))
+            entry['status']='prepared-brief' if entry.get('kind')=='reviewed-local-brief' else 'downloaded'
+        except Exception as exc:
+            entry['status']='unavailable';entry['error']=type(exc).__name__+': '+('Cached snapshot unavailable' if isinstance(exc,FileNotFoundError) else str(exc).replace(str(ROOT),'[project]')[:160])
+        (KNOWLEDGE/'sources.json').write_text(json.dumps(catalog,indent=2)+'\n',encoding='utf-8')
+        print(entry['id']+': '+entry['status'],flush=True)
+    return documents
+
 def build(fetch_docs,reuse_research=False):
     catalog=json.loads((KNOWLEDGE/'sources.json').read_text(encoding='utf-8'))
-    records=[];rejected=[];documents=[]
+    records=[];rejected=[]
     reused=set()
     if reuse_research:
         from runtime.knowledge import database
@@ -197,19 +223,7 @@ def build(fetch_docs,reuse_research=False):
         reusable={r[0] for r in records if r[4]!='metadata only'}
         reused &= reusable
         records=[r for r in records if r[0] in reused]
-    for entry in catalog['documents']:
-        try:
-            if fetch_docs:raw,mime=fetch(entry)
-            elif entry.get('kind')=='reviewed-local-brief':raw,mime=fetch(entry)
-            else:
-                raw=(CACHE/'originals'/(entry['id']+'.raw')).read_bytes();mime=entry['content_type']
-                if hashlib.sha256(raw).hexdigest()!=entry['sha256']:raise ValueError('Snapshot hash mismatch')
-            documents.append((entry,raw,mime))
-            entry['status']='prepared-brief' if entry.get('kind')=='reviewed-local-brief' else 'downloaded'
-        except Exception as exc:
-            entry['status']='unavailable';entry['error']=type(exc).__name__+': '+('Cached snapshot unavailable' if isinstance(exc,FileNotFoundError) else str(exc).replace(str(ROOT),'[project]')[:160])
-        (KNOWLEDGE/'sources.json').write_text(json.dumps(catalog,indent=2)+'\n',encoding='utf-8')
-        print(entry['id']+': '+entry['status'],flush=True)
+    documents=load_documents(catalog,fetch_docs)
     # Existing PDF bytes must match the reviewed archive catalog before parsing.
     research=json.loads((ROOT/'research/catalog.json').read_text(encoding='utf-8'))
     for source in research['entries']:

@@ -68,4 +68,43 @@ class KnowledgePreparationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             list(prep.extracted(raw.replace(b'<article>',b'<!EnTiTy x "unsafe"><article>'),'application/xml'))
 
+    def test_habit_article_catalog_entry_is_pinned_and_role_scoped(self):
+        # The source entry, not only the parser rule, must keep the reviewed
+        # scope, licence and pinned local snapshot that indexing relies on.
+        import json
+        catalog=json.loads((Path(__file__).resolve().parents[1]/'knowledge/sources.json').read_text(encoding='utf-8'))
+        entries=next(v for v in catalog.values() if isinstance(v,list)) if isinstance(catalog,dict) else catalog
+        matches=[e for e in entries if e.get('id')=='singh-2024-habit-formation-review']
+        self.assertEqual(len(matches),1)
+        entry=matches[0]
+        self.assertIn(entry['url'],prep.REVIEWED_ARTICLES)
+        self.assertEqual(prep.vetted_url(entry['url']),entry['url'])
+        prep.validate_review(entry,entry['url'])
+        self.assertEqual(sorted(entry['roles']),['home-assistant','psychologist'])
+        self.assertEqual(entry['content_type'],'application/xml')
+        self.assertRegex(entry['sha256'],r'^[0-9a-f]{64}$')
+        self.assertIn('CC BY 4.0',entry['rights'])
+        self.assertEqual(entry['status'],'downloaded')
+
+    def test_owner_reviewed_references_keep_status_without_cache_or_fetch(self):
+        # Owner-supplied references have no web snapshot here. A rebuild must
+        # not relabel them unavailable or try to fetch them.
+        reference={'id':'owner-book','url':'owner-supplied:owner-book','roles':['mathematician'],'sha256':'0'*64,'status':'owner-reviewed-local-reference'}
+        missing={'id':'missing-doc','url':'https://www.kernel.org/releases.html','content_type':'text/html','sha256':'0'*64,'status':'downloaded'}
+        catalog={'documents':[dict(reference),missing]}
+        with tempfile.TemporaryDirectory() as temp,patch.object(prep,'KNOWLEDGE',Path(temp)),patch.object(prep,'CACHE',Path(temp)/'cache'),patch.object(prep.HTTP,'open',side_effect=AssertionError('network used')),patch('builtins.print'):
+            for fetch_docs in (False,True):
+                documents=prep.load_documents(catalog,fetch_docs)
+                self.assertEqual(documents,[])
+                self.assertEqual(catalog['documents'][0],reference)
+                self.assertEqual(catalog['documents'][1]['status'],'unavailable')
+
+    def test_checkout_owner_references_are_owner_reviewed(self):
+        import json
+        catalog=json.loads((Path(__file__).resolve().parents[1]/'knowledge/sources.json').read_text(encoding='utf-8'))
+        status={e['id']:e for e in catalog['documents']}
+        for identifier in ('chicone-ordinary-differential-equations','salsa-partial-differential-equations'):
+            self.assertEqual(status[identifier]['status'],'owner-reviewed-local-reference')
+            self.assertNotIn('error',status[identifier])
+
 if __name__=='__main__':unittest.main()
