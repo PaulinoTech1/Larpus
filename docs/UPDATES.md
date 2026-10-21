@@ -1,5 +1,93 @@
 # Updates while Larpus remains usable
 
+## 2026-10-21 Habit-source release activated after broker-check fix
+
+Activated `346773e17fd54b7784fd3148b07a4b0e` at 3:47:06 PM ET; previous
+`03959f0891764772a962726bea4309d7` is retained as the rollback target. The
+gateway (pid 23796) runs from the new release folder and
+`http://127.0.0.1:8080` returns 200. Retrieval inside the live agent container
+returns the Singh et al. (2024) habit article first for the psychologist and
+home-assistant roles. Receipt: `data/broker-live-346773e1-activated-20261021.json`
+(pass; running note preempted, chat 2.078 s after preemption, resumed note
+completed). Cutover rebinds the port; LAN tabs need a fresh login.
+
+The 2:34 PM failure ("Synthetic note finished before cancellation could be
+exercised") was not a fast note: a full synthetic note takes 21-32 s. The broker
+counter afterwards showed one confirmed recovery without a preemption, which
+fits the note being refused straight after cutover by the broker's first-use
+idle fence, before it generated anything. The old check discarded that result.
+`scripts/verify-broker-live.py` now does a readiness handshake first: one chat
+must complete on an idle, unfaulted broker; only an unconfirmed fence is waited
+out (90 s bound), any other refusal or a fault fails. It still requires the note
+to be observed generating before chat is sent, and still fails if the note ends
+first, is not preempted, or the broker records no confirmed recovery. The
+receipt now includes readiness attempts, the note outcome code (never its text)
+and the failure message. The fix is checkout-only: the check runs from the
+checkout and the release's notes worker and broker are unchanged, so
+`346773e1` was activated as prepared. Before cutover the fixed check passed 5/5
+on `03959f08` (`data/broker-check-20261021/03959f08-run1..5.json`).
+
+## 2026-10-21 Textbook catalog status fixed; activation rolled back
+
+Cause: `scripts/prepare-knowledge.py` treated every catalog document as a cached
+web snapshot. The two owner-supplied textbooks,
+`chicone-ordinary-differential-equations` and
+`salsa-partial-differential-equations`, are admitted through
+`config/reference-reviews.json`, not this builder, and have no cached original,
+so the habit-source rebuild relabelled them `unavailable`. They were added to the
+committed catalog on 2026-10-18 (`1efdf79`) as `owner-reviewed-local-reference`;
+the active `03959f08` corpus predates that and lists neither.
+
+Fix: the builder now leaves `owner-reviewed-local-reference` entries untouched
+and never fetches them (`load_documents`, with a regression test). Both catalog
+entries were restored byte-for-byte to their committed values. No text, source
+or passage was added. The rebuilt index and vectors were reused unchanged.
+
+Prepared `346773e17fd54b7784fd3148b07a4b0e` at 2:33 PM ET. Its payload differs
+from `8203e538` only in `knowledge/sources.json`, `scripts/prepare-knowledge.py`
+and `tests/test_knowledge_preparation.py`. Against `03959f08` the index adds 124
+role rows (62 passages), all from the habit article, and removes none. Checks
+passed; 69 scan targets pass and `mcp` keeps the known reviewed warning.
+
+Activated at 2:33:58 PM ET. The gateway ran from the new release directory and
+`http://127.0.0.1:8080` returned 200. `scripts/verify-broker-live.py` then failed
+(`data/broker-live-346773e1-20261021.json`: "Synthetic note finished before
+cancellation could be exercised"), so the release was rolled back to `03959f08`
+at 2:35:07 PM ET as instructed. Afterwards the same check passed on `03959f08`
+(`data/broker-live-03959f08-baseline-20261021.json`) and on the still-prepared
+`346773e1` (`data/broker-live-346773e1-prepared-retry-20261021.json`, 2.25 s
+chat after preemption). Host-side retrieval on the `346773e1` corpus returns the
+habit article first for both roles. `346773e1` remains prepared and is the
+recorded rollback target; re-activation needs the boss's go-ahead.
+
+## 2026-10-21 Habit-formation source — prepared, not activated
+
+Prepared `8203e5380a1b4dbea18c9c9084edecf9` at 1:55 PM ET. It is the active
+`03959f0891764772a962726bea4309d7` payload plus only the Singh et al. (2024)
+habit-formation systematic review: Europe PMC JATS XML, CC BY 4.0, SHA-256
+`d60c91f1a33822dbd5733f0beb64f0f402761ff5f6bdd9b5cccaabd0a27aaa46`, 62 passages
+for the psychologist and home-assistant roles (124 role rows). Index rows go
+from 76,726 to 76,850. Vectors go from 74,709 to 74,771: the 74,709 existing
+vectors were reused after hash verification against the active release and
+only the 62 new passages were embedded. The payload also carries the XML
+source rule, the incremental `--reuse-index-from` indexing option and their
+tests. Complexity, the isolated suite, UI checks, isolation and the scan passed;
+69 scan targets pass and `mcp` keeps the existing source-pinned warning. The
+earlier `9ce4ddd7929940f39bfdb85f9515cc89` attempt stopped at the complexity
+gate and is not a candidate.
+
+Active is still `03959f08`; activation needs the boss's approval. Before that,
+review one catalog difference: the candidate's `sources.json` marks
+`chicone-ordinary-differential-equations` and
+`salsa-partial-differential-equations` as `unavailable` (cached snapshot
+missing during the rebuild), where the committed checkout catalog lists them as
+`owner-reviewed-local-reference` (correction: the active release has no entries
+for them at all). Neither release's index has rows for them, so
+retrieval is unchanged, but the catalog status changes. The checkout's own
+`knowledge/` database and vectors are a broader local rebuild, are not the
+candidate's and were not shipped. Do not pool timing runs taken during this
+source work into the latency receipts.
+
 ## 2026-10-21 Verified timing spans — activated
 
 Activated `03959f0891764772a962726bea4309d7`; previous

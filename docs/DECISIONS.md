@@ -887,3 +887,67 @@ The owner approved the recommendations in MOBILE-ACCESS.md:
 D5 retires LAN clients, the start-lan and LAN firewall scripts, and the Tailscale demo bridge, and requires
 rewriting HTTPS.md, AUTH.md and LAN.md in the implementing PR. None of this is implemented yet. The code PRs
 H1-H6, the thresholds and the open questions each still need separate approval.
+
+## Habit-formation source staged as a narrow candidate (2026-10-21, 2:10 PM ET)
+
+The boss asked for a peer-reviewed habit-formation source. Codex chose the 2024
+Singh et al. systematic review and meta-analysis (CC BY 4.0) and indexed it
+through the normal review path from Europe PMC's full-text XML, because the
+publisher refused automated retrieval. The XML rule is limited to that exact
+URL, rejects entities and unknown DTDs, and indexes only the abstract and
+body, not the reference list. Answers must not promise a fixed number of days
+or a behaviour outcome. If the boss meant the original Lally et al. study, the
+source choice should be revisited.
+
+The deployable candidate `8203e5380a1b4dbea18c9c9084edecf9` was assembled from
+the active release plus only this article, not from the checkout's broader
+rebuild. That rebuild also changed passage text for older cyber sources and
+should not ride along unreviewed. Incremental indexing reuses a vector only
+when the source, locator, title and text match a hash-verified previous index,
+which avoided a roughly 69-minute full re-embed.
+
+Codex stopped at 1:41 PM ET on a usage limit while preparation was running.
+Preparation finished unattended at 1:55 PM ET with status `prepared`. This
+entry, the UPDATES note and a catalog-entry test were added afterwards to
+record the result. Nothing was activated, committed or pushed. Activation,
+the `chicone`/`salsa` catalog-status difference, and what to do with the
+checkout's rebuilt `knowledge/` files are left for the boss to decide.
+
+## Owner-reviewed references are not rebuilt by the web-snapshot builder (2026-10-21, 2:40 PM ET)
+
+The boss asked to fix the textbook status in the habit-source release and then
+activate it. The cause was the knowledge builder, not a catalog edit: it marked
+any document without a cached web snapshot `unavailable`, which includes the
+owner-supplied Chicone and Salsa references reviewed through
+`config/reference-reviews.json`. The builder now skips entries whose status is
+`owner-reviewed-local-reference`, so it can neither relabel nor fetch them.
+Their catalog entries were restored to the committed values. An earlier note
+said the live release listed them as owner-reviewed; it does not list them at
+all, and the committed catalog is the reference for their status.
+
+Release `346773e17fd54b7784fd3148b07a4b0e` was prepared with this fix and
+activated at 2:33:58 PM ET. The first live broker verification failed with a
+cancellation-timing error, so it was rolled back to `03959f08` at 2:35:07 PM ET
+as the activation instruction required. The same verification passed afterwards
+on both `03959f08` and the prepared `346773e1`, which suggests a timing race
+straight after cutover rather than a content fault, but this was not proven.
+Re-activation is left for the boss to decide.
+
+## Live broker check waits for broker readiness, then proves preemption (2026-10-21, 3:55 PM ET)
+
+The boss chose to fix the check's timing before retrying activation. The check
+now confirms readiness with one completed chat before starting the synthetic
+note, so a broker's first-use idle fence or model warm-up can no longer
+masquerade as "the note finished before cancellation". The cause was inferred
+from the broker counters and the 21-32 s note duration, not observed directly:
+the original receipt kept only the error type. A truly gated synthetic job would
+need a hold inside the broker or notes worker; those are security-boundary
+files pinned by the MCP scan review, so they were left unchanged. The
+cancellation proof itself is unchanged and stricter about reporting. Tests cover
+a passing preemption, a note ending early, ignored cancellation and readiness
+failures.
+
+Release `346773e17fd54b7784fd3148b07a4b0e` was activated at 3:47:06 PM ET and
+passed `data/broker-live-346773e1-activated-20261021.json`. Rollback target:
+`03959f0891764772a962726bea4309d7`. The frozen release still carries the old
+copy of `scripts/verify-broker-live.py`; it is not used at runtime.
