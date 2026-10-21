@@ -10,6 +10,7 @@ import sqlite3
 import sys
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from runtime.text_filter import inspect_message,TextHeld
 
@@ -38,6 +39,7 @@ AI_DOCUMENTS={
     'https://x.com/alexandr_wang/status/2100256890559308197',
 }
 MICROSOFT_DOCUMENTS={'https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access', 'https://learn.microsoft.com/en-us/azure/role-based-access-control/best-practices', 'https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/', 'https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/recovery-overview', 'https://learn.microsoft.com/en-us/intune/fundamentals/planning-guide', 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access', 'https://learn.microsoft.com/en-us/intune/fundamentals/platform-guide-windows', 'https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-areas', 'https://learn.microsoft.com/en-us/microsoft-365/enterprise/setup-overview-for-enterprises?view=o365-worldwide', 'https://learn.microsoft.com/en-us/intune/device-configuration/endpoint-security/encrypt-bitlocker-windows', 'https://learn.microsoft.com/en-us/intune/device-enrollment/guide'}
+REVIEWED_ARTICLES={'https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11641623/fullTextXML'}
 MAX_DOWNLOAD=8*1024*1024
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -45,11 +47,23 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 HTTP=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
 
+def reviewed_article(url):
+    return url in REVIEWED_ARTICLES
+
+def allowed_mime(url,mime):
+    return mime in ('text/html','text/plain','application/pdf','application/json') or (reviewed_article(url) and mime=='application/xml')
+
+def validate_review(entry,url):
+    expected='peer-reviewed-open-access-article' if reviewed_article(url) else 'official-publisher-documentation'
+    if entry.get('review')!=expected or not entry.get('reviewed_on'):
+        raise ValueError('Missing source review')
+
 def vetted_url(url):
     parsed=urllib.parse.urlsplit(url)
-    if parsed.scheme!='https' or (parsed.hostname not in HOSTS and url not in AI_DOCUMENTS and url not in MICROSOFT_DOCUMENTS) or parsed.username or parsed.password or parsed.port not in (None,443) or (parsed.query and url not in MICROSOFT_DOCUMENTS) or parsed.fragment:
+    exception=url in AI_DOCUMENTS or url in MICROSOFT_DOCUMENTS or reviewed_article(url)
+    if parsed.scheme!='https' or (parsed.hostname not in HOSTS and not exception) or parsed.username or parsed.password or parsed.port not in (None,443) or (parsed.query and url not in MICROSOFT_DOCUMENTS) or parsed.fragment:
         raise ValueError('Source URL is outside reviewed publisher scope')
-    if url not in AI_DOCUMENTS and url not in MICROSOFT_DOCUMENTS and not re.search(r'\.pdf$|\.html$|/index$|/$',parsed.path) and parsed.hostname!='fedoraproject.org':
+    if not exception and not re.search(r'\.pdf$|\.html$|/index$|/$',parsed.path) and parsed.hostname!='fedoraproject.org':
         raise ValueError('Only reviewed documentation URLs allowed')
     return url
 
@@ -57,8 +71,7 @@ def fetch(entry):
     if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,80}',entry.get('id','')):
         raise ValueError('Invalid source identity')
     url=vetted_url(entry['url'])
-    if entry.get('review')!='official-publisher-documentation' or not entry.get('reviewed_on'):
-        raise ValueError('Missing source review')
+    validate_review(entry,url)
     if entry.get('kind')=='reviewed-local-brief':
         raw=(KNOWLEDGE/'briefs'/(entry['id']+'.txt')).read_bytes()
         if len(raw)>8000 or hashlib.sha256(raw).hexdigest()!=entry['sha256']:
@@ -73,7 +86,7 @@ def fetch(entry):
     # Vet type and declared size before fetching any document body.
     with HTTP.open(urllib.request.Request(url,method='HEAD',headers=headers),timeout=30) as response:
         mime=response.headers.get_content_type()
-        if mime not in ('text/html','text/plain','application/pdf','application/json'):
+        if not allowed_mime(url,mime):
             raise ValueError('Unexpected document type')
         if int(response.headers.get('Content-Length','0'))>MAX_DOWNLOAD:
             raise ValueError('Document exceeds preparation limit')
@@ -109,23 +122,44 @@ class TextHTML(HTMLParser):
     def handle_data(self,data):
         if not self.skip:self.add(data)
 
+def extracted_pdf(raw):
+    import io
+    from pypdf import PdfReader
+    from pypdf.constants import UserAccessPermissions
+    reader=PdfReader(io.BytesIO(raw),strict=True)
+    if reader.is_encrypted:
+        # Respect extraction restrictions; never guess a key.
+        if not reader.decrypt('') or not reader.user_access_permissions & UserAccessPermissions.EXTRACT:
+            raise ValueError('PDF password/extraction permission prevents indexing')
+    if len(reader.pages)>700:raise ValueError('PDF exceeds page limit')
+    total=0
+    for number,page in enumerate(reader.pages,1):
+        text=page.extract_text() or '';total+=len(text)
+        if total>2_000_000:raise ValueError('PDF text exceeds index limit')
+        yield 'page '+str(number),text
+
+def extracted_jats(raw):
+    # Europe PMC returns JATS with an external DTD. Strip only that known
+    # declaration; reject entities and other DTDs before parsing locally.
+    if re.search(br'<!\s*ENTITY',raw,re.I):raise ValueError('XML entities prohibited')
+    cleaned,count=re.subn(br'<!DOCTYPE article\s+PUBLIC\s+"[^"]+"\s+"[^"]+">',b'',raw,count=1)
+    if count!=1 or re.search(br'<!\s*DOCTYPE',cleaned,re.I):raise ValueError('Unexpected XML document type')
+    root=ET.fromstring(cleaned)
+    if root.tag!='article' or root.find('./body') is None:raise ValueError('Expected JATS article body')
+    sections=[('abstract',root.find('./front/article-meta/abstract'))]
+    sections.extend((f'body section {number}',node) for number,node in enumerate(root.findall('./body/*'),1))
+    total=0
+    for locator,node in sections:
+        if node is None:continue
+        text=' '.join(node.itertext());total+=len(text)
+        if total>2_000_000:raise ValueError('XML text exceeds index limit')
+        yield locator,text
+
 def extracted(raw,mime):
     if mime=='application/pdf':
-        import io
-        from pypdf import PdfReader
-        from pypdf.constants import UserAccessPermissions
-        reader=PdfReader(io.BytesIO(raw),strict=True)
-        if reader.is_encrypted:
-            # Publicly readable PDFs may use an empty user password with owner
-            # permissions. Respect extraction restrictions; never guess a key.
-            if not reader.decrypt('') or not reader.user_access_permissions & UserAccessPermissions.EXTRACT:
-                raise ValueError('PDF password/extraction permission prevents indexing')
-        if len(reader.pages)>700:raise ValueError('PDF exceeds page limit')
-        total=0
-        for number,page in enumerate(reader.pages,1):
-            text=page.extract_text() or '';total+=len(text)
-            if total>2_000_000:raise ValueError('PDF text exceeds index limit')
-            yield 'page '+str(number),text
+        yield from extracted_pdf(raw)
+    elif mime=='application/xml':
+        yield from extracted_jats(raw)
     else:
         text=raw.decode('utf-8',errors='strict')
         if mime=='text/html':

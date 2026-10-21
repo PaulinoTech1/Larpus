@@ -15,6 +15,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tarfile
@@ -94,7 +95,47 @@ def sync(config):
     os.unlink(pins.name)
     print('WSL build cache updated and verified against config/cpu-retrieval.json.')
 
-def build_index(config,workers):
+def reusable_vectors(directory,config):
+    """Reuse only hash-verified vectors for identical source, locator, title and text."""
+    import numpy
+    old=json.loads((directory/'manifest.json').read_bytes())
+    retrieval.verify_file(directory/'approved.sqlite',{'sha256':old['database_sha256'],'bytes':old['database_bytes']})
+    vectors,rowids=retrieval.load_index(directory,config)
+    with sqlite3.connect((directory/'approved.sqlite').resolve().as_uri()+'?mode=ro',uri=True) as db:
+        rows=db.execute('SELECT rowid,source_id,locator,title,text FROM chunks ORDER BY rowid')
+        unique={}
+        for rowid,source,locator,title,text in rows:
+            unique.setdefault((source,locator,text),(rowid,title or ''))
+    by_rowid={int(rowid):vector for rowid,vector in zip(rowids,vectors)}
+    if len(by_rowid)!=len(unique) or set(by_rowid)!={rowid for rowid,_ in unique.values()}:
+        raise ValueError('Reusable embedding row IDs do not match the verified database')
+    return {(source,locator,text,title):by_rowid[rowid] for (source,locator,text),(rowid,title) in unique.items()}
+
+def encode_items(items,config,workers,reuse_from):
+    import numpy
+    reused=reusable_vectors(Path(reuse_from),config) if reuse_from else {}
+    pending=[(key,value) for key,value in items if (*key,value[1]) not in reused]
+    print(f'{len(items)} unique; {len(items)-len(pending)} verified vectors reused, {len(pending)} embedding with {workers} workers',flush=True)
+    # One session per worker: concurrent runs on a shared session would share
+    # (and serialise on) a single intra-op thread pool.
+    threads=max(1,(os.cpu_count() or 4)//workers);local=threading.local()
+    batches=[pending[i:i+32] for i in range(0,len(pending),32)]
+    started=time.monotonic();done=[0]
+    def work(batch):
+        if not hasattr(local,'embedder'):local.embedder=retrieval.Embedder(config,threads)
+        vectors=local.embedder.encode([value[2] for _,value in batch])
+        done[0]+=len(batch)
+        if done[0]%4096<len(batch):print(f'  {done[0]}/{len(pending)} in {time.monotonic()-started:.0f}s',flush=True)
+        return vectors
+    with ThreadPoolExecutor(workers) as pool:
+        for batch,vectors in zip(batches,pool.map(work,batches)):
+            for (key,value),vector in zip(batch,vectors):
+                reused[(*key,value[1])]=vector
+    vectors=numpy.stack([reused[(*key,value[1])] for key,value in items]).astype(numpy.float16)
+    rowids=numpy.array([value[0] for _,value in items],dtype=numpy.int64)
+    return vectors,rowids,time.monotonic()-started
+
+def build_index(config,workers,reuse_from=None):
     import numpy
     from runtime import knowledge
     from contextlib import closing
@@ -103,22 +144,10 @@ def build_index(config,workers):
     with closing(knowledge.database()) as connection:  # hash-verified immutable DB
         rows=connection.execute('SELECT rowid,source_id,locator,title,text FROM chunks ORDER BY rowid').fetchall()
     unique={}
-    for rowid,source,locator,title,text in rows:unique.setdefault((source,locator,text),(rowid,(title or '')+'\n'+text))
-    items=sorted(unique.values(),key=lambda pair:len(pair[1]))
-    print(f'{len(rows)} passages, {len(items)} unique; embedding with {workers} workers',flush=True)
-    # One session per worker: concurrent runs on a shared session would share
-    # (and serialise on) a single intra-op thread pool.
-    threads=max(1,(os.cpu_count() or 4)//workers);local=threading.local()
-    batches=[items[i:i+32] for i in range(0,len(items),32)]
-    started=time.monotonic();done=[0]
-    def work(batch):
-        if not hasattr(local,'embedder'):local.embedder=retrieval.Embedder(config,threads)
-        vectors=local.embedder.encode([text for _,text in batch])
-        done[0]+=len(batch)
-        if done[0]%4096<len(batch):print(f'  {done[0]}/{len(items)} in {time.monotonic()-started:.0f}s',flush=True)
-        return vectors
-    with ThreadPoolExecutor(workers) as pool:vectors=numpy.concatenate(list(pool.map(work,batches))).astype(numpy.float16)
-    rowids=numpy.array([rowid for rowid,_ in items],dtype=numpy.int64)
+    for rowid,source,locator,title,text in rows:unique.setdefault((source,locator,text),(rowid,title or '',(title or '')+'\n'+text))
+    items=sorted(unique.items(),key=lambda item:len(item[1][2]))
+    print(f'{len(rows)} passages',flush=True)
+    vectors,rowids,elapsed=encode_items(items,config,workers,reuse_from)
     order=numpy.argsort(rowids,kind='stable');rowids=rowids[order];vectors=vectors[order]
     temp_vectors=directory/'embeddings.build.npy';temp_rowids=directory/'embeddings-rowids.build.npy'
     numpy.save(temp_vectors,vectors,allow_pickle=False);numpy.save(temp_rowids,rowids,allow_pickle=False)
@@ -129,7 +158,7 @@ def build_index(config,workers):
         'rows':int(len(rowids)),'dimensions':int(vectors.shape[1]),
         'vectors_sha256':retrieval.sha256_file(temp_vectors),'vectors_bytes':temp_vectors.stat().st_size,
         'rowids_sha256':retrieval.sha256_file(temp_rowids),'rowids_bytes':temp_rowids.stat().st_size,
-        'build_seconds':round(time.monotonic()-started,1)}
+        'build_seconds':round(elapsed,1)}
     temp_vectors.replace(directory/'embeddings.npy');temp_rowids.replace(directory/'embeddings-rowids.npy')
     (directory/'embeddings-manifest.tmp').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     (directory/'embeddings-manifest.tmp').replace(directory/retrieval.INDEX_MANIFEST)
@@ -140,7 +169,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__,formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('operation',choices=('fetch','verify','install-host','sync','index'))
     parser.add_argument('--workers',type=int,default=6)
+    parser.add_argument('--reuse-index-from',type=Path,help='Verified previous index/database directory for incremental indexing')
     args=parser.parse_args();config=retrieval.load_config()
-    {'fetch':fetch,'verify':verify,'install-host':install_host,'sync':sync}.get(args.operation,lambda c:build_index(c,args.workers))(config)
+    if args.reuse_index_from and args.operation!='index':parser.error('--reuse-index-from requires index')
+    {'fetch':fetch,'verify':verify,'install-host':install_host,'sync':sync}.get(args.operation,lambda c:build_index(c,args.workers,args.reuse_index_from))(config)
 
 if __name__=='__main__':main()

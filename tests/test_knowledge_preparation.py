@@ -52,4 +52,20 @@ class KnowledgePreparationTests(unittest.TestCase):
         for url in ('https://x.ai/unreviewed/','https://developers.openai.com/api/unreviewed/','https://api.deepseek.com/','https://api-docs.deepseek.com/quick_start/pricing/?next=evil','https://support.claude.com.evil.test/'):
             with self.assertRaises(ValueError):prep.vetted_url(url)
 
+    def test_habit_article_is_exactly_scoped_and_excludes_bibliography(self):
+        url='https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11641623/fullTextXML'
+        self.assertEqual(prep.vetted_url(url),url)
+        for other in (url+'?id=other',url.replace('PMC11641623','PMC00000000')):
+            with self.assertRaises(ValueError):prep.vetted_url(other)
+        raw=(b'<!DOCTYPE article PUBLIC "JATS" "archive.dtd">'
+             b'<article><front><article-meta><abstract><p>Habit evidence.</p></abstract></article-meta></front>'
+             b'<body><sec><title>Results</title><p>Repeated action in stable context.</p></sec></body>'
+             b'<back><ref-list><ref>Unreviewed cited paper.</ref></ref-list></back></article>')
+        sections=list(prep.extracted(raw,'application/xml'))
+        self.assertEqual([loc for loc,_ in sections],['abstract','body section 1'])
+        self.assertIn('Repeated action',sections[1][1])
+        self.assertNotIn('Unreviewed cited paper',' '.join(text for _,text in sections))
+        with self.assertRaises(ValueError):
+            list(prep.extracted(raw.replace(b'<article>',b'<!EnTiTy x "unsafe"><article>'),'application/xml'))
+
 if __name__=='__main__':unittest.main()

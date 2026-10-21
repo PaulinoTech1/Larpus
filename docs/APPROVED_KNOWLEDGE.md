@@ -90,6 +90,15 @@ recordings and host files are not mounted into the model container.
 
 ## Answering and citations
 
+The 2024 peer-reviewed [habit-formation systematic review](https://www.mdpi.com/2227-9032/12/23/2488/notes)
+is indexed from Europe PMC's CC BY 4.0 full-text XML for the psychologist and
+home-assistant roles. Its 62 screened passages include the abstract and article
+body, excluding the reference list. It studies health behaviours and reports
+substantial variation in the time to automaticity; LARPUS should not promise a
+fixed number of days or generalise its timing estimates to every kind of habit.
+The article is evidence for answering questions, not a clinical treatment
+protocol or proof that LARPUS changes a user's behaviour.
+
 The trusted runtime selects up to three shared-library passages, with an overall
 3600-character metadata/text budget, from the latest question. Named platforms
 and version/model numbers narrow lexical matching. Candidates are deduplicated
