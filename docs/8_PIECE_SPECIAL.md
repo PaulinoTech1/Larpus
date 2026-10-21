@@ -65,6 +65,29 @@ checked text. Pixel/browser timing is deferred. See
 [the broader Verified plan](VERIFIED_LATENCY_PLAN_2026_10_21.md) for release
 gates and limitations.
 
+## Quiet gateway measurement, 2026-10-21
+
+From 5:06:14 to 5:11:38 PM ET, the fixed nine-case local HTTP suite ran alone
+against active release `346773e17fd54b7784fd3148b07a4b0e` (gateway PID
+23796). Before the run, `scripts/releases.py status` confirmed this release;
+the Study Notes scheduled task was disabled and no notes, indexing, release
+preparation, or other benchmark process was active. The command was
+`python -m scripts.performance_suite --run --repeats 3 --warmups 1 --retain-answers`.
+Receipt: `data/evals/performance/91940e8da4d1456e8891a299d147c84d/`.
+The suite marked the run valid and confirmed matching release, source, model,
+database, and retrieval settings before and after.
+
+All 27/27 measured HTTP requests succeeded after nine excluded warm-ups. First
+checked text was 5.709 s median, 6.734 s p90, 6.845 s nearest-rank p95, and
+7.066 s maximum. Completion was 7.221 s median and 9.387 s p95. The median
+meets the 5.9 s target; p95 misses the 6.8 s target by 45 ms. The nine warm-ups
+had first-text median 11.096 s and p95 14.748 s. No measured request met the
+suite's >=16-second first-after-idle gap, so first-after-idle remains unmeasured.
+The receipt reports no unknown citation IDs; factual answer quality still needs
+manual review against original passages. This 27-request local result is
+descriptive, not the two-session/100-attempt release qualification, and its
+different corpus cannot be pooled with the earlier `03959f08` results.
+
 ## Fresh-preflight candidate, 2026-10-21
 
 Candidate `b2e0c086017d480f9e360f1dbc6b2a7e` was prepared from the active
