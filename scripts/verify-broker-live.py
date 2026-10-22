@@ -36,45 +36,91 @@ def note_summary(note):
     return {'ok':'ok' in note,'code':note.get('code'),'error':note.get('error'),'http_status':note.get('http_status'),
             'done_reason':note.get('metrics',{}).get('done_reason') if isinstance(note.get('metrics'),dict) else None}
 
-def ready_broker(agent_call,clock,sleep,window=90):
-    """Readiness handshake: one completed chat proves the broker's first-use idle
-    fence and model are ready before the note starts. A faulted broker or any
-    other refusal fails at once; only an unconfirmed fence is waited out."""
-    attempts=[];deadline=clock()+window
-    while True:
-        warm=agent_call('/api/chat');attempts.append({'http':warm['http'],'code':warm['value'].get('error')})
-        if warm['http']==200 and warm['value'].get('done') is True:return attempts
-        state=agent_call('/broker/state')['value']
-        if state['faulted'] or warm['http']!=503 or warm['value'].get('error')!='cancellation_unconfirmed' or clock()>=deadline:
-            raise RuntimeError('Broker readiness handshake failed: '+json.dumps(attempts))
-        sleep(2)
+# Readiness spends at most CHAT_PROBES chat-lane requests, CHAT_PROBE_SPACING s apart, so
+# readiness plus the one preempting chat stays far below the broker's 12/min chat budget.
+# Polling uses the broker's status lane (/api/ps, /broker/state), never chat quota, at rates
+# below its 120/min status budget.
+CHAT_PROBES=4;CHAT_PROBE_SPACING=10;RESIDENT_WINDOW=30;RESIDENT_POLL=5;STATE_POLL=.75
+WAITABLE={(503,'cancellation_unconfirmed'),(429,'inference_budget')}
 
-def exercise_preemption(agent_call,note_call,clock=time.monotonic,sleep=time.sleep,window=45):
-    """Start the synthetic note only on a ready, idle broker, wait until it is
-    generating, then send chat. Passes only if that running note is preempted."""
-    readiness=ready_broker(agent_call,clock,sleep)
-    before=agent_call('/broker/state')['value']
+def broker_state(agent_call):
+    state=agent_call('/broker/state')
+    if state['http']!=200:raise RuntimeError('Broker state unavailable: '+json.dumps(state['value']))
+    return state['value']
+
+def model_resident(agent_call):
+    """Non-chat signal: the broker's status lane lists the approved model as loaded."""
+    listed=agent_call('/api/ps')
+    return listed['http']==200 and bool(listed['value'].get('models'))
+
+def wait_resident(agent_call,clock,sleep,window=RESIDENT_WINDOW):
+    """Best effort: give a loading model time on the status lane before any chat probe."""
+    deadline=clock()+window
+    while not model_resident(agent_call):
+        if clock()>=deadline:return False
+        sleep(RESIDENT_POLL)
+    return True
+
+def probe_outcome(agent_call):
+    """One chat-lane probe: 'ready', 'wait' (unconfirmed fence or chat budget hold on an
+    unfaulted broker) or 'fail' (fault or any other refusal)."""
+    warm=agent_call('/api/chat');attempt={'http':warm['http'],'code':warm['value'].get('error')}
+    if warm['http']==200 and warm['value'].get('done') is True:return attempt,'ready'
+    state=agent_call('/broker/state')
+    if state['http']!=200 or state['value'].get('faulted') or (attempt['http'],attempt['code']) not in WAITABLE:return attempt,'fail'
+    return attempt,'wait'
+
+def ready_broker(agent_call,clock,sleep):
+    """Readiness handshake: one completed chat proves the broker's first-use idle fence and
+    model are ready before the note starts. Bounded chat probes; status-lane waiting."""
+    resident=wait_resident(agent_call,clock,sleep);attempts=[]
+    for _ in range(CHAT_PROBES):
+        attempt,outcome=probe_outcome(agent_call);attempts.append(attempt)
+        if outcome=='ready':return {'model_resident':resident,'chat_probes':attempts}
+        if outcome=='fail':break
+        sleep(CHAT_PROBE_SPACING)
+    raise RuntimeError('Broker readiness handshake failed: '+json.dumps({'model_resident':resident,'chat_probes':attempts}))
+
+def idle_state(agent_call):
+    before=broker_state(agent_call)
     if before['active'] is not None or before['faulted']:raise RuntimeError('Broker not idle before the synthetic note')
+    return before
+
+def wait_for_generation(agent_call,background,clock,sleep,window):
+    deadline=clock()+window
+    while True:
+        state=broker_state(agent_call)
+        if state['active']=='notes' and state['received_frame']:return
+        if background.done():
+            raise RuntimeError('Synthetic note ended before cancellation could be exercised: '+json.dumps(note_summary(background.result())))
+        if clock()>=deadline:raise RuntimeError('No active background generation observed')
+        sleep(STATE_POLL)
+
+def preempt_running_note(agent_call,note_call,clock,sleep,window):
     with ThreadPoolExecutor(max_workers=1) as pool:
-        background=pool.submit(note_call);deadline=clock()+window
-        while True:
-            state=agent_call('/broker/state')['value']
-            if state['active']=='notes' and state['received_frame']:break
-            if background.done():
-                raise RuntimeError('Synthetic note ended before cancellation could be exercised: '+json.dumps(note_summary(background.result())))
-            if clock()>=deadline:raise RuntimeError('No active background generation observed')
-            sleep(.25)
+        background=pool.submit(note_call)
+        wait_for_generation(agent_call,background,clock,sleep,window)
         started=clock();chat=agent_call('/api/chat');elapsed=round(clock()-started,3)
         note=background.result(timeout=30)
-    after=agent_call('/broker/state')['value']
-    result={'readiness':readiness,'chat_after_preemption_seconds':elapsed,'chat':chat,'background_code':note.get('code'),
-            'background':note_summary(note),'before':before,'after':after}
+    return chat,note,elapsed
+
+def assert_preempted(chat,note,before,after,elapsed):
     if chat['http']!=200 or chat['value'].get('done') is not True:raise AssertionError('Chat did not complete after preemption')
     if note.get('code')!='background_preempted':raise AssertionError('Running note was not preempted: '+json.dumps(note_summary(note)))
     if not (after['preemptions']>before['preemptions'] and after['confirmed_recoveries']>before['confirmed_recoveries'] and not after['faulted']):
         raise AssertionError('Broker did not record a confirmed preemption and recovery')
     if elapsed>=30:raise AssertionError('Chat after preemption exceeded 30 seconds')
-    return result
+
+def exercise_preemption(agent_call,note_call,clock=time.monotonic,sleep=time.sleep,window=45):
+    """Start the synthetic note only on a ready, idle broker, wait until it is
+    generating, then send chat. Passes only if that running note is preempted."""
+    readiness=ready_broker(agent_call,clock,sleep)
+    before=idle_state(agent_call)
+    chat,note,elapsed=preempt_running_note(agent_call,note_call,clock,sleep,window)
+    after=broker_state(agent_call)
+    assert_preempted(chat,note,before,after,elapsed)
+    return {'readiness':readiness,'chat_after_preemption_seconds':elapsed,'chat':chat,'background_code':note.get('code'),
+            'background':note_summary(note),'before':before,'after':after}
 
 def verify(args):
     root=release.release_path(args.id);release.validate(root);profile=release.read(root/'deployment.json')
