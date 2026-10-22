@@ -1,5 +1,9 @@
 # Local Stegdetect detection and gap tracking
 
+The [cross-filter error report](FILTER_FP_FN_2026-10-22.md) puts the standalone
+Stegdetect false positives and missed density-evasion family beside the active
+LARPUS input gate and output DLP, without pooling their denominators.
+
 The [Chicone review](CHICONE_SCREENING_REVIEW.md) documents an owner-adjudicated
 mathematics false-positive incident. Its selected held subset and mixed gate reasons
 are kept separate from the public synthetic evaluation and its rate denominators.
