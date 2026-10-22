@@ -185,6 +185,13 @@ models would justify their loading, memory and evaluation costs.
 
 ## Work in progress and validation
 
+The checkout includes [MTRAGEval-inspired local RAG evaluation probes](docs/MTRAGEVAL_LOCAL.md)
+for retrieval, fixed-evidence generation, and end-to-end checked responses.
+The runner and five synthetic smoke fixtures are committed as a working
+evaluation capability. Model-backed runs and latency comparisons are deferred
+until the Grok Bot fine-tuning work finishes; the probes have not been validated
+against the active frozen release or promoted to production.
+
 The active release includes optional [teaching-profile controls](docs/TEACHING.md).
 The [paired capability comparison tooling](docs/CAPABILITY_TRIALS.md) is available,
 but its live comparisons have not been run.
