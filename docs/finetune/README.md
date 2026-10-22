@@ -1,6 +1,13 @@
 # Fine-tuning drafts (Grok Bot teacher loop, round zero)
 
-**DRAFT. Pending independent review. Not admitted or usable as training data.**
+Owner content-review signoff for the 264 train/dev families was recorded on
+2026-10-22. See [the owner review receipt](OWNER_REVIEW_2026-10-22.md). The
+original draft files below are retained unchanged; reviewed copies are in a
+versioned local processing package. One known-error variant remains held, and
+content review alone does not admit data for training.
+
+**Original draft snapshot. Its review fields remain null by design; not admitted
+or usable as training data.**
 Authored 2026-10-22 (ET) by Grok Bot for the first bounded action in
 [`docs/GROK_TEACHER_TUNING_LOOP.md`](../GROK_TEACHER_TUNING_LOOP.md): 12 synthetic
 training families, one per topic lane in [`docs/TEACHER_STUDENT_PILOT.md`](../TEACHER_STUDENT_PILOT.md).
@@ -29,8 +36,9 @@ Rules carried from the plan:
 
 ## Round 1: dataset built to 28x (2026-10-22 ET)
 
-**Still DRAFT. Pending independent review. Not admitted or usable as training data.**
-Known content defect awaiting review: `grok-r1-opt-05/d` says a step size
+**Original round-1 draft snapshot. Its review fields remain null by design;
+not admitted or usable as training data.**
+Known content defect held after owner review: `grok-r1-opt-05/d` says a step size
 `0 < alpha < 2/L` avoids divergence "on quadratics" without requiring a
 lower-bounded/convex objective. That claim is false for an indefinite quadratic.
 Do not admit this variant until its scope and target are corrected and rechecked.

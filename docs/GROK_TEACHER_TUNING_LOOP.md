@@ -2,8 +2,9 @@
 
 Status: executable **plan**, not a training or deployment receipt. Proposed 2026-10-22.
 The later owner decision in `DECISIONS.md` selects Qwen3.8 27B and expands the
-round-1 register to 336 families. The 72 locked-test families remain unwritten;
-the train/dev drafts remain unreviewed and are not admitted training data.
+round-1 register to 336 families. The 72 locked-test families remain unwritten.
+The owner has recorded content-review approval for the train/dev targets, with
+one known-error variant held; none are admitted training data.
 This specializes [behavior tuning](BEHAVIOR_TUNING_PLAN.md) and the
 [teacher–student pilot](TEACHER_STUDENT_PILOT.md). The owner's new choice of
 Grok Bot supersedes that pilot's Codex teacher choice for this experiment; its

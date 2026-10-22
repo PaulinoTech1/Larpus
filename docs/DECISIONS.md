@@ -1162,3 +1162,15 @@ format, sealing and hashes. Still blocked before any training: independent revie
 (license/training_use/external_sharing_approval are null), the hosted-exchange decision, a round-zero LARPUS baseline
 (stopped, not run) to replace the synthetic student attempts, and independent authoring and sealing of the test set.
 Nothing committed or pushed. Release and model unchanged.
+
+## Owner review signoff recorded; one known-error variant held (2026-10-22)
+
+The owner identified himself as the independent reviewer of the Grok Bot
+train/dev drafts, approved their targets wholesale, and supplied the textual
+signoff "Paulino power approved." A versioned processing copy and its hashes
+are documented in [the owner review receipt](finetune/OWNER_REVIEW_2026-10-22.md).
+The original drafts are retained. The false gradient-descent claim in
+`grok-r1-opt-05/d` remains held rather than being marked as an accepted target.
+The signoff does not resolve rights, synthetic student attempts, the frozen
+baseline or the independently authored locked-test gap; no training, model
+switch or production activation follows from it.
