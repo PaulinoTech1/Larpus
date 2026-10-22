@@ -991,3 +991,174 @@ targets and one existing reviewed warning; it was not a clean scan. The
 candidate is prepared but not activated. Active remains `346773e1`, with
 `03959f08` retained as its rollback target. Activation is separate and not
 authorized by this decision.
+
+## Grok Bot teacher loop: planning only (2026-10-22)
+
+The owner requested [a Grok Bot teacher loop](GROK_TEACHER_TUNING_LOOP.md) for the
+shared local LARPUS model. The proposal targets evidence-first adaptive tutoring,
+starts with the existing math/quantum family design, and requires independent
+review, model identity hashes, a prompt-only control, a locked test, all-persona
+regressions and an exported-model check. This changes the proposed teacher from
+Codex to Grok Bot for the next experiment; it does not start training or approve
+private-data sharing, model replacement or a production activation.
+
+## MTRAGEval-inspired local evaluation: prepared, not run (2026-10-22)
+
+The owner authorized implementing a local three-task evaluation and explicitly
+deferred live and latency runs until Grok Bot fine-tuning finishes. The
+[MTRAGEval local protocol](MTRAGEVAL_LOCAL.md) adds owner-only catalog/receipt
+accounting and a checked-HTTP end-to-end runner. It changes no production request
+path or model. Task A retrieval-only and task B fixed-evidence generation require
+separate controlled executors; imported receipts remain operator claims, not
+independent proof. Five public synthetic cases are contract smoke fixtures, not
+an official MTRAGEval score. Unit and live tests are deferred per the owner's
+instruction; syntax and catalog structure were inspected offline.
+
+## Scope MTRAGEval ideas to LARPUS capability probes (2026-10-22)
+
+The owner clarified that the goal is to improve LARPUS, not reproduce or submit
+MTRAGEval. The checkout now includes owner-only A retrieval and B fixed-evidence
+probes in the sealed agent, alongside the existing checked-gateway C probe. A
+uses LARPUS's current three-passage selection; B uses exact ID/locator selections
+from its hash-verified approved database and the normal inference, broker and DLP
+path. No public MCP or gateway override was added. Ordinary chat keeps its
+existing retrieval path and context budget. The five cases remain smoke fixtures;
+they cannot establish a quality gain or official benchmark score. No unit,
+model-backed or latency tests were run while fine-tuning is in progress. A/B
+execution requires a later staged release and separate authorization to activate
+it; this decision does not authorize activation or a model switch.
+
+## Qwen3.8 27B chosen as the fine-tuning base; base weights and training toolkit downloaded (2026-10-22)
+
+The owner chose **Qwen3.8 27B** as the base for the Grok Bot teacher-loop experiment
+on 2026-10-22, instead of the served `qwen3.5:27b-q4_K_M`. He approved two downloads:
+the full-precision weights and a training toolkit. This changes the student named in
+[the Grok Bot teacher loop](GROK_TEACHER_TUNING_LOOP.md). The served model is unchanged,
+and nothing is trained, swapped, activated or released by this decision. The frozen
+round-zero baseline must now be captured on Qwen3.8 27B before any tuning comparison.
+
+**Source.** [`Qwen/Qwen3.8-27B`](https://huggingface.co/Qwen/Qwen3.8-27B), the official
+Qwen organisation repo, at revision `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`. The license is Apache-2.0
+(`LICENSE` downloaded with the weights). The repo is not gated, and no account token
+was used. The model card describes it as the **post-trained** model: thinking by
+default, switchable to non-thinking per request. It is a "Causal Language Model with
+Vision Encoder" (`Qwen3_5ForConditionalGeneration`, `model_type: qwen3_5`, BF16).
+There is no separate public `-Base` repo (the API returns 401).
+
+**Match with the local GGUF.** `config/models.json` lists Unsloth `UD-Q4_K_M` sha256
+`322e194f…3482`. That equals the LFS oid of `unsloth/Qwen3.8-27B-GGUF`
+`Qwen3.8-27B-UD-Q4_K_M.gguf` (16,464,440,224 bytes; card `base_model: Qwen/Qwen3.8-27B`),
+and it is the same size as `/home/larpus/notes38/input/model.gguf`. The GGUF metadata
+gives:
+- `general.base_model.0.repo_url = https://huggingface.co/Qwen/Qwen3.8-27B`, architecture `qwen35`, 27B;
+- embedding 5120, FFN 17408, heads 24/4, context 262144;
+- 65 blocks: 64 layers plus 1 multi-token-prediction layer, with a full-attention layer every 4th layer and linear attention elsewhere.
+
+All of this matches the safetensors `config.json`. The GGUF is text-only; the vision
+tower is in Unsloth's separate `mmproj-*.gguf`, which is not on the PC. The BF16 repo
+includes the vision encoder (27 blocks, width 1152). Any export must either drop it
+deliberately or carry it into a projector file.
+
+**Storage.** `/home/larpus/train-models/qwen3.8-27b-bf16/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/` inside the
+isolated `Larpus` WSL distro. Its ext4 virtual disk is `E:\WSL\Larpus`, so the bytes
+live on `E:`. A Windows `E:\` folder was not used because the distro deliberately has
+automount and interop disabled, and that isolation was not loosened. The path is outside
+the repository and every release image. The files fetched are the 18 safetensors shards,
+the index, config, generation config, tokenizer files, chat template, the
+image/video preprocessor configs and `LICENSE`; `README.md`, `.gitattributes` and
+`crc32.txt` were skipped. Weights and the tokenizer were verified against their LFS
+sha256; small files were verified by git blob SHA-1, with their sha256 also recorded.
+The download ran from 3:00:13 to 3:25:12 AM ET and verified all 29 files
+(55,586,048,043 bytes) with no retries. `MANIFEST.json` in the same folder (sha256
+`a69bfee9657b9f5a5aae75f05bf0cb1114b57f98e2e292092e5058c153cb1502`) records the repo,
+revision, license, every file, size, hash, and the start and end times in ET.
+
+**Download job.** The job was the transient systemd user unit `larpus-qwen38-fetch`
+(`systemd-run --collect`, `Restart=on-failure`, nice 10, idle I/O), launched by
+`/home/larpus/train-models/qwen3.8-27b-bf16/_fetch/start-fetch.sh`. It used plain HTTPS
+range requests, with no hub client and no telemetry. The unit removed itself when it finished;
+no Windows scheduled task was created. Re-running `start-fetch.sh` skips verified
+files and resumes partial ones.
+
+**Toolkit.** `/home/larpus/train-venv` (Python 3.12.3, 6.1 GB), installed with no sudo
+and no system packages, leaving the gateway runtime images and release containers
+untouched:
+- torch 2.14.1+cu130, triton 3.8.0;
+- transformers 5.20.2, peft 0.21.2, trl 1.16.0, accelerate 1.15.0, bitsandbytes 0.50.2;
+- safetensors 0.8.0, tokenizers 0.23.3, sentencepiece 0.2.2, huggingface_hub 2.2.0;
+- sympy 1.14.0, numpy 2.5.4, scipy 1.18.1, flash-linear-attention 0.5.2.
+
+The full lock is `/home/larpus/train-models/train-venv.requirements.lock.txt`, and
+`pip check` is clean. The WSL driver is 595.79, supporting CUDA 13.2.
+`torch.cuda.is_available()` is true, and the device is an NVIDIA GeForce RTX 3090 Ti
+(sm_86). No tensor was allocated, and GPU use was unchanged at 23,138 MiB. When
+imported, flash-linear-attention warns that "Triton is not supported on current
+platform", so its fast kernels are not yet proven usable under WSL; check this in the
+measured pilot. `docs/finetune/verify_round0_families.py` passed 12/12 in this venv.
+
+**Not authorized by this entry:** training, unloading Ollama, replacing the served
+model, sending private data to a hosted teacher, or any release or activation.
+
+| File | Bytes | Pinned hash |
+| --- | ---: | --- |
+| `LICENSE` | 11,544 | `git blob f938136e3adacfd92be087f6e113b5d6d97f678f` |
+| `chat_template.jinja` | 8,952 | `git blob c0c686f9c38d70d179fb7b5f5aa7530bc913dda3` |
+| `config.json` | 4,312 | `git blob 706cebd746c4b6f2b1d1f892630867acfdfd3df8` |
+| `generation_config.json` | 202 | `git blob 023756cfadf88e5bf69eefeee3e172f38c448d64` |
+| `merges.txt` | 3,353,259 | `git blob a494e019ca1502219fd0128658b979e5f05ae8e8` |
+| `model-00001-of-00018.safetensors` | 3,966,730,552 | `ba0ce20aae489ad196733da5064bcdf159a1fe84f53336648196e1ebb7751b1c` |
+| `model-00002-of-00018.safetensors` | 3,043,080,328 | `06a148c01bfbe3faa14a5f184a7ff29a706f7ae1c8b2705d2058e26d17a001fb` |
+| `model-00003-of-00018.safetensors` | 2,542,796,952 | `2e1bf62cbcd406eaa64b60d10353e1f0ef4039d0976e56f05cabe953454f9968` |
+| `model-00004-of-00018.safetensors` | 3,988,973,152 | `511e34063187882659753c4d93f3859f93c019fd438d8813071921c81d9a3f1a` |
+| `model-00005-of-00018.safetensors` | 2,099,339,864 | `635cb53446dc74f219740fc59e18b774f877b803b9722e289ca62575a6efa701` |
+| `model-00006-of-00018.safetensors` | 3,979,553,696 | `0bc5214fac607f0e6cc92eec3789d4b8559410ef9fce66621ba8158e8410dae0` |
+| `model-00007-of-00018.safetensors` | 2,108,759,344 | `80b0c49033e9a0d5762562aa12f4acdb7f54da586f3d0110f28c48d91cf07892` |
+| `model-00008-of-00018.safetensors` | 3,979,553,696 | `7192c5b66185d3592927daabee1cc19e6f6e0ce75988ee20e824b624765fda79` |
+| `model-00009-of-00018.safetensors` | 2,108,759,344 | `af3c48cc37af44f3db6ae0579baf019180d48d9c527caa0a1f03ff85813a56d8` |
+| `model-00010-of-00018.safetensors` | 3,979,553,696 | `163490a76f3bea3a40855b7efc04ce6d27afaf1a34f0bbde495b9491f76457c9` |
+| `model-00011-of-00018.safetensors` | 2,108,759,344 | `5f3ae1b948aeee39da77aec558e8236cd65fe4d7cb7686a76bb007acc563c6d8` |
+| `model-00012-of-00018.safetensors` | 3,979,553,696 | `a3de1c7114677a8f5ac5c4892c90e8238ea5c1e2038c80e757dfc87c3902ca55` |
+| `model-00013-of-00018.safetensors` | 2,108,759,344 | `06ab79a41f74c9c5cb734816feb0c7fc364104b227165ee7391231e1155aa02a` |
+| `model-00014-of-00018.safetensors` | 3,979,553,696 | `4138ed94603065ba884bbcadedb04d7718bb40117e85e6f5c6fc5b9c05b7a85b` |
+| `model-00015-of-00018.safetensors` | 2,108,759,344 | `69224e27b9de4e7dbf6fc936c6eaae08447bda3b80a6c31a871ab451173afd22` |
+| `model-00016-of-00018.safetensors` | 3,979,564,040 | `73cb9a1089fb6155cb648609478d6633be8a5c7d9ca5a05bc8925ce8a553cefe` |
+| `model-00017-of-00018.safetensors` | 2,108,759,344 | `beb51f01056142ac4984bd800507b0dd0fd18de57f8e9ef6ea41d1a3598983a8` |
+| `model-00018-of-00018.safetensors` | 3,392,197,344 | `1d3479509e21494658f9b64d317f5ea8e55c4025d28c702d6c4d0b356ce8ea06` |
+| `model.safetensors.index.json` | 112,216 | `git blob da35e3c564457dface7d138f0b6cac284ff8958c` |
+| `preprocessor_config.json` | 390 | `git blob 2ea84a437d448ff71b08df68fdd949d5cc4ebb64` |
+| `tokenizer.json` | 12,809,320 | `0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3` |
+| `tokenizer_config.json` | 17,928 | `git blob 5de744b3fca2129d7186979ae47c06be33903243` |
+| `video_preprocessor_config.json` | 385 | `git blob 3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe` |
+| `vocab.json` | 6,722,759 | `git blob 0aa0ce0658d60ac4a5d609f4eadb0e8e43514176` |
+
+## Qwen3.8 27B fine-tune technical trial: feasible on the 3090 Ti, nothing kept (2026-10-22)
+
+Technical trial only, not a training run. 04:38-04:43 ET: under the owner lock, the agent container was stopped and
+larpus3.8:27b-q4 unloaded (the sanctioned model-switch qualify pattern; gateway process and release 346773e1 untouched).
+Qwen3.8 27B (pinned revision 1d4bf0f2) loaded text-only in NF4 with gradient checkpointing in 60 s; LoRA r=16
+(108.8M params, 400 modules), AdamW, batch 1, 10 steps each at 1k and 2k tokens of throwaway draft-family text.
+No OOM: 4.9 s/step at 1k and 10.0 s/step at 2k (~205 tokens/s), peak 21.9 GiB reserved, 24,042 of 24,564 MiB
+including ~2.1 GB used by Windows, so 2k is near the ceiling. FLA/Triton kernels cannot run because the Larpus distro
+has no C compiler or Python headers; the run used the torch fallback (speed difference not measurable). Chat was
+restored: same model fully on GPU at 131072 context, agent started, gateway 200, broker idle. Adapter never saved,
+nothing exported or created. Estimate at 1.5k tokens/example: 500 examples 2.1-3.1 h, 1000 examples 4.1-6.2 h for 2-3
+epochs, plus export and evaluation. Still blocked on reviewed data, rights decisions, hosted-exchange decision, a
+round-zero baseline on Qwen3.8 and vision/MTP handling for export. Record: data/evals/tuning/trial-20261022/.
+
+## Teacher-loop dataset built to 336 families (train/dev only); locked test left as a sealed gap (2026-10-22)
+
+At the owner's instruction (relayed 05:21 ET: "Stop the training and build out the data set, ... 28 times the current
+data set size"), no training or baseline was run. The station was checked at 05:2x and again at 06:12 ET: the agent
+container was up, larpus3.8:27b-q4 was 100% on GPU at 131072 context, the gateway returned 200, the broker was idle,
+and no training or baseline processes were running. dpkg was clean, and no `round0-*` tuning folder existed, so no
+STOPPED.md was needed. Nothing was killed or restarted. The split follows the plan's per-lane rule scaled to 28 per
+lane, 18 train / 4 dev / 6 test, giving 216 / 48 / 72. That differs slightly from a straight 65/15/20 rounding of 336
+and keeps lanes equal. Splits were registered at 05:26 ET, before any variant was written (`docs/finetune/split-register.json`).
+Grok Bot wrote 204 new train families (plus the 12 unchanged round-0 families) and 48 dev families, 660 new variants
+in all. Every family has an executable sympy/numpy/scipy check in `docs/finetune/verify_families.py`: 262 pass, 2 are
+hand-proof-only, 0 fail. The dedupe audit removed nothing. The 72 locked-test families are not written, by design,
+because a hosted teacher must not author them. `docs/finetune/locked-test-spec.md` specifies the independent author,
+format, sealing and hashes. Still blocked before any training: independent review of every family, rights decisions
+(license/training_use/external_sharing_approval are null), the hosted-exchange decision, a round-zero LARPUS baseline
+(stopped, not run) to replace the synthetic student attempts, and independent authoring and sealing of the test set.
+Nothing committed or pushed. Release and model unchanged.

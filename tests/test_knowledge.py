@@ -39,6 +39,21 @@ class KnowledgeTests(unittest.TestCase):
         self.assertEqual(prepared[-1]['content'],'What kernel does Ubuntu 26.04 use?')
         self.assertTrue(evidence)
 
+    def test_fixed_evidence_uses_exact_approved_passage_without_retrieval(self):
+        selector=[{'id':'ubuntu-26-04','locator':'document'}]
+        with patch.object(knowledge,'retrieve',side_effect=AssertionError('retrieval ran')):
+            prepared=[{'role':'system','content':'Trusted persona.'},{'role':'user','content':'Which kernel?'}]
+            output,evidence=knowledge.augment(prepared,'linux-kernel-expert',fixed_selectors=selector)
+        self.assertEqual([(x['id'],x['locator']) for x in evidence],[('ubuntu-26-04','document')])
+        self.assertIn('LOCAL_REFERENCE_DATA',output[-1]['content'])
+        self.assertNotIn('Ubuntu 26.04 uses',output[0]['content'])
+        with self.assertRaises(ValueError):knowledge.fixed_evidence([{'id':'ubuntu-26-04','locator':'missing'}])
+        with self.assertRaises(ValueError):knowledge.fixed_evidence(selector+selector)
+        with patch.object(inference,'ollama') as model:
+            result=inference.chat('linux-kernel-expert',[{'role':'user','content':'Which kernel?'}],fixed_selectors=[{'id':'ubuntu-26-04','locator':'missing'}])
+            self.assertEqual(result['status'],503)
+            model.assert_not_called()
+
     def test_tampering_missing_index_and_write_denial(self):
         self.assertEqual(knowledge.status()['documents'],2)
         with closing(knowledge.database()) as connection:

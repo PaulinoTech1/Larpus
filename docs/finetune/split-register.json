@@ -1,0 +1,2365 @@
+{
+ "schema": "larpus-family-split-register/1",
+ "created_et": "2026-10-22 05:26 ET",
+ "rule": "Plan (GROK_TEACHER_TUNING_LOOP.md step 2; TEACHER_STUDENT_PILOT.md): equal counts per topic lane with the 13/3/4 per-lane train/dev/test ratio, split before variants. Scaled to 28 families x 12 lanes = 336: 18 train / 4 dev / 6 locked test per lane = 216 / 48 / 72. Dev slots are positions 05, 10, 15, 20 of each lane's 21 new slots. Splits were fixed in this file before any new variant was written.",
+ "totals": {
+  "train": 216,
+  "dev": 48,
+  "test": 72,
+  "all": 336
+ },
+ "lanes": [
+  {
+   "lane_code": "lim",
+   "persona": "Mathematician",
+   "topic_lane": "Limits, continuity and convergence",
+   "slots": [
+    {
+     "family_id": "grok-r0-math-limits-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-lim-01",
+     "split": "train",
+     "planned_subtopic": "epsilon-N sequence limit",
+     "status": "written; checks pass",
+     "core_problem": "epsilon-N for (3n+1)/(n+2) -> 3"
+    },
+    {
+     "family_id": "grok-r1-lim-02",
+     "split": "train",
+     "planned_subtopic": "squeeze theorem",
+     "status": "written; checks pass",
+     "core_problem": "x^2 sin(1/x) at 0: squeeze and differentiability"
+    },
+    {
+     "family_id": "grok-r1-lim-03",
+     "split": "train",
+     "planned_subtopic": "L'Hopital applicability",
+     "status": "written; checks pass",
+     "core_problem": "L'Hopital: (x + sin x)/x at infinity; circularity of sin x/x"
+    },
+    {
+     "family_id": "grok-r1-lim-04",
+     "split": "train",
+     "planned_subtopic": "p-series and harmonic series",
+     "status": "written; checks pass",
+     "core_problem": "p-series and the harmonic series"
+    },
+    {
+     "family_id": "grok-r1-lim-05",
+     "split": "dev",
+     "planned_subtopic": "ratio test inconclusive",
+     "status": "written; checks pass",
+     "core_problem": "ratio test inconclusive; n!/n^n; sum x^n/n"
+    },
+    {
+     "family_id": "grok-r1-lim-06",
+     "split": "train",
+     "planned_subtopic": "conditional convergence and rearrangement",
+     "status": "written; checks pass",
+     "core_problem": "alternating harmonic series and rearrangement"
+    },
+    {
+     "family_id": "grok-r1-lim-07",
+     "split": "train",
+     "planned_subtopic": "Weierstrass M-test",
+     "status": "written; checks pass",
+     "core_problem": "M-test for sum sin(nx)/n^2; term-by-term differentiation"
+    },
+    {
+     "family_id": "grok-r1-lim-08",
+     "split": "train",
+     "planned_subtopic": "limit-integral interchange",
+     "status": "written; checks pass",
+     "core_problem": "moving bump n^2 x e^(-n x) on [0,1]: limit of integrals"
+    },
+    {
+     "family_id": "grok-r1-lim-09",
+     "split": "train",
+     "planned_subtopic": "continuity vs differentiability",
+     "status": "written; checks pass",
+     "core_problem": "differentiability of |x-2|, x|x|, cube root"
+    },
+    {
+     "family_id": "grok-r1-lim-10",
+     "split": "dev",
+     "planned_subtopic": "intermediate value theorem hypotheses",
+     "status": "written; checks pass",
+     "core_problem": "IVT hypotheses: 1/x, x^5 - 3x + 1, step functions"
+    },
+    {
+     "family_id": "grok-r1-lim-11",
+     "split": "train",
+     "planned_subtopic": "power series radius (complex)",
+     "status": "written; checks pass",
+     "core_problem": "radius of convergence vs real smoothness; 1/(1+z^2)"
+    },
+    {
+     "family_id": "grok-r1-lim-12",
+     "split": "train",
+     "planned_subtopic": "smooth vs analytic",
+     "status": "written; checks pass",
+     "core_problem": "smooth non-analytic exp(-1/x^2); Taylor error bound for e^x"
+    },
+    {
+     "family_id": "grok-r1-lim-13",
+     "split": "train",
+     "planned_subtopic": "Cauchy sequences and completeness of Q",
+     "status": "written; checks pass",
+     "core_problem": "sqrt(2) decimal truncations: Cauchy in Q; irrationality proof"
+    },
+    {
+     "family_id": "grok-r1-lim-14",
+     "split": "train",
+     "planned_subtopic": "induction proof technique",
+     "status": "written; checks pass",
+     "core_problem": "induction: 2^n > n^2 for n >= 5"
+    },
+    {
+     "family_id": "grok-r1-lim-15",
+     "split": "dev",
+     "planned_subtopic": "limsup and liminf",
+     "status": "written; checks pass",
+     "core_problem": "limsup/liminf of (-1)^n (1 + 1/n)"
+    },
+    {
+     "family_id": "grok-r1-lim-16",
+     "split": "train",
+     "planned_subtopic": "law of large numbers / convergence in probability",
+     "status": "written; checks pass",
+     "core_problem": "law of large numbers: gambler's fallacy, Cauchy means, binomial tail"
+    },
+    {
+     "family_id": "grok-r1-lim-17",
+     "split": "train",
+     "planned_subtopic": "monotone convergence of sequences",
+     "status": "written; checks pass",
+     "core_problem": "a_{n+1} = sqrt(2 + a_n): monotone convergence"
+    },
+    {
+     "family_id": "grok-r1-lim-18",
+     "split": "train",
+     "planned_subtopic": "uniform continuity on unbounded domain",
+     "status": "written; checks pass",
+     "core_problem": "uniform continuity: x^2 on R, 1/x on (0,1) vs [1,inf)"
+    },
+    {
+     "family_id": "grok-r1-lim-19",
+     "split": "train",
+     "planned_subtopic": "dominated convergence",
+     "status": "written; checks pass",
+     "core_problem": "dominated convergence: (1 + x/n)^(-n) on [0, inf); escaping indicator"
+    },
+    {
+     "family_id": "grok-r1-lim-20",
+     "split": "dev",
+     "planned_subtopic": "Dirichlet test",
+     "status": "written; checks pass",
+     "core_problem": "Dirichlet test: sum sin(n)/n and non-uniform convergence of sum sin(nx)/n"
+    },
+    {
+     "family_id": "grok-r1-lim-21",
+     "split": "train",
+     "planned_subtopic": "limits of products with a divergent factor",
+     "status": "written; checks pass",
+     "core_problem": "limits of products with a divergent factor: x sin(1/x), n(e^(1/n) - 1)"
+    },
+    {
+     "family_id": "locked-test-lim-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-lim-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-lim-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-lim-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-lim-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-lim-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "calc",
+   "persona": "Mathematician",
+   "topic_lane": "Differentiation and integration",
+   "slots": [
+    {
+     "family_id": "grok-r0-math-calculus-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-calc-01",
+     "split": "train",
+     "planned_subtopic": "implicit differentiation",
+     "status": "written; checks pass",
+     "core_problem": "implicit differentiation on x^2 + y^2 = 25"
+    },
+    {
+     "family_id": "grok-r1-calc-02",
+     "split": "train",
+     "planned_subtopic": "integration by parts",
+     "status": "written; checks pass",
+     "core_problem": "integration by parts: x e^(a x)"
+    },
+    {
+     "family_id": "grok-r1-calc-03",
+     "split": "train",
+     "planned_subtopic": "substitution with limits",
+     "status": "written; checks pass",
+     "core_problem": "u-substitution with changed limits: 2x (x^2+1)^3 on [0,1]"
+    },
+    {
+     "family_id": "grok-r1-calc-04",
+     "split": "train",
+     "planned_subtopic": "improper integral across singularity",
+     "status": "written; checks pass",
+     "core_problem": "FTC across a singularity: 1/x^2 on [-1,1]"
+    },
+    {
+     "family_id": "grok-r1-calc-05",
+     "split": "dev",
+     "planned_subtopic": "differentiation under the integral",
+     "status": "written; checks pass",
+     "core_problem": "differentiating under the integral: x e^(-a x) on [0, inf)"
+    },
+    {
+     "family_id": "grok-r1-calc-06",
+     "split": "train",
+     "planned_subtopic": "Gaussian integral",
+     "status": "written; checks pass",
+     "core_problem": "Gaussian integrals; non-elementary antiderivative"
+    },
+    {
+     "family_id": "grok-r1-calc-07",
+     "split": "train",
+     "planned_subtopic": "residue theorem on the real line",
+     "status": "written; checks pass",
+     "core_problem": "residues on the real line: 1/(x^2+4), cos x/(x^2+1), Jordan's lemma direction"
+    },
+    {
+     "family_id": "grok-r1-calc-08",
+     "split": "train",
+     "planned_subtopic": "residue at a higher-order pole",
+     "status": "written; checks pass",
+     "core_problem": "residues at higher-order poles: cos z/z^3, 1/(z^2+1)^2"
+    },
+    {
+     "family_id": "grok-r1-calc-09",
+     "split": "train",
+     "planned_subtopic": "Dirichlet integral sin x/x",
+     "status": "written; checks pass",
+     "core_problem": "Dirichlet integral sin x/x: improper but not Lebesgue"
+    },
+    {
+     "family_id": "grok-r1-calc-10",
+     "split": "dev",
+     "planned_subtopic": "inverse-function derivative",
+     "status": "written; checks pass",
+     "core_problem": "derivative of an inverse function: x^3 + x; x^2 restricted"
+    },
+    {
+     "family_id": "grok-r1-calc-11",
+     "split": "train",
+     "planned_subtopic": "Fourier transform of exp(-abs x)",
+     "status": "written; checks pass",
+     "core_problem": "Fourier transform of exp(-|x|): conventions and Plancherel"
+    },
+    {
+     "family_id": "grok-r1-calc-12",
+     "split": "train",
+     "planned_subtopic": "Leibniz rule with variable limits",
+     "status": "written; checks pass",
+     "core_problem": "Leibniz rule with a variable upper limit: cos t on [0, x^2]"
+    },
+    {
+     "family_id": "grok-r1-calc-13",
+     "split": "train",
+     "planned_subtopic": "mean value theorem hypotheses",
+     "status": "written; checks pass",
+     "core_problem": "mean value theorem hypotheses: x^(2/3), x^3, endpoint data"
+    },
+    {
+     "family_id": "grok-r1-calc-14",
+     "split": "train",
+     "planned_subtopic": "arc length / volume",
+     "status": "written; checks pass",
+     "core_problem": "volume of revolution sqrt(x); arc length of x^2"
+    },
+    {
+     "family_id": "grok-r1-calc-15",
+     "split": "dev",
+     "planned_subtopic": "partial fractions",
+     "status": "written; checks pass",
+     "core_problem": "partial fractions: 1/(x^2 - a^2); singular interval"
+    },
+    {
+     "family_id": "grok-r1-calc-16",
+     "split": "train",
+     "planned_subtopic": "integrable log singularity",
+     "status": "written; checks pass",
+     "core_problem": "integrable log singularity; p-integrals near 0"
+    },
+    {
+     "family_id": "grok-r1-calc-17",
+     "split": "train",
+     "planned_subtopic": "Cauchy-Riemann equations",
+     "status": "written; checks pass",
+     "core_problem": "Cauchy-Riemann: conj(z), |z|^2, e^z"
+    },
+    {
+     "family_id": "grok-r1-calc-18",
+     "split": "train",
+     "planned_subtopic": "polar change of variables",
+     "status": "written; checks pass",
+     "core_problem": "polar coordinates Jacobian: area of the unit disk; Gaussian"
+    },
+    {
+     "family_id": "grok-r1-calc-19",
+     "split": "train",
+     "planned_subtopic": "Fubini failure",
+     "status": "written; checks pass",
+     "core_problem": "Fubini failure for (x^2 - y^2)/(x^2 + y^2)^2 on the unit square"
+    },
+    {
+     "family_id": "grok-r1-calc-20",
+     "split": "dev",
+     "planned_subtopic": "Gamma function value",
+     "status": "written; checks pass",
+     "core_problem": "Gamma function: Gamma(1/2), Gamma(5/2), pole at 0"
+    },
+    {
+     "family_id": "grok-r1-calc-21",
+     "split": "train",
+     "planned_subtopic": "branch cuts and complex roots",
+     "status": "written; checks pass",
+     "core_problem": "branches: Log of products, sqrt(-4) sqrt(-9)"
+    },
+    {
+     "family_id": "locked-test-calc-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-calc-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-calc-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-calc-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-calc-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-calc-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "ode",
+   "persona": "Mathematician",
+   "topic_lane": "ODEs and dynamical systems",
+   "slots": [
+    {
+     "family_id": "grok-r0-math-ode-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-ode-01",
+     "split": "train",
+     "planned_subtopic": "finite-time blow-up",
+     "status": "written; checks pass",
+     "core_problem": "finite-time blow-up of y' = y^2"
+    },
+    {
+     "family_id": "grok-r1-ode-02",
+     "split": "train",
+     "planned_subtopic": "integrating factor",
+     "status": "written; checks pass",
+     "core_problem": "integrating factor: y' + 2y = e^(-x)"
+    },
+    {
+     "family_id": "grok-r1-ode-03",
+     "split": "train",
+     "planned_subtopic": "repeated characteristic root",
+     "status": "written; checks pass",
+     "core_problem": "repeated characteristic root: y'' - 4y' + 4y = 0"
+    },
+    {
+     "family_id": "grok-r1-ode-04",
+     "split": "train",
+     "planned_subtopic": "resonance",
+     "status": "written; checks pass",
+     "core_problem": "resonance: y'' + y = cos x"
+    },
+    {
+     "family_id": "grok-r1-ode-05",
+     "split": "dev",
+     "planned_subtopic": "interval of existence",
+     "status": "written; checks pass",
+     "core_problem": "interval of existence: y' = 1 + y^2 and Picard-Lindelof step size"
+    },
+    {
+     "family_id": "grok-r1-ode-06",
+     "split": "train",
+     "planned_subtopic": "linear stability of equilibria",
+     "status": "written; checks pass",
+     "core_problem": "stability of equilibria: logistic x' = x(1-x); x' = r x"
+    },
+    {
+     "family_id": "grok-r1-ode-07",
+     "split": "train",
+     "planned_subtopic": "linearization failure at a center",
+     "status": "written; checks pass",
+     "core_problem": "linearization at a non-hyperbolic center: r' = r^3"
+    },
+    {
+     "family_id": "grok-r1-ode-08",
+     "split": "train",
+     "planned_subtopic": "exact equations",
+     "status": "written; checks pass",
+     "core_problem": "exact equations: (2xy + 3) dx + (x^2 + 4y) dy = 0; integrating factor"
+    },
+    {
+     "family_id": "grok-r1-ode-09",
+     "split": "train",
+     "planned_subtopic": "Wronskian and independence",
+     "status": "written; checks pass",
+     "core_problem": "Wronskian: x^3 and |x|^3; e^x and e^(2x)"
+    },
+    {
+     "family_id": "grok-r1-ode-10",
+     "split": "dev",
+     "planned_subtopic": "Euler-Cauchy equation",
+     "status": "written; checks pass",
+     "core_problem": "Euler-Cauchy equations: repeated root and domain"
+    },
+    {
+     "family_id": "grok-r1-ode-11",
+     "split": "train",
+     "planned_subtopic": "Laplace transform",
+     "status": "written; checks pass",
+     "core_problem": "Laplace transform solution and exponential order"
+    },
+    {
+     "family_id": "grok-r1-ode-12",
+     "split": "train",
+     "planned_subtopic": "2x2 linear system phase portrait",
+     "status": "written; checks pass",
+     "core_problem": "2x2 linear systems: node vs saddle by eigenvalues"
+    },
+    {
+     "family_id": "grok-r1-ode-13",
+     "split": "train",
+     "planned_subtopic": "Lyapunov function",
+     "status": "written; checks pass",
+     "core_problem": "Lyapunov functions: x' = -x^3 and the harmonic oscillator"
+    },
+    {
+     "family_id": "grok-r1-ode-14",
+     "split": "train",
+     "planned_subtopic": "logistic equation",
+     "status": "written; checks pass",
+     "core_problem": "logistic growth: time to reach a level; model scope"
+    },
+    {
+     "family_id": "grok-r1-ode-15",
+     "split": "dev",
+     "planned_subtopic": "boundary-value nonuniqueness",
+     "status": "written; checks pass",
+     "core_problem": "boundary-value problems for y'' + y = 0: none, one or infinitely many"
+    },
+    {
+     "family_id": "grok-r1-ode-16",
+     "split": "train",
+     "planned_subtopic": "variation of parameters",
+     "status": "written; checks pass",
+     "core_problem": "variation of parameters: y'' + y = sec x"
+    },
+    {
+     "family_id": "grok-r1-ode-17",
+     "split": "train",
+     "planned_subtopic": "Euler method error",
+     "status": "written; checks pass",
+     "core_problem": "forward Euler accuracy and stability"
+    },
+    {
+     "family_id": "grok-r1-ode-18",
+     "split": "train",
+     "planned_subtopic": "conservative system periodic orbits",
+     "status": "written; checks pass",
+     "core_problem": "pendulum: energy conservation and amplitude-dependent period"
+    },
+    {
+     "family_id": "grok-r1-ode-19",
+     "split": "train",
+     "planned_subtopic": "Sturm-Liouville eigenvalues",
+     "status": "written; checks pass",
+     "core_problem": "Sturm-Liouville eigenvalues for y'' + lambda y = 0 under different boundary conditions"
+    },
+    {
+     "family_id": "grok-r1-ode-20",
+     "split": "dev",
+     "planned_subtopic": "power-series solution",
+     "status": "written; checks pass",
+     "core_problem": "power-series solution of y'' = x y"
+    },
+    {
+     "family_id": "grok-r1-ode-21",
+     "split": "train",
+     "planned_subtopic": "chaos claims and model scope",
+     "status": "written; checks pass",
+     "core_problem": "Lorenz system: numerical chaos claims and parameter scope"
+    },
+    {
+     "family_id": "locked-test-ode-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ode-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ode-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ode-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ode-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ode-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "pde",
+   "persona": "Mathematician",
+   "topic_lane": "PDE boundary problems",
+   "slots": [
+    {
+     "family_id": "grok-r0-math-pde-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-pde-01",
+     "split": "train",
+     "planned_subtopic": "heat equation separation (Dirichlet)",
+     "status": "written; checks pass",
+     "core_problem": "heat equation on [0, pi] by separation of variables"
+    },
+    {
+     "family_id": "grok-r1-pde-02",
+     "split": "train",
+     "planned_subtopic": "d'Alembert wave solution",
+     "status": "written; checks pass",
+     "core_problem": "d'Alembert solution of the wave equation on R"
+    },
+    {
+     "family_id": "grok-r1-pde-03",
+     "split": "train",
+     "planned_subtopic": "mean value property (Laplace)",
+     "status": "written; checks pass",
+     "core_problem": "mean value property of harmonic functions"
+    },
+    {
+     "family_id": "grok-r1-pde-04",
+     "split": "train",
+     "planned_subtopic": "Fourier sine coefficients",
+     "status": "written; checks pass",
+     "core_problem": "Fourier sine coefficients of f = 1 on (0, pi)"
+    },
+    {
+     "family_id": "grok-r1-pde-05",
+     "split": "dev",
+     "planned_subtopic": "Gibbs phenomenon",
+     "status": "written; checks pass",
+     "core_problem": "Gibbs phenomenon for the square-wave sine series"
+    },
+    {
+     "family_id": "grok-r1-pde-06",
+     "split": "train",
+     "planned_subtopic": "maximum principle uniqueness",
+     "status": "written; checks pass",
+     "core_problem": "uniqueness for the Dirichlet problem; half-plane counterexample"
+    },
+    {
+     "family_id": "grok-r1-pde-07",
+     "split": "train",
+     "planned_subtopic": "backward heat ill-posedness",
+     "status": "written; checks pass",
+     "core_problem": "backward heat equation ill-posedness"
+    },
+    {
+     "family_id": "grok-r1-pde-08",
+     "split": "train",
+     "planned_subtopic": "Fourier series at a jump",
+     "status": "written; checks pass",
+     "core_problem": "Fourier series of x on (-pi, pi) at the jump"
+    },
+    {
+     "family_id": "grok-r1-pde-09",
+     "split": "train",
+     "planned_subtopic": "Neumann heat conservation",
+     "status": "written; checks pass",
+     "core_problem": "insulated-rod heat equation: conservation and steady state"
+    },
+    {
+     "family_id": "grok-r1-pde-10",
+     "split": "dev",
+     "planned_subtopic": "transport by characteristics",
+     "status": "written; checks pass",
+     "core_problem": "linear transport by characteristics"
+    },
+    {
+     "family_id": "grok-r1-pde-11",
+     "split": "train",
+     "planned_subtopic": "Robin eigenvalues",
+     "status": "written; checks pass",
+     "core_problem": "Robin eigenvalue problem X(0) = 0, X'(1) + hX(1) = 0"
+    },
+    {
+     "family_id": "grok-r1-pde-12",
+     "split": "train",
+     "planned_subtopic": "Laplace in a rectangle",
+     "status": "written; checks pass",
+     "core_problem": "Laplace equation in a rectangle with one nonzero side"
+    },
+    {
+     "family_id": "grok-r1-pde-13",
+     "split": "train",
+     "planned_subtopic": "wave energy conservation",
+     "status": "written; checks pass",
+     "core_problem": "wave energy: conserved without damping, decreasing with damping"
+    },
+    {
+     "family_id": "grok-r1-pde-14",
+     "split": "train",
+     "planned_subtopic": "Parseval identity",
+     "status": "written; checks pass",
+     "core_problem": "Parseval for f(x) = x on (-pi, pi): sum 1/n^2"
+    },
+    {
+     "family_id": "grok-r1-pde-15",
+     "split": "dev",
+     "planned_subtopic": "1D Green's function",
+     "status": "written; checks pass",
+     "core_problem": "Green's function for -u'' = f with Dirichlet conditions; Neumann failure"
+    },
+    {
+     "family_id": "grok-r1-pde-16",
+     "split": "train",
+     "planned_subtopic": "Burgers shock time",
+     "status": "written; checks pass",
+     "core_problem": "Burgers shock formation time; entropy condition"
+    },
+    {
+     "family_id": "grok-r1-pde-17",
+     "split": "train",
+     "planned_subtopic": "PDE classification",
+     "status": "written; checks pass",
+     "core_problem": "classification of second-order PDEs including Tricomi"
+    },
+    {
+     "family_id": "grok-r1-pde-18",
+     "split": "train",
+     "planned_subtopic": "heat kernel",
+     "status": "written; checks pass",
+     "core_problem": "heat kernel and growth conditions on initial data"
+    },
+    {
+     "family_id": "grok-r1-pde-19",
+     "split": "train",
+     "planned_subtopic": "eigenfunction orthogonality",
+     "status": "written; checks pass",
+     "core_problem": "orthogonality depends on the interval: sin x and cos 2x on [0, pi]"
+    },
+    {
+     "family_id": "grok-r1-pde-20",
+     "split": "dev",
+     "planned_subtopic": "Helmholtz nonuniqueness at eigenvalues",
+     "status": "written; checks pass",
+     "core_problem": "Helmholtz/resonance nonuniqueness and solvability at eigenvalues"
+    },
+    {
+     "family_id": "grok-r1-pde-21",
+     "split": "train",
+     "planned_subtopic": "CFL stability claim",
+     "status": "written; checks pass",
+     "core_problem": "FTCS stability limit for the heat equation"
+    },
+    {
+     "family_id": "locked-test-pde-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pde-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pde-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pde-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pde-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pde-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "opt",
+   "persona": "Mathematician",
+   "topic_lane": "Continuous optimization",
+   "slots": [
+    {
+     "family_id": "grok-r0-math-opt-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-opt-01",
+     "split": "train",
+     "planned_subtopic": "Lagrange multipliers",
+     "status": "written; checks pass",
+     "core_problem": "Lagrange multipliers for xy on x + y = 10"
+    },
+    {
+     "family_id": "grok-r1-opt-02",
+     "split": "train",
+     "planned_subtopic": "convexity local=global",
+     "status": "written; checks pass",
+     "core_problem": "convexity and global minima: quadratic form vs x^4 - 2x^2"
+    },
+    {
+     "family_id": "grok-r1-opt-03",
+     "split": "train",
+     "planned_subtopic": "saddle points",
+     "status": "written; checks pass",
+     "core_problem": "saddle point of x^2 - y^2"
+    },
+    {
+     "family_id": "grok-r1-opt-04",
+     "split": "train",
+     "planned_subtopic": "KKT inequality constraints",
+     "status": "written; checks pass",
+     "core_problem": "KKT for min (x - 2)^2 with x <= 1; nonconvex KKT points"
+    },
+    {
+     "family_id": "grok-r1-opt-05",
+     "split": "dev",
+     "planned_subtopic": "gradient descent step size",
+     "status": "written; checks pass",
+     "core_problem": "gradient descent step size on diag(1, 10)"
+    },
+    {
+     "family_id": "grok-r1-opt-06",
+     "split": "train",
+     "planned_subtopic": "least squares normal equations",
+     "status": "written; checks pass",
+     "core_problem": "least squares line through three points; rank-deficient design"
+    },
+    {
+     "family_id": "grok-r1-opt-07",
+     "split": "train",
+     "planned_subtopic": "nonconvex multiple minima",
+     "status": "written; checks pass",
+     "core_problem": "nonconvex quartic (x(x-2))^2: stationary points and what descent finds"
+    },
+    {
+     "family_id": "grok-r1-opt-08",
+     "split": "train",
+     "planned_subtopic": "constraint qualification failure",
+     "status": "written; checks pass",
+     "core_problem": "constraint qualification failure: min x subject to x^2 <= 0"
+    },
+    {
+     "family_id": "grok-r1-opt-09",
+     "split": "train",
+     "planned_subtopic": "Jensen inequality",
+     "status": "written; checks pass",
+     "core_problem": "Jensen's inequality: squares, reciprocals, logs"
+    },
+    {
+     "family_id": "grok-r1-opt-10",
+     "split": "dev",
+     "planned_subtopic": "Newton's method convergence",
+     "status": "written; checks pass",
+     "core_problem": "Newton's method: quadratic convergence, cube-root divergence, double roots"
+    },
+    {
+     "family_id": "grok-r1-opt-11",
+     "split": "train",
+     "planned_subtopic": "linear programming vertices",
+     "status": "written; checks pass",
+     "core_problem": "small LP: vertices, ties along an edge, missing sign constraints"
+    },
+    {
+     "family_id": "grok-r1-opt-12",
+     "split": "train",
+     "planned_subtopic": "maximum likelihood (exponential)",
+     "status": "written; checks pass",
+     "core_problem": "exponential MLE: value, bias, model choice"
+    },
+    {
+     "family_id": "grok-r1-opt-13",
+     "split": "train",
+     "planned_subtopic": "AM-GM bounds",
+     "status": "written; checks pass",
+     "core_problem": "AM-GM: minimize x + 4/x"
+    },
+    {
+     "family_id": "grok-r1-opt-14",
+     "split": "train",
+     "planned_subtopic": "existence of minimizers",
+     "status": "written; checks pass",
+     "core_problem": "existence of minimizers: e^(-x) on [0, inf), x on (0, 1]"
+    },
+    {
+     "family_id": "grok-r1-opt-15",
+     "split": "dev",
+     "planned_subtopic": "positive definiteness tests",
+     "status": "written; checks pass",
+     "core_problem": "positive (semi)definiteness tests"
+    },
+    {
+     "family_id": "grok-r1-opt-16",
+     "split": "train",
+     "planned_subtopic": "LP duality",
+     "status": "written; checks pass",
+     "core_problem": "LP duality for the small LP"
+    },
+    {
+     "family_id": "grok-r1-opt-17",
+     "split": "train",
+     "planned_subtopic": "Rayleigh quotient",
+     "status": "written; checks pass",
+     "core_problem": "Rayleigh quotient and eigenvalue bounds"
+    },
+    {
+     "family_id": "grok-r1-opt-18",
+     "split": "train",
+     "planned_subtopic": "convexity of compositions",
+     "status": "written; checks pass",
+     "core_problem": "convexity of compositions"
+    },
+    {
+     "family_id": "grok-r1-opt-19",
+     "split": "train",
+     "planned_subtopic": "L-smooth step size",
+     "status": "written; checks pass",
+     "core_problem": "L-smooth descent lemma and convex rate scope"
+    },
+    {
+     "family_id": "grok-r1-opt-20",
+     "split": "dev",
+     "planned_subtopic": "constrained second-order conditions",
+     "status": "written; checks pass",
+     "core_problem": "second-order conditions on the constraint tangent space"
+    },
+    {
+     "family_id": "grok-r1-opt-21",
+     "split": "train",
+     "planned_subtopic": "benchmark claims from an excerpt",
+     "status": "written; checks pass",
+     "core_problem": "benchmark claim scope and binomial uncertainty"
+    },
+    {
+     "family_id": "locked-test-opt-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-opt-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-opt-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-opt-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-opt-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-opt-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "fa",
+   "persona": "Mathematician",
+   "topic_lane": "Functional analysis",
+   "slots": [
+    {
+     "family_id": "grok-r0-math-fa-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-fa-01",
+     "split": "train",
+     "planned_subtopic": "2x2 eigenvalues",
+     "status": "written; checks pass",
+     "core_problem": "2x2 eigenvalues; real vs complex field"
+    },
+    {
+     "family_id": "grok-r1-fa-02",
+     "split": "train",
+     "planned_subtopic": "diagonalizability and Jordan blocks",
+     "status": "written; checks pass",
+     "core_problem": "diagonalizability: Jordan block vs scalar matrix"
+    },
+    {
+     "family_id": "grok-r1-fa-03",
+     "split": "train",
+     "planned_subtopic": "norm equivalence",
+     "status": "written; checks pass",
+     "core_problem": "norm equivalence: finite vs infinite dimensions"
+    },
+    {
+     "family_id": "grok-r1-fa-04",
+     "split": "train",
+     "planned_subtopic": "Cauchy-Schwarz",
+     "status": "written; checks pass",
+     "core_problem": "Cauchy-Schwarz in L^2[0,1] and a non-inner-product bound"
+    },
+    {
+     "family_id": "grok-r1-fa-05",
+     "split": "dev",
+     "planned_subtopic": "orthogonal projection",
+     "status": "written; checks pass",
+     "core_problem": "orthogonal projection onto a non-orthogonal span; projection onto constants"
+    },
+    {
+     "family_id": "grok-r1-fa-06",
+     "split": "train",
+     "planned_subtopic": "completeness under different norms",
+     "status": "written; checks pass",
+     "core_problem": "completeness of C[0,1] under sup vs L1 norms"
+    },
+    {
+     "family_id": "grok-r1-fa-07",
+     "split": "train",
+     "planned_subtopic": "unbounded differentiation operator",
+     "status": "written; checks pass",
+     "core_problem": "differentiation operator: unbounded under sup norms, bounded C^1 -> C"
+    },
+    {
+     "family_id": "grok-r1-fa-08",
+     "split": "train",
+     "planned_subtopic": "spectrum vs point spectrum",
+     "status": "written; checks pass",
+     "core_problem": "spectrum vs eigenvalues: multiplication operator; real rotation"
+    },
+    {
+     "family_id": "grok-r1-fa-09",
+     "split": "train",
+     "planned_subtopic": "Gram-Schmidt",
+     "status": "written; checks pass",
+     "core_problem": "Gram-Schmidt on polynomials"
+    },
+    {
+     "family_id": "grok-r1-fa-10",
+     "split": "dev",
+     "planned_subtopic": "determinant and trace identities",
+     "status": "written; checks pass",
+     "core_problem": "determinant and trace identities"
+    },
+    {
+     "family_id": "grok-r1-fa-11",
+     "split": "train",
+     "planned_subtopic": "self-adjoint spectra",
+     "status": "written; checks pass",
+     "core_problem": "real spectra of Hermitian matrices; complex symmetric counterexample"
+    },
+    {
+     "family_id": "grok-r1-fa-12",
+     "split": "train",
+     "planned_subtopic": "compact operators",
+     "status": "written; checks pass",
+     "core_problem": "compact operators: identity vs integral kernel min(x, y); spectral theorem scope"
+    },
+    {
+     "family_id": "grok-r1-fa-13",
+     "split": "train",
+     "planned_subtopic": "dual spaces of sequence spaces",
+     "status": "written; checks hand-proof-only",
+     "core_problem": "duals of sequence spaces: excerpt range 1 <= p < infinity"
+    },
+    {
+     "family_id": "grok-r1-fa-14",
+     "split": "train",
+     "planned_subtopic": "Banach fixed point",
+     "status": "written; checks pass",
+     "core_problem": "Banach fixed point: cos on [0,1], x + 1/x, x/2 + 1"
+    },
+    {
+     "family_id": "grok-r1-fa-15",
+     "split": "dev",
+     "planned_subtopic": "rank-nullity",
+     "status": "written; checks pass",
+     "core_problem": "rank-nullity counts"
+    },
+    {
+     "family_id": "grok-r1-fa-16",
+     "split": "train",
+     "planned_subtopic": "singular value decomposition",
+     "status": "written; checks pass",
+     "core_problem": "singular values vs eigenvalues"
+    },
+    {
+     "family_id": "grok-r1-fa-17",
+     "split": "train",
+     "planned_subtopic": "Bessel and Parseval",
+     "status": "written; checks pass",
+     "core_problem": "Bessel vs Parseval for an incomplete orthonormal set"
+    },
+    {
+     "family_id": "grok-r1-fa-18",
+     "split": "train",
+     "planned_subtopic": "weak vs strong convergence",
+     "status": "written; checks pass",
+     "core_problem": "weak vs norm convergence of e_n in l^2"
+    },
+    {
+     "family_id": "grok-r1-fa-19",
+     "split": "train",
+     "planned_subtopic": "matrix exponential of non-commuting matrices",
+     "status": "written; checks pass",
+     "core_problem": "matrix exponentials: commuting vs non-commuting"
+    },
+    {
+     "family_id": "grok-r1-fa-20",
+     "split": "dev",
+     "planned_subtopic": "Gram matrices",
+     "status": "written; checks pass",
+     "core_problem": "Gram and correlation matrices: PSD requirement"
+    },
+    {
+     "family_id": "grok-r1-fa-21",
+     "split": "train",
+     "planned_subtopic": "Riesz representation scope",
+     "status": "written; checks pass",
+     "core_problem": "Riesz representation: inner-product dependence and completeness/boundedness"
+    },
+    {
+     "family_id": "locked-test-fa-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-fa-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-fa-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-fa-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-fa-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-fa-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "meas",
+   "persona": "Quantum Mechanics Professor",
+   "topic_lane": "States and measurement",
+   "slots": [
+    {
+     "family_id": "grok-r0-qm-measure-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-meas-01",
+     "split": "train",
+     "planned_subtopic": "normalizing a qutrit",
+     "status": "written; checks pass",
+     "core_problem": "normalizing a qutrit and a Gaussian wavefunction"
+    },
+    {
+     "family_id": "grok-r1-meas-02",
+     "split": "train",
+     "planned_subtopic": "expectation values",
+     "status": "written; checks pass",
+     "core_problem": "<sigma_x> for cos(theta)|0> + sin(theta)|1>; probabilities vs expectations; experimental scope"
+    },
+    {
+     "family_id": "grok-r1-meas-03",
+     "split": "train",
+     "planned_subtopic": "Robertson uncertainty for spin",
+     "status": "written; checks pass",
+     "core_problem": "Robertson uncertainty for spin components"
+    },
+    {
+     "family_id": "grok-r1-meas-04",
+     "split": "train",
+     "planned_subtopic": "sequential measurements",
+     "status": "written; checks pass",
+     "core_problem": "sequential measurements and disturbance"
+    },
+    {
+     "family_id": "grok-r1-meas-05",
+     "split": "dev",
+     "planned_subtopic": "Hadamard gate",
+     "status": "written; checks pass",
+     "core_problem": "Hadamard gate action and relative phase"
+    },
+    {
+     "family_id": "grok-r1-meas-06",
+     "split": "train",
+     "planned_subtopic": "global vs relative phase",
+     "status": "written; checks pass",
+     "core_problem": "global vs relative phase"
+    },
+    {
+     "family_id": "grok-r1-meas-07",
+     "split": "train",
+     "planned_subtopic": "Bloch sphere",
+     "status": "written; checks pass",
+     "core_problem": "Bloch sphere coordinates and conventions; qubit-only purity criterion"
+    },
+    {
+     "family_id": "grok-r1-meas-08",
+     "split": "train",
+     "planned_subtopic": "POVMs",
+     "status": "written; checks pass",
+     "core_problem": "POVMs: trine measurement and Naimark dilation scope"
+    },
+    {
+     "family_id": "grok-r1-meas-09",
+     "split": "train",
+     "planned_subtopic": "pure vs mixed density matrices",
+     "status": "written; checks pass",
+     "core_problem": "mixtures vs superpositions; purity"
+    },
+    {
+     "family_id": "grok-r1-meas-10",
+     "split": "dev",
+     "planned_subtopic": "no-cloning",
+     "status": "written; checks pass",
+     "core_problem": "no-cloning: CNOT on superpositions; orthogonal states can be copied"
+    },
+    {
+     "family_id": "grok-r1-meas-11",
+     "split": "train",
+     "planned_subtopic": "CNOT action",
+     "status": "written; checks pass",
+     "core_problem": "CNOT action and qubit-ordering conventions"
+    },
+    {
+     "family_id": "grok-r1-meas-12",
+     "split": "train",
+     "planned_subtopic": "compatible observables",
+     "status": "written; checks pass",
+     "core_problem": "commuting two-qubit observables; common eigenvector vs commuting"
+    },
+    {
+     "family_id": "grok-r1-meas-13",
+     "split": "train",
+     "planned_subtopic": "continuous Born rule",
+     "status": "written; checks pass",
+     "core_problem": "continuous Born rule in the infinite well"
+    },
+    {
+     "family_id": "grok-r1-meas-14",
+     "split": "train",
+     "planned_subtopic": "box-state probability",
+     "status": "written; checks pass",
+     "core_problem": "energy-measurement probabilities and time-dependent position probabilities in the well"
+    },
+    {
+     "family_id": "grok-r1-meas-15",
+     "split": "dev",
+     "planned_subtopic": "unitarity of gates",
+     "status": "written; checks pass",
+     "core_problem": "unitarity of gate matrices"
+    },
+    {
+     "family_id": "grok-r1-meas-16",
+     "split": "train",
+     "planned_subtopic": "Mach-Zehnder interference",
+     "status": "written; checks pass",
+     "core_problem": "Mach-Zehnder interference and which-path information"
+    },
+    {
+     "family_id": "grok-r1-meas-17",
+     "split": "train",
+     "planned_subtopic": "nonorthogonal state discrimination",
+     "status": "written; checks pass",
+     "core_problem": "discriminating |0> from |+>: Helstrom bound and priors"
+    },
+    {
+     "family_id": "grok-r1-meas-18",
+     "split": "train",
+     "planned_subtopic": "Pauli expectations of mixed states",
+     "status": "written; checks pass",
+     "core_problem": "Bloch-form density matrices: expectations and validity"
+    },
+    {
+     "family_id": "grok-r1-meas-19",
+     "split": "train",
+     "planned_subtopic": "Stern-Gerlach sequences",
+     "status": "written; checks pass",
+     "core_problem": "Stern-Gerlach sequences"
+    },
+    {
+     "family_id": "grok-r1-meas-20",
+     "split": "dev",
+     "planned_subtopic": "teleportation and classical bits",
+     "status": "written; checks pass",
+     "core_problem": "teleportation needs classical communication and shared entanglement"
+    },
+    {
+     "family_id": "grok-r1-meas-21",
+     "split": "train",
+     "planned_subtopic": "reported gate fidelity scope",
+     "status": "written; checks pass",
+     "core_problem": "scope of a reported two-qubit gate fidelity; naive circuit success estimate"
+    },
+    {
+     "family_id": "locked-test-meas-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-meas-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-meas-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-meas-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-meas-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-meas-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "dyn",
+   "persona": "Quantum Mechanics Professor",
+   "topic_lane": "Dynamics and stationary states",
+   "slots": [
+    {
+     "family_id": "grok-r0-qm-dynamics-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-dyn-01",
+     "split": "train",
+     "planned_subtopic": "infinite well energies",
+     "status": "written; checks pass",
+     "core_problem": "infinite-well energies and scaling"
+    },
+    {
+     "family_id": "grok-r1-dyn-02",
+     "split": "train",
+     "planned_subtopic": "superposition time evolution",
+     "status": "written; checks pass",
+     "core_problem": "two-state superposition in the well: oscillating <x>"
+    },
+    {
+     "family_id": "grok-r1-dyn-03",
+     "split": "train",
+     "planned_subtopic": "oscillator ground energy",
+     "status": "written; checks pass",
+     "core_problem": "oscillator zero-point energy; harmonic-approximation scope"
+    },
+    {
+     "family_id": "grok-r1-dyn-04",
+     "split": "train",
+     "planned_subtopic": "ladder operators",
+     "status": "written; checks pass",
+     "core_problem": "ladder operators on number states"
+    },
+    {
+     "family_id": "grok-r1-dyn-05",
+     "split": "dev",
+     "planned_subtopic": "oscillator <x^2>",
+     "status": "written; checks pass",
+     "core_problem": "<x^2> in oscillator eigenstates"
+    },
+    {
+     "family_id": "grok-r1-dyn-06",
+     "split": "train",
+     "planned_subtopic": "Ehrenfest theorem",
+     "status": "written; checks pass",
+     "core_problem": "Ehrenfest theorem scope: quadratic vs quartic potentials"
+    },
+    {
+     "family_id": "grok-r1-dyn-07",
+     "split": "train",
+     "planned_subtopic": "coherent states",
+     "status": "written; checks pass",
+     "core_problem": "coherent states: photon statistics and non-stationarity"
+    },
+    {
+     "family_id": "grok-r1-dyn-08",
+     "split": "train",
+     "planned_subtopic": "step potential reflection",
+     "status": "written; checks pass",
+     "core_problem": "step potential: partial reflection above the step; penetration below"
+    },
+    {
+     "family_id": "grok-r1-dyn-09",
+     "split": "train",
+     "planned_subtopic": "barrier tunneling",
+     "status": "written; checks pass",
+     "core_problem": "rectangular barrier tunneling: exact vs thick-barrier approximation"
+    },
+    {
+     "family_id": "grok-r1-dyn-10",
+     "split": "dev",
+     "planned_subtopic": "delta-well bound state",
+     "status": "written; checks pass",
+     "core_problem": "delta-function well: exactly one bound state"
+    },
+    {
+     "family_id": "grok-r1-dyn-11",
+     "split": "train",
+     "planned_subtopic": "free wave-packet spreading",
+     "status": "written; checks pass",
+     "core_problem": "free Gaussian packet spreading; chirped packets can first narrow"
+    },
+    {
+     "family_id": "grok-r1-dyn-12",
+     "split": "train",
+     "planned_subtopic": "stationary-state probabilities",
+     "status": "written; checks pass",
+     "core_problem": "stationary states: constant probabilities"
+    },
+    {
+     "family_id": "grok-r1-dyn-13",
+     "split": "train",
+     "planned_subtopic": "Heisenberg picture oscillator",
+     "status": "written; checks pass",
+     "core_problem": "Heisenberg-picture oscillator operators"
+    },
+    {
+     "family_id": "grok-r1-dyn-14",
+     "split": "train",
+     "planned_subtopic": "1D finite well bound state",
+     "status": "written; checks pass",
+     "core_problem": "finite-well bound states: always in 1D, threshold in 3D"
+    },
+    {
+     "family_id": "grok-r1-dyn-15",
+     "split": "dev",
+     "planned_subtopic": "Rabi oscillation",
+     "status": "written; checks pass",
+     "core_problem": "Rabi oscillations with and without detuning"
+    },
+    {
+     "family_id": "grok-r1-dyn-16",
+     "split": "train",
+     "planned_subtopic": "virial theorem",
+     "status": "written; checks pass",
+     "core_problem": "virial theorem: oscillator eigenstates vs coherent states; Coulomb case"
+    },
+    {
+     "family_id": "grok-r1-dyn-17",
+     "split": "train",
+     "planned_subtopic": "energy-time uncertainty",
+     "status": "written; checks pass",
+     "core_problem": "energy-time relation: not a Robertson relation; natural vs observed linewidth"
+    },
+    {
+     "family_id": "grok-r1-dyn-18",
+     "split": "train",
+     "planned_subtopic": "parity of eigenstates",
+     "status": "written; checks pass",
+     "core_problem": "parity of eigenstates in symmetric potentials; degeneracy loophole"
+    },
+    {
+     "family_id": "grok-r1-dyn-19",
+     "split": "train",
+     "planned_subtopic": "WKB validity",
+     "status": "written; checks pass",
+     "core_problem": "WKB: exact for the oscillator, invalid near turning points"
+    },
+    {
+     "family_id": "grok-r1-dyn-20",
+     "split": "dev",
+     "planned_subtopic": "hydrogen levels",
+     "status": "written; checks pass",
+     "core_problem": "hydrogen-like levels and reduced-mass scope"
+    },
+    {
+     "family_id": "grok-r1-dyn-21",
+     "split": "train",
+     "planned_subtopic": "scattering cross-section claims",
+     "status": "written; checks pass",
+     "core_problem": "scope of a reported cross section; unit conversion"
+    },
+    {
+     "family_id": "locked-test-dyn-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-dyn-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-dyn-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-dyn-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-dyn-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-dyn-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "spin",
+   "persona": "Quantum Mechanics Professor",
+   "topic_lane": "Spin and angular momentum",
+   "slots": [
+    {
+     "family_id": "grok-r0-qm-spin-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-spin-01",
+     "split": "train",
+     "planned_subtopic": "spin-1 S_z",
+     "status": "written; checks pass",
+     "core_problem": "spin-1 S_z outcomes"
+    },
+    {
+     "family_id": "grok-r1-spin-02",
+     "split": "train",
+     "planned_subtopic": "ladder operators on j,m states",
+     "status": "written; checks pass",
+     "core_problem": "raising operator on |j,m>"
+    },
+    {
+     "family_id": "grok-r1-spin-03",
+     "split": "train",
+     "planned_subtopic": "two spin-1/2 addition",
+     "status": "written; checks pass",
+     "core_problem": "two spin-1/2: triplet and singlet; three spins"
+    },
+    {
+     "family_id": "grok-r1-spin-04",
+     "split": "train",
+     "planned_subtopic": "Clebsch-Gordan coefficients",
+     "status": "written; checks pass",
+     "core_problem": "Clebsch-Gordan coefficients for 1 x 1/2"
+    },
+    {
+     "family_id": "grok-r1-spin-05",
+     "split": "dev",
+     "planned_subtopic": "spin-1 commutators",
+     "status": "written; checks pass",
+     "core_problem": "spin-1 matrices: commutators and S_x^2"
+    },
+    {
+     "family_id": "grok-r1-spin-06",
+     "split": "train",
+     "planned_subtopic": "L^2 eigenvalues",
+     "status": "written; checks pass",
+     "core_problem": "orbital angular momentum magnitude"
+    },
+    {
+     "family_id": "grok-r1-spin-07",
+     "split": "train",
+     "planned_subtopic": "2pi spinor rotation",
+     "status": "written; checks pass",
+     "core_problem": "spinor sign under 2pi rotation; observability scope"
+    },
+    {
+     "family_id": "grok-r1-spin-08",
+     "split": "train",
+     "planned_subtopic": "Larmor precession",
+     "status": "written; checks pass",
+     "core_problem": "Larmor precession; frequency depends on the particle and environment"
+    },
+    {
+     "family_id": "grok-r1-spin-09",
+     "split": "train",
+     "planned_subtopic": "1 x 1/2 coupling",
+     "status": "written; checks pass",
+     "core_problem": "coupling 1 x 1/2"
+    },
+    {
+     "family_id": "grok-r1-spin-10",
+     "split": "dev",
+     "planned_subtopic": "<S_x> in S_z eigenstate",
+     "status": "written; checks pass",
+     "core_problem": "transverse-spin moments in S_z eigenstates"
+    },
+    {
+     "family_id": "grok-r1-spin-11",
+     "split": "train",
+     "planned_subtopic": "spin-orbit J^2",
+     "status": "written; checks pass",
+     "core_problem": "spin-orbit L.S from J^2; hydrogen vs heavy-atom scope"
+    },
+    {
+     "family_id": "grok-r1-spin-12",
+     "split": "train",
+     "planned_subtopic": "1 x 1 multiplets",
+     "status": "written; checks pass",
+     "core_problem": "1 x 1 multiplets and exchange symmetry for identical bosons"
+    },
+    {
+     "family_id": "grok-r1-spin-13",
+     "split": "train",
+     "planned_subtopic": "tilted Stern-Gerlach",
+     "status": "written; checks pass",
+     "core_problem": "tilted Stern-Gerlach probabilities for spin-1/2 and spin-1"
+    },
+    {
+     "family_id": "grok-r1-spin-14",
+     "split": "train",
+     "planned_subtopic": "exchange symmetry",
+     "status": "written; checks pass",
+     "core_problem": "exchange symmetry for fermions: total, not spatial alone"
+    },
+    {
+     "family_id": "grok-r1-spin-15",
+     "split": "dev",
+     "planned_subtopic": "magnetic moment and g-factor",
+     "status": "written; checks pass",
+     "core_problem": "electron Zeeman splitting and effective g-factors"
+    },
+    {
+     "family_id": "grok-r1-spin-16",
+     "split": "train",
+     "planned_subtopic": "[L_x, L^2]",
+     "status": "written; checks pass",
+     "core_problem": "[L_x, L^2] = 0 vs [L_x, L_y] != 0"
+    },
+    {
+     "family_id": "grok-r1-spin-17",
+     "split": "train",
+     "planned_subtopic": "dipole selection rules",
+     "status": "written; checks pass",
+     "core_problem": "electric-dipole selection rules and forbidden-but-not-impossible decays"
+    },
+    {
+     "family_id": "grok-r1-spin-18",
+     "split": "train",
+     "planned_subtopic": "Y_10 normalization",
+     "status": "written; checks pass",
+     "core_problem": "spherical harmonic normalization"
+    },
+    {
+     "family_id": "grok-r1-spin-19",
+     "split": "train",
+     "planned_subtopic": "Heisenberg two-spin exchange",
+     "status": "written; checks pass",
+     "core_problem": "Heisenberg two-spin exchange: singlet/triplet energies and sign of J"
+    },
+    {
+     "family_id": "grok-r1-spin-20",
+     "split": "dev",
+     "planned_subtopic": "Pauli product identities",
+     "status": "written; checks pass",
+     "core_problem": "Pauli product identity"
+    },
+    {
+     "family_id": "grok-r1-spin-21",
+     "split": "train",
+     "planned_subtopic": "spectroscopy excerpt qualifications",
+     "status": "written; checks pass",
+     "core_problem": "hydrogen hyperfine line: rest-frame value vs observed frequency"
+    },
+    {
+     "family_id": "locked-test-spin-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-spin-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-spin-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-spin-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-spin-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-spin-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "pert",
+   "persona": "Quantum Mechanics Professor",
+   "topic_lane": "Perturbation and approximation",
+   "slots": [
+    {
+     "family_id": "grok-r0-qm-perturb-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-pert-01",
+     "split": "train",
+     "planned_subtopic": "linear shift of the oscillator",
+     "status": "written; checks pass",
+     "core_problem": "linear perturbation of the oscillator: zero first order, exact second order"
+    },
+    {
+     "family_id": "grok-r1-pert-02",
+     "split": "train",
+     "planned_subtopic": "second-order oscillator shift",
+     "status": "written; checks pass",
+     "core_problem": "quadratic perturbation: series vs exact frequency shift"
+    },
+    {
+     "family_id": "grok-r1-pert-03",
+     "split": "train",
+     "planned_subtopic": "variational bound",
+     "status": "written; checks pass",
+     "core_problem": "variational upper bound; excited-state scope"
+    },
+    {
+     "family_id": "grok-r1-pert-04",
+     "split": "train",
+     "planned_subtopic": "degenerate two-level",
+     "status": "written; checks pass",
+     "core_problem": "degenerate perturbation theory"
+    },
+    {
+     "family_id": "grok-r1-pert-05",
+     "split": "dev",
+     "planned_subtopic": "linear Stark effect",
+     "status": "written; checks pass",
+     "core_problem": "Stark effect: linear for hydrogen n = 2, quadratic otherwise"
+    },
+    {
+     "family_id": "grok-r1-pert-06",
+     "split": "train",
+     "planned_subtopic": "Fermi golden rule",
+     "status": "written; checks pass",
+     "core_problem": "Fermi golden rule: regime of validity"
+    },
+    {
+     "family_id": "grok-r1-pert-07",
+     "split": "train",
+     "planned_subtopic": "adiabatic approximation",
+     "status": "written; checks pass",
+     "core_problem": "adiabatic theorem: slow change keeps the quantum number, not the energy"
+    },
+    {
+     "family_id": "grok-r1-pert-08",
+     "split": "train",
+     "planned_subtopic": "avoided crossing",
+     "status": "written; checks pass",
+     "core_problem": "avoided crossing and Landau-Zener"
+    },
+    {
+     "family_id": "grok-r1-pert-09",
+     "split": "train",
+     "planned_subtopic": "quartic anharmonicity",
+     "status": "written; checks pass",
+     "core_problem": "quartic anharmonic first-order shift; sign scope"
+    },
+    {
+     "family_id": "grok-r1-pert-10",
+     "split": "dev",
+     "planned_subtopic": "asymptotic series",
+     "status": "written; checks pass",
+     "core_problem": "asymptotic series and optimal truncation"
+    },
+    {
+     "family_id": "grok-r1-pert-11",
+     "split": "train",
+     "planned_subtopic": "Born approximation",
+     "status": "written; checks pass",
+     "core_problem": "first Born approximation: Yukawa amplitude and validity"
+    },
+    {
+     "family_id": "grok-r1-pert-12",
+     "split": "train",
+     "planned_subtopic": "sudden approximation",
+     "status": "written; checks pass",
+     "core_problem": "sudden approximation: projection probabilities and conserved <H>"
+    },
+    {
+     "family_id": "grok-r1-pert-13",
+     "split": "train",
+     "planned_subtopic": "variational excited states",
+     "status": "written; checks pass",
+     "core_problem": "variational bound on the first excited state by symmetry"
+    },
+    {
+     "family_id": "grok-r1-pert-14",
+     "split": "train",
+     "planned_subtopic": "first-order state correction",
+     "status": "written; checks pass",
+     "core_problem": "first-order state correction"
+    },
+    {
+     "family_id": "grok-r1-pert-15",
+     "split": "dev",
+     "planned_subtopic": "rotating-wave approximation",
+     "status": "written; checks pass",
+     "core_problem": "rotating-wave approximation and its breakdown"
+    },
+    {
+     "family_id": "grok-r1-pert-16",
+     "split": "train",
+     "planned_subtopic": "perturbed infinite well",
+     "status": "written; checks pass",
+     "core_problem": "half-well step perturbation of the infinite well"
+    },
+    {
+     "family_id": "grok-r1-pert-17",
+     "split": "train",
+     "planned_subtopic": "Hellmann-Feynman",
+     "status": "written; checks pass",
+     "core_problem": "Hellmann-Feynman theorem: exact eigenstates required"
+    },
+    {
+     "family_id": "grok-r1-pert-18",
+     "split": "train",
+     "planned_subtopic": "weak-field Zeeman",
+     "status": "written; checks pass",
+     "core_problem": "weak-field Zeeman: Lande g and its validity"
+    },
+    {
+     "family_id": "grok-r1-pert-19",
+     "split": "train",
+     "planned_subtopic": "quasi-degenerate levels",
+     "status": "written; checks pass",
+     "core_problem": "quasi-degenerate levels: when second-order fails"
+    },
+    {
+     "family_id": "grok-r1-pert-20",
+     "split": "dev",
+     "planned_subtopic": "regime of validity",
+     "status": "written; checks pass",
+     "core_problem": "checking the perturbative small parameter"
+    },
+    {
+     "family_id": "grok-r1-pert-21",
+     "split": "train",
+     "planned_subtopic": "perturbative excerpt qualifications",
+     "status": "written; checks pass",
+     "core_problem": "first-order helium-like energies: scope across Z"
+    },
+    {
+     "family_id": "locked-test-pert-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pert-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pert-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pert-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pert-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-pert-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "ent",
+   "persona": "Quantum Mechanics Professor",
+   "topic_lane": "Entanglement and reduced states",
+   "slots": [
+    {
+     "family_id": "grok-r0-qm-entangle-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-ent-01",
+     "split": "train",
+     "planned_subtopic": "product-state test",
+     "status": "written; checks pass",
+     "core_problem": "product-state test via coefficient-matrix rank"
+    },
+    {
+     "family_id": "grok-r1-ent-02",
+     "split": "train",
+     "planned_subtopic": "Schmidt decomposition",
+     "status": "written; checks pass",
+     "core_problem": "Schmidt decomposition by SVD"
+    },
+    {
+     "family_id": "grok-r1-ent-03",
+     "split": "train",
+     "planned_subtopic": "entanglement entropy",
+     "status": "written; checks pass",
+     "core_problem": "entanglement entropy of reduced states; mixed-state scope"
+    },
+    {
+     "family_id": "grok-r1-ent-04",
+     "split": "train",
+     "planned_subtopic": "CHSH and Tsirelson",
+     "status": "written; checks pass",
+     "core_problem": "CHSH bound and Tsirelson; detection-loophole scope"
+    },
+    {
+     "family_id": "grok-r1-ent-05",
+     "split": "dev",
+     "planned_subtopic": "partial transpose",
+     "status": "written; checks pass",
+     "core_problem": "partial transpose (PPT) criterion and its dimension scope"
+    },
+    {
+     "family_id": "grok-r1-ent-06",
+     "split": "train",
+     "planned_subtopic": "Werner states",
+     "status": "written; checks pass",
+     "core_problem": "Werner states: entangled vs Bell-violating thresholds"
+    },
+    {
+     "family_id": "grok-r1-ent-07",
+     "split": "train",
+     "planned_subtopic": "mixed but separable",
+     "status": "written; checks pass",
+     "core_problem": "mixtures of entangled states can be separable"
+    },
+    {
+     "family_id": "grok-r1-ent-08",
+     "split": "train",
+     "planned_subtopic": "GHZ reduced states",
+     "status": "written; checks pass",
+     "core_problem": "GHZ two-qubit marginals are separable"
+    },
+    {
+     "family_id": "grok-r1-ent-09",
+     "split": "train",
+     "planned_subtopic": "local unitaries",
+     "status": "written; checks pass",
+     "core_problem": "local unitaries preserve entanglement; CNOT is not local"
+    },
+    {
+     "family_id": "grok-r1-ent-10",
+     "split": "dev",
+     "planned_subtopic": "purification",
+     "status": "written; checks pass",
+     "core_problem": "purification and its non-uniqueness"
+    },
+    {
+     "family_id": "grok-r1-ent-11",
+     "split": "train",
+     "planned_subtopic": "concurrence",
+     "status": "written; checks pass",
+     "core_problem": "concurrence (two qubits) and its scope"
+    },
+    {
+     "family_id": "grok-r1-ent-12",
+     "split": "train",
+     "planned_subtopic": "entanglement swapping",
+     "status": "written; checks pass",
+     "core_problem": "entanglement swapping needs classical communication"
+    },
+    {
+     "family_id": "grok-r1-ent-13",
+     "split": "train",
+     "planned_subtopic": "W vs GHZ",
+     "status": "written; checks pass",
+     "core_problem": "W vs GHZ robustness; W pairwise concurrence scaling"
+    },
+    {
+     "family_id": "grok-r1-ent-14",
+     "split": "train",
+     "planned_subtopic": "reduced states of products",
+     "status": "written; checks pass",
+     "core_problem": "reduced states of product states"
+    },
+    {
+     "family_id": "grok-r1-ent-15",
+     "split": "dev",
+     "planned_subtopic": "classical correlation vs entanglement",
+     "status": "written; checks pass",
+     "core_problem": "classical correlation vs entanglement; one-basis correlations don't certify"
+    },
+    {
+     "family_id": "grok-r1-ent-16",
+     "split": "train",
+     "planned_subtopic": "negativity",
+     "status": "written; checks pass",
+     "core_problem": "negativity and its limits beyond 2x3"
+    },
+    {
+     "family_id": "grok-r1-ent-17",
+     "split": "train",
+     "planned_subtopic": "LOCC monotonicity",
+     "status": "written; checks pass",
+     "core_problem": "LOCC monotonicity and Nielsen's majorization theorem"
+    },
+    {
+     "family_id": "grok-r1-ent-18",
+     "split": "train",
+     "planned_subtopic": "Bell basis",
+     "status": "written; checks pass",
+     "core_problem": "Bell basis expansions"
+    },
+    {
+     "family_id": "grok-r1-ent-19",
+     "split": "train",
+     "planned_subtopic": "decoherence of entanglement",
+     "status": "written; checks pass",
+     "core_problem": "local dephasing of entanglement: asymptotic vs sudden death"
+    },
+    {
+     "family_id": "grok-r1-ent-20",
+     "split": "dev",
+     "planned_subtopic": "mutual information",
+     "status": "written; checks pass",
+     "core_problem": "quantum mutual information"
+    },
+    {
+     "family_id": "grok-r1-ent-21",
+     "split": "train",
+     "planned_subtopic": "Bell-test excerpt qualifications",
+     "status": "written; checks pass",
+     "core_problem": "significance and assumptions of a Bell test report"
+    },
+    {
+     "family_id": "locked-test-ent-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ent-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ent-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ent-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ent-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-ent-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  },
+  {
+   "lane_code": "open",
+   "persona": "Quantum Mechanics Professor",
+   "topic_lane": "Open systems and experiments",
+   "slots": [
+    {
+     "family_id": "grok-r0-qm-open-01",
+     "split": "train",
+     "planned_subtopic": "round-0 family (existing, unchanged)",
+     "status": "existing"
+    },
+    {
+     "family_id": "grok-r1-open-01",
+     "split": "train",
+     "planned_subtopic": "amplitude damping steady state",
+     "status": "written; checks pass",
+     "core_problem": "amplitude damping: zero-temperature fixed point"
+    },
+    {
+     "family_id": "grok-r1-open-02",
+     "split": "train",
+     "planned_subtopic": "dephasing channel",
+     "status": "written; checks pass",
+     "core_problem": "dephasing channel acts on coherences only"
+    },
+    {
+     "family_id": "grok-r1-open-03",
+     "split": "train",
+     "planned_subtopic": "depolarizing Kraus completeness",
+     "status": "written; checks pass",
+     "core_problem": "depolarizing Kraus completeness"
+    },
+    {
+     "family_id": "grok-r1-open-04",
+     "split": "train",
+     "planned_subtopic": "Gibbs populations",
+     "status": "written; checks pass",
+     "core_problem": "thermal populations and effective temperature"
+    },
+    {
+     "family_id": "grok-r1-open-05",
+     "split": "dev",
+     "planned_subtopic": "Lindblad trace preservation",
+     "status": "written; checks pass",
+     "core_problem": "Lindblad form preserves trace; dropping terms breaks it"
+    },
+    {
+     "family_id": "grok-r1-open-06",
+     "split": "train",
+     "planned_subtopic": "T2* vs echo T2",
+     "status": "written; checks pass",
+     "core_problem": "T2* vs echo T2"
+    },
+    {
+     "family_id": "grok-r1-open-07",
+     "split": "train",
+     "planned_subtopic": "fidelity decay",
+     "status": "written; checks pass",
+     "core_problem": "fidelity under dephasing saturates at 1/2"
+    },
+    {
+     "family_id": "grok-r1-open-08",
+     "split": "train",
+     "planned_subtopic": "Kraus non-uniqueness",
+     "status": "written; checks pass",
+     "core_problem": "Kraus representations are not unique"
+    },
+    {
+     "family_id": "grok-r1-open-09",
+     "split": "train",
+     "planned_subtopic": "positivity of maps",
+     "status": "written; checks pass",
+     "core_problem": "positive vs completely positive maps"
+    },
+    {
+     "family_id": "grok-r1-open-10",
+     "split": "dev",
+     "planned_subtopic": "exponential decay assumptions",
+     "status": "written; checks pass",
+     "core_problem": "exponential decay: when it holds and where it was tested"
+    },
+    {
+     "family_id": "grok-r1-open-11",
+     "split": "train",
+     "planned_subtopic": "detailed balance",
+     "status": "written; checks pass",
+     "core_problem": "detailed balance fixes thermal steady state"
+    },
+    {
+     "family_id": "grok-r1-open-12",
+     "split": "train",
+     "planned_subtopic": "measurement-induced decoherence",
+     "status": "written; checks pass",
+     "core_problem": "non-selective measurement as decoherence"
+    },
+    {
+     "family_id": "grok-r1-open-13",
+     "split": "train",
+     "planned_subtopic": "damped Rabi",
+     "status": "written; checks pass",
+     "core_problem": "driven damped two-level steady state: saturation"
+    },
+    {
+     "family_id": "grok-r1-open-14",
+     "split": "train",
+     "planned_subtopic": "quantum trajectories",
+     "status": "written; checks pass",
+     "core_problem": "quantum trajectories: jumps average to the master equation"
+    },
+    {
+     "family_id": "grok-r1-open-15",
+     "split": "dev",
+     "planned_subtopic": "Ramsey fringes",
+     "status": "written; checks pass",
+     "core_problem": "Ramsey fringe period and envelope"
+    },
+    {
+     "family_id": "grok-r1-open-16",
+     "split": "train",
+     "planned_subtopic": "Markov approximation",
+     "status": "written; checks hand-proof-only",
+     "core_problem": "Markov/Lindblad validity"
+    },
+    {
+     "family_id": "grok-r1-open-17",
+     "split": "train",
+     "planned_subtopic": "gate error composition",
+     "status": "written; checks pass",
+     "core_problem": "composing gate errors: stochastic vs coherent"
+    },
+    {
+     "family_id": "grok-r1-open-18",
+     "split": "train",
+     "planned_subtopic": "randomized benchmarking scope",
+     "status": "written; checks pass",
+     "core_problem": "randomized benchmarking: what r means"
+    },
+    {
+     "family_id": "grok-r1-open-19",
+     "split": "train",
+     "planned_subtopic": "thermalization",
+     "status": "written; checks pass",
+     "core_problem": "thermalization in closed systems: global purity vs subsystem appearance"
+    },
+    {
+     "family_id": "grok-r1-open-20",
+     "split": "dev",
+     "planned_subtopic": "simulation vs demonstration",
+     "status": "written; checks pass",
+     "core_problem": "simulated vs demonstrated performance"
+    },
+    {
+     "family_id": "grok-r1-open-21",
+     "split": "train",
+     "planned_subtopic": "noise-model excerpt qualifications",
+     "status": "written; checks pass",
+     "core_problem": "scope of a reported noise parameter"
+    },
+    {
+     "family_id": "locked-test-open-01",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-open-02",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-open-03",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-open-04",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-open-05",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    },
+    {
+     "family_id": "locked-test-open-06",
+     "split": "test",
+     "planned_subtopic": null,
+     "status": "GAP: to be authored independently, sealed from Grok Bot"
+    }
+   ]
+  }
+ ]
+}

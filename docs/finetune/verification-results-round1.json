@@ -1,0 +1,2571 @@
+{
+  "tool_versions": {
+    "python": "3.13.5",
+    "sympy": "1.14.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "summary": {
+    "checks": 264,
+    "pass": 262,
+    "hand_proof_only": 2,
+    "fail": []
+  },
+  "results": {
+    "M1": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "pointwise_limit": "0 on [0,1), 1 at x=1",
+        "integral_n": "1/(n+1) -> 0",
+        "sup_[0,1)|x^n - 0|": "1 for every n (limit x->1-), so not uniform"
+      },
+      "limits": "Checks the specific sequence x**n on [0,1]; the non-uniformity argument (sup = 1) is a hand argument confirmed symbolically, not a general theorem."
+    },
+    "M2": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "int_1^e 1/x": 1,
+        "int_0^1 1/x": "diverges (+oo)",
+        "PV int_-1^1 1/x": 0,
+        "antiderivative": "ln|x| + C1 on x<0, ln|x| + C2 on x>0 (independent constants)"
+      },
+      "limits": "Divergence shown for the one-sided integral of 1/x on (0,1]; principal value computed separately and is a different notion."
+    },
+    "M3": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "solutions_through_(0,0)": [
+          "y=0",
+          "y=x^3 (x>=0)",
+          "y=0 for x<=c, (x-c)^3 for x>c, any c>=0"
+        ],
+        "lipschitz_at_0": "fails: difference quotient 3*y^(-1/3) unbounded"
+      },
+      "limits": "Substitution verified for x>=0 and for the piecewise family on the region x>c with c>=0; the non-Lipschitz claim is checked through the unbounded difference quotient at y=0."
+    },
+    "M4": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "f=-pi^2 cos(pi x)": "u = cos(pi x) + C, unique only up to C",
+        "compatibility": "int f = 0 required; f=1 gives 1 != 0 -> no solution"
+      },
+      "limits": "Residual and Neumann boundary checks on the unit square for one reference solution; the no-solution claim for f=1 uses the divergence theorem (hand argument), illustrated symbolically."
+    },
+    "M5": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "stationary": [
+          -1,
+          1
+        ],
+        "values": {
+          "-3": -18,
+          "-1": 2,
+          "1": -2,
+          "3": 18
+        },
+        "global_min_on_[-3,3]": "x=-3, f=-18",
+        "x=1": "local min, f=-2",
+        "on_R": "unbounded below, no global min"
+      },
+      "limits": "Exhaustive for this polynomial on a closed interval (stationary points plus endpoints)."
+    },
+    "M6": {
+      "status": "pass",
+      "kind": "numeric illustration + hand proof",
+      "facts": {
+        "||e_n-e_m||": "sqrt(2) for n != m (no Cauchy subsequence)",
+        "finite_dim": "injective <=> surjective (rank-nullity)",
+        "right_shift_l2": "isometric, injective, not surjective (e_1 not in range)"
+      },
+      "limits": "Finite truncations only illustrate ||e_n - e_m|| = sqrt(2); the infinite-dimensional claims rest on the hand argument."
+    },
+    "Q1": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "norm^2": 5,
+        "P(0),P(1)": [
+          0.2,
+          0.8
+        ],
+        "P(+),P(-)": [
+          0.5,
+          0.5
+        ]
+      },
+      "limits": "Exact for the stated two-level state (floating point, tol 1e-12)."
+    },
+    "Q2": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<sx>(t)": "cos(omega t)",
+        "<sy>(t)": "+sin(omega t) with U=exp(-iHt/hbar)",
+        "wrong_sign_U": "gives -sin(omega t)",
+        "|0>": "stationary (phase only)"
+      },
+      "limits": "Checked at sampled times for hbar=omega=1; the sign depends on the stated Hamiltonian convention H=(hbar*omega/2)sigma_z."
+    },
+    "Q3": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[sx,sy]": "2i sz",
+        "[Sx,Sy]": "i hbar Sz",
+        "S^2": "(3/4) hbar^2 I"
+      },
+      "limits": "Exact matrix identities for spin-1/2 in the standard S_z basis, hbar=1."
+    },
+    "Q4": {
+      "status": "pass",
+      "kind": "numeric + symbolic",
+      "facts": {
+        "degenerate_V": "exact 1-eps, 1+eps, 3 (first-order split +-eps)",
+        "nondegenerate_V": "lowest exact 2 - sqrt(1+eps^2) = 1 - eps^2/2 + O(eps^4)"
+      },
+      "limits": "Exact diagonalization of the stated 3x3 model; perturbative statements apply for |eps| << level spacing 2."
+    },
+    "Q5": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "rho_A": "I/2 (mixed, purity 1/2)",
+        "global_state": "pure (purity 1)",
+        "Bob_after_Alice_Z_or_X": "I/2 unchanged -> no signalling"
+      },
+      "limits": "Exact for the Bell state; no-signalling checked for Z and X measurement choices (non-selective), not for all POVMs."
+    },
+    "Q6": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "1/T2": "1/(2 T1) + gamma_phi",
+        "alt_convention_T2": "33.33 us (if rho01 ~ exp(-2 gamma_phi t))",
+        "T1=50us,gamma_phi=0.01/us": "T2=50.00 us",
+        "pure_damping": "T2 = 2 T1 = 100 us (upper bound in this model)"
+      },
+      "limits": "Integrates the stated Markovian Lindblad model (amplitude damping + pure dephasing); confirms model consistency only and is not experimental evidence."
+    },
+    "grok-r1-calc-01": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "y'": "-x/y",
+        "(3,4)": "-3/4",
+        "(3,-4)": "3/4"
+      },
+      "limits": "Specific curve and points."
+    },
+    "grok-r1-calc-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "int x e^(2x)": "e^(2x)(x/2-1/4)",
+        "a=0": "x^2/2"
+      },
+      "limits": "Antiderivatives verified by differentiation."
+    },
+    "grok-r1-calc-03": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "value": "15/4",
+        "wrong-limits value": "1/4"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-04": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "[-1,1]": "diverges",
+        "[1,2]": "1/2"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-05": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "I(a)": "1/a (a>0)",
+        "int x e^-3x": "1/9",
+        "a<=0": "diverges"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-06": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "int e^(-x^2/2)": "sqrt(2 pi)",
+        "int_0^1 e^-x^2": 0.746824,
+        "a=-1": "diverges"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-07": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "int 1/(x^2+4)": "pi/2",
+        "int cos x/(x^2+1)": "pi/e",
+        "a=-1 lower half-plane": "pi/e",
+        "cos z on arc R=30": "> 1e5"
+      },
+      "limits": "Residues and real-line integrals for these integrands."
+    },
+    "grok-r1-calc-08": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Res cos z/z^3": "-1/2",
+        "Res 1/(z^2+1)^2 at i": "-i/4"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-09": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "improper value": "pi/2",
+        "|sin x|/x blocks": ">= 2/((k+1) pi), harmonic -> diverges"
+      },
+      "limits": "Absolute divergence shown via the lower bound over [k pi, (k+1) pi]."
+    },
+    "grok-r1-calc-10": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "(f^-1)'(2)": "1/4",
+        "x^2 branches": "+-1/(2 sqrt y)"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-11": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "F(k)": "2/(1+k^2)",
+        "unitary": "sqrt(2/pi)/(1+k^2)",
+        "ordinary freq": "2/(1+4 pi^2 xi^2)",
+        "Plancherel": "1 = (1/2pi)(2pi)",
+        "topup: unitary convention": "sqrt(2/pi)/(1+k^2)"
+      },
+      "limits": "Three conventions; Plancherel for this f."
+    },
+    "grok-r1-calc-12": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "d/dx": "2x cos(x^2)",
+        "sign example": "|x|"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "c": "2/sqrt3",
+        "x^(2/3)": "no critical point; cusp at 0"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-14": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "volume": "8 pi",
+        "arc length": 1.4789
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-15": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "partial fractions": "(1/2)(1/(x-1) - 1/(x+1))",
+        "[0,2]": "diverges"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-16": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "int ln x": -1,
+        "p=-1": "diverges",
+        "p=-1/2": 2
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-17": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "conj z": "CR fail everywhere",
+        "|z|^2": "CR only at 0",
+        "e^z": "CR hold"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-18": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Jacobian": "r",
+        "disk area": "pi",
+        "Gaussian": "pi"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-19": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "dy dx": "pi/4",
+        "dx dy": "-pi/4",
+        "int |f|": "diverges near 0"
+      },
+      "limits": "Iterated integrals for this f; absolute divergence via polar radial integral."
+    },
+    "grok-r1-calc-20": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Gamma(1/2)": "sqrt(pi)",
+        "Gamma(5/2)": "3 sqrt(pi)/4",
+        "Gamma(0)": "pole"
+      },
+      "limits": ""
+    },
+    "grok-r1-calc-21": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Log(1) vs 2 Log(-1)": "0 vs 2 pi i",
+        "sqrt(-4)sqrt(-9)": -6
+      },
+      "limits": "Principal branches as implemented by sympy."
+    },
+    "grok-r1-dyn-01": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "E1 (eV)": 0.376,
+        "E_n/E_1": "n^2"
+      },
+      "limits": "CODATA constants."
+    },
+    "grok-r1-dyn-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x12": "-16L/(9 pi^2)",
+        "period": "4 m L^2/(3 pi hbar)"
+      },
+      "limits": "hbar = m = L = 1 for the matrix element; omega symbolic."
+    },
+    "grok-r1-dyn-03": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "lowest levels": [
+          0.5,
+          1.5,
+          2.5,
+          3.5,
+          4.5
+        ]
+      },
+      "limits": "Truncated basis N = 60; hbar = omega = 1."
+    },
+    "grok-r1-dyn-04": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "a^dag|2>": "sqrt(3)|3>",
+        "a^dag a": "N"
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<x^2>_n": "n + 1/2 (units hbar/(m omega))",
+        "thermal": "coth form verified"
+      },
+      "limits": "hbar = m = omega = 1; thermal formula checked against Boltzmann sum."
+    },
+    "grok-r1-dyn-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "x^4 potential": "<x^3> != <x>^3 for spread distributions",
+        "quadratic": "V' linear => exact"
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-07": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "P(2), alpha=1": 0.1839,
+        "eigenstate of a": true,
+        "eigenstate of H": false
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-08": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "R (E=2V0)": 0.0294,
+        "E<V0": "|r| = 1 with evanescent tail"
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-09": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "exact kappa a=2": 0.0707,
+        "approx": 0.0733,
+        "kappa a=0.3": [
+          0.915,
+          2.2
+        ],
+        "kappa (1 eV, nm^-1)": 5.123
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-10": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "E": "-m alpha^2/(2 hbar^2)",
+        "kappa": "m alpha/hbar^2"
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Gaussian formula": "verified",
+        "chirped widths t=0,1,2,10": [
+          1.0,
+          0.781,
+          1.02,
+          5.831
+        ]
+      },
+      "limits": "Free evolution by FFT; hbar = m = 1."
+    },
+    "grok-r1-dyn-12": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "d|Psi|^2/dt": 0
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x(t)": "x cos wt + p/(m w) sin wt"
+      },
+      "limits": "Classical-form operator ODE checked with commuting symbols."
+    },
+    "grok-r1-dyn-14": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "1D even root": "exists for all z0 > 0",
+        "3D threshold": "z0 > pi/2, i.e. V0 a^2 > pi^2 hbar^2/(8m)"
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "resonant": "sin^2(Omega t/2)",
+        "detuned max": "Omega^2/(Omega^2+Delta^2)"
+      },
+      "limits": "RWA Hamiltonian H = (Delta/2) Z + (Omega/2) X, hbar = 1."
+    },
+    "grok-r1-dyn-16": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "eigenstates": "<T> = <V>",
+        "coherent alpha=1, t=0: <V>-<T>": 1.0,
+        "hydrogen": "<T> 13.6, <V> -27.2 eV"
+      },
+      "limits": "hbar = m = omega = 1; truncated basis."
+    },
+    "grok-r1-dyn-17": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "FWHM (MHz)": 15.92,
+        "Gamma (eV)": 6.58e-08
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-18": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<x> in eigenstates": 0,
+        "e^(ikx)": "no definite parity"
+      },
+      "limits": "Finite-difference oscillator, grid 1201."
+    },
+    "grok-r1-dyn-19": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "phase integral": "pi E/omega",
+        "WKB levels": "(n + 1/2) hbar omega"
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-20": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "Lyman alpha": [
+          10.2,
+          121.6
+        ],
+        "positronium": "-6.8 eV/n^2",
+        "D vs H relative shift": 0.000272
+      },
+      "limits": ""
+    },
+    "grok-r1-dyn-21": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "1.2 b": "1.2e-24 cm^2 = 1.2e-28 m^2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-01": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "|++>": "rank 1",
+        "Phi+": "rank 2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-02": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "lambda^2": [
+          0.8727,
+          0.1273
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-03": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "S(rho_A)": 0.55,
+        "I/4 marginal entropy": 1
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-04": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "|S|": 2.8284,
+        "sigma above 2": 2.1
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "PT eigenvalues": [
+          -0.5,
+          0.5,
+          0.5,
+          0.5
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "entangled": "p > 1/3",
+        "CHSH violation": "p > 1/sqrt2"
+      },
+      "limits": "Horodecki criterion for maximal CHSH: 2 sqrt(sum of two largest eigenvalues of T^T T)."
+    },
+    "grok-r1-ent-07": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "mixture": "separable"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-08": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "GHZ marginal": "separable"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-09": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "local unitaries": "entropy invariant",
+        "CNOT|+0>": "Phi+"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-10": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "purification": "verified",
+        "non-unique": true
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "pure": "2|ab|",
+        "Werner": "max(0,(3p-1)/2)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-12": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "each outcome": "p = 1/4, 1-4 in matching Bell state",
+        "unconditioned rho_14": "I/4"
+      },
+      "limits": "Qubit order 1,2,3,4."
+    },
+    "grok-r1-ent-13": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "pairwise concurrence": "2/N (N = 3, 4, 5)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-14": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "pure product marginal": "pure",
+        "mixed product": "marginal = rho_A"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<XX>": {
+          "Phi+": 1,
+          "mixture": 0
+        },
+        "witness value Phi+": 3
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-16": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Phi+": 0.5,
+        "Werner 0.6": 0.2
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-17": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "(0.6,0.4)->(0.8,0.2)": true,
+        "reverse": false,
+        "Vidal max prob to Bell": 0.4
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-18": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "|00>": "(Phi+ + Phi-)/sqrt2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-19": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "C": "(1-2p)^2 > 0 for p != 1/2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Phi+": 2,
+        "mixture": 1
+      },
+      "limits": ""
+    },
+    "grok-r1-ent-21": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "sigma": 3.0,
+        "one-sided p": 0.00135
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-01": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "[[4,1],[2,3]]": [
+          2,
+          5
+        ],
+        "rotation": "+-i (none real)"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Jordan block": "eigenspace dim 1, not diagonalizable",
+        "2I": "diagonal"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-03": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "x^n sup/L1": "1 vs 1/(n+1)",
+        "R^3 constant": "sqrt3",
+        "c00 ratio": "n (unbounded)"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-04": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "exact": 1,
+        "CS bound": 1.0319,
+        "max-norm version": "fails at (1,1)"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-05": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "projection": "(2/3,1/3,-1/3)",
+        "naive sum residual . b": -0.5,
+        "projection of x onto constants": {
+          "[0,1]": "1/2",
+          "[-1,1]": 0
+        }
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "ramp L1 distance": "(1/n - 1/m)/2",
+        "L1 limit": "step function (discontinuous)"
+      },
+      "limits": "Exact ramp L1 distances on a fine grid (tolerance 1e-6)."
+    },
+    "grok-r1-fa-07": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "||x^n||": 1,
+        "||(x^n)'||": "n",
+        "C^1 -> C": "norm <= 1"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-08": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "spectrum of M": "[0,1], no eigenvalues",
+        "rotation": "+-i over C"
+      },
+      "limits": "Resolvent unboundedness via divergence of the integral of 1/(x-lam)^2 near lam = 1/2; real rotation eigenvalues."
+    },
+    "grok-r1-fa-09": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "[-1,1]": [
+          "1",
+          "x",
+          "x^2-1/3"
+        ],
+        "[0,1] orthonormal": [
+          "1",
+          "sqrt3(2x-1)"
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-10": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "det(2I)": 4,
+        "tr(AB)=tr(BA)": true,
+        "tr(ABC) vs tr(ACB)": "differ for random matrices"
+      },
+      "limits": "Random 3x3 Gaussian matrices (seed 2)."
+    },
+    "grok-r1-fa-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Hermitian": [
+          1,
+          3
+        ],
+        "complex symmetric": "1 +- i"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-12": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "eigenvalues": "1/((n-1/2)^2 pi^2), n=1..3 verified",
+        "identity": "e_n sqrt2 apart"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-13": {
+      "status": "hand-proof-only",
+      "kind": "hand-proof-only",
+      "facts": {
+        "proof_sketch": "Excerpt covers 1 <= p < oo only. (l^oo)* != l^1: the limit functional on the closed subspace c of convergent sequences has norm 1; Hahn-Banach extends it to L on l^oo. L vanishes on c_00 (finitely supported sequences). If L(x) = sum a_n x_n with a in l^1, testing on e_n gives a_n = 0 for all n, so L = 0, contradicting L(1,1,1,...) = 1. Hence not every functional on l^oo comes from l^1. Dual exponent for p = 3 is q = 3/2 (1/3 + 2/3 = 1)."
+      },
+      "limits": "Non-constructive (Hahn-Banach); no executable check. Only the arithmetic q = 3/2 is trivially checkable."
+    },
+    "grok-r1-fa-14": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "cos fixed point": 0.739085,
+        "x+1/x": "ratio 1-1/(xy) -> 1, no fixed point",
+        "x/2+1 on [0,1]": "T(1)=1.5"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "3x5 rank 2": "nullity 3"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-16": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "singular values": [
+          6.7082,
+          2.2361
+        ],
+        "eigenvalues": [
+          3,
+          5
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-17": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "f=1 sine coefficients": 0,
+        "||1||^2": "2 pi",
+        "topup: cos x vs sine set": "all coefficients 0, ||f||^2 = pi"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-18": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<e_n, y>": "y_n -> 0",
+        "||e_n||": 1
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-19": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "non-commuting": "e^(A+B) != e^A e^B",
+        "converse counterexample": "all exponentials = I, AB != BA"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Gram": "PSD, eigenvalues 0,1,3",
+        "proposed correlation": "min eigenvalue -0.2728"
+      },
+      "limits": ""
+    },
+    "grok-r1-fa-21": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "standard": "(2,-1)",
+        "weighted": "(2,-1/2)",
+        "tent L2 norm": "sqrt(2h/3) -> 0, value 1"
+      },
+      "limits": ""
+    },
+    "grok-r1-lim-01": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "limit": 3,
+        "|a_n-3|": "5/(n+2)",
+        "N(0.01)": 499
+      },
+      "limits": "Exact algebra for this sequence and tolerance 0.01 only."
+    },
+    "grok-r1-lim-02": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "lim x^2 sin(1/x)": 0,
+        "f'(0)": 0,
+        "f'(1/(k pi))": "alternates near +-1"
+      },
+      "limits": "Squeeze verified symbolically; oscillation of f'(x) shown by sampling at x = 1/(k pi), not a proof of non-existence."
+    },
+    "grok-r1-lim-03": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "lim (x+sin x)/x": 1,
+        "(1+cos x)": "oscillates in [0,2]",
+        "squeeze cos x <= sin x/x <= 1": "holds on sample (0,0.5]"
+      },
+      "limits": "Specific limits only."
+    },
+    "grok-r1-lim-04": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "H_n >= ln(n+1)": true,
+        "zeta(1.5)": 2.6124,
+        "bound p/(p-1) at p=2": 2,
+        "pi^2/6": 1.6449
+      },
+      "limits": "Harmonic lower bound checked at sample n; zeta values from mpmath via sympy."
+    },
+    "grok-r1-lim-05": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "ratio 1/n^2": 1,
+        "sum 1/n^2": "pi^2/6",
+        "ratio n!/n^n": "1/e",
+        "x=-1": "-ln2 (converges)",
+        "x=1": "diverges"
+      },
+      "limits": "Specific ratio limits; endpoint behaviour by named tests."
+    },
+    "grok-r1-lim-06": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "alternating harmonic": "ln 2",
+        "rearranged (1,-1/2,-1/4,...)": "ln2/2",
+        "abs-convergent pair swap": "same sum"
+      },
+      "limits": "Partial sums to 2e6 terms (tolerance 1e-5); grouping identity symbolic."
+    },
+    "grok-r1-lim-07": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "M_n": "1/n^2 summable",
+        "cos series at 0": "harmonic, diverges",
+        "x^n/n at x=1": "diverges",
+        "[0,0.9]": "r^n/n summable"
+      },
+      "limits": "Bound and divergence at x = 0/x = 1; uniform convergence on [0,r] uses r^n/n summable."
+    },
+    "grok-r1-lim-08": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "integral": "1-(n+1)e^-n -> 1",
+        "pointwise": 0,
+        "max": "n/e at x=1/n"
+      },
+      "limits": "Specific sequence only."
+    },
+    "grok-r1-lim-09": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "|x-2| one-sided": [
+          -1,
+          1
+        ],
+        "(x|x|)'(0)": 0,
+        "x^(1/3) at 0": "quotient -> +oo both sides"
+      },
+      "limits": "One-sided limits of difference quotients."
+    },
+    "grok-r1-lim-10": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "1/x roots": "none",
+        "f(0),f(1)": [
+          1,
+          -1
+        ],
+        "root in (0,1)": 0.3347
+      },
+      "limits": "Specific functions only."
+    },
+    "grok-r1-lim-11": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "Maclaurin radius": 1,
+        "radius sum n z^n/3^n": 3,
+        "radius about z=1 (root test est.)": 1.426,
+        "topup: f(2)": "1/5",
+        "topup: series terms at x=2": "(-4)^k, do not tend to 0"
+      },
+      "limits": "Root-test estimate from 80 coefficients (tolerance 2e-2) about z = 1; exactness uses the pole argument."
+    },
+    "grok-r1-lim-12": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "f^(k)(0)": "0 for k=1..3 (limit check)",
+        "f(0.5)": "e^-4",
+        "error": 0.00289,
+        "Lagrange bound": 0.00429
+      },
+      "limits": "First three derivatives of exp(-1/x^2) shown to vanish at 0 via limits; general n is the standard induction."
+    },
+    "grok-r1-lim-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "sqrt2 rational": false,
+        "truncation Cauchy bound": "|t_m - t_k| < 10^-k"
+      },
+      "limits": "Irrationality via sympy's exact arithmetic; the classical proof is the hand argument."
+    },
+    "grok-r1-lim-14": {
+      "status": "pass",
+      "kind": "exhaustive+symbolic",
+      "facts": {
+        "holds for": "n=1 and n>=5 (checked to 300)",
+        "step needs": "k >= 1+sqrt2 (~2.414)",
+        "topup: small n": "n=1 true; n=2,3,4 false; n>=5 true (checked to 199)"
+      },
+      "limits": "Exhaustive for n <= 300; step inequality symbolic."
+    },
+    "grok-r1-lim-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "sup": 1.5,
+        "inf": -2,
+        "limsup": 1,
+        "liminf": -1
+      },
+      "limits": "Tail suprema computed to n = 10^5."
+    },
+    "grok-r1-lim-16": {
+      "status": "pass",
+      "kind": "exact+symbolic",
+      "facts": {
+        "P(T | 5H)": 0.5,
+        "Cauchy mean of n": "standard Cauchy",
+        "P(X<=60)": 0.9824,
+        "normal approx": 0.9821
+      },
+      "limits": "Fair independent coin model; Cauchy via characteristic functions."
+    },
+    "grok-r1-lim-17": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "limit": 2,
+        "monotone, bounded by 2": true,
+        "a_{n+1}=2a_n": "diverges"
+      },
+      "limits": "Iteration to 60 steps; fixed points symbolic."
+    },
+    "grok-r1-lim-18": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x^2 witness gap": "2 + 1/n^2",
+        "1/x on (0,1) gap": "n",
+        "1/x on [1,oo)": "Lipschitz 1"
+      },
+      "limits": "Specific witness sequences."
+    },
+    "grok-r1-lim-19": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "integral": "n/(n-1) -> 1",
+        "dominating": "(1+x/2)^-2 (integral 2)",
+        "indicator [n,n+1]": "integral 1 each",
+        "topup: integral f_n": 1,
+        "topup: sup_n f_n(x)": ">= 1/(2x), not integrable near 0"
+      },
+      "limits": "Closed form for n >= 2; domination checked on a grid for n = 2..60."
+    },
+    "grok-r1-lim-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "sum sin n/n": "(pi-1)/2",
+        "partial sums of sin n": "bounded",
+        "overshoot at x=pi/N": "> 0.27 for all N tested"
+      },
+      "limits": "Partial sums to 2e6 (tolerance 1e-5); non-uniformity shown at x = pi/N."
+    },
+    "grok-r1-lim-21": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x sin(1/x)": 1,
+        "n(e^(1/n)-1)": 1
+      },
+      "limits": "Specific limits."
+    },
+    "grok-r1-meas-01": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "P(2)": "1/3",
+        "Gaussian N": "(2a/pi)^(1/4), a>0"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-02": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<sigma_x>": "sin(2 theta)",
+        "P(+)": "(1+<X>)/2",
+        "pi/8 ideal vs measured": [
+          0.7071,
+          0.62
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-03": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "dSx dSy": "1/4 = (1/2)|<Sz>| (equality)",
+        "Sz-Sx bound": "(1/2)|<Sy>| = 0"
+      },
+      "limits": "hbar = 1."
+    },
+    "grok-r1-meas-04": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "P(Z=1) after X": 0.5
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "H|0>": "|+>",
+        "H^2": "I",
+        "H|1>": "|->"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<+|->": 0,
+        "global phase": "no observable change"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-07": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "(|0>+i|1>)/sqrt2": "+y",
+        "polar angle": "2 theta"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-08": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "trine": "3 positive elements sum to I, not projectors"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-09": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "mixture vs |+>": "<X> 0 vs 1",
+        "purity": 0.625
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-10": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "CNOT|+0>": "Bell state",
+        "basis states": "copied"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "control first": "|10> -> |11>",
+        "control second": "|10> unchanged"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-12": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[XX,ZZ]": 0,
+        "[X,Z]": "-2iY",
+        "common eigenvector, non-commuting": true
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "P[0,1/4]": 0.0908,
+        "Delta x^2 (state n)": "1/12 - 1/(2 n^2 pi^2)"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-14": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "P(E1) flat": "8/pi^2",
+        "P_left(t)": "1/2 + (4/(3 pi)) cos(w21 t)",
+        "P_left(0)": 0.9244
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[[1,1],[1,-1]]": "U^dag U = 2I",
+        "S": "unitary"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-16": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "outputs": "cos^2(phi/2), sin^2(phi/2)"
+      },
+      "limits": "Ideal symmetric beam splitter B = [[1, i], [i, 1]]/sqrt2."
+    },
+    "grok-r1-meas-17": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Helstrom equal priors": 0.8536,
+        "Z strategy": 0.75,
+        "0.9/0.1 priors": 0.9528
+      },
+      "limits": "Optimal projective measurement found by scanning the measurement angle."
+    },
+    "grok-r1-meas-18": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<X>,<Z>": [
+          0.8,
+          0.6
+        ],
+        "pure": true,
+        "valid iff": "|a| <= 1"
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-19": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "z- fraction after z+ selection": 0.25,
+        "of unpolarized source": 0.125
+      },
+      "limits": ""
+    },
+    "grok-r1-meas-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "outcomes": "4 equiprobable",
+        "corrected": "input recovered",
+        "Bob before bits": "I/2"
+      },
+      "limits": "Full teleportation circuit simulated for a random input state."
+    },
+    "grok-r1-meas-21": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "0.995^100": 0.6058
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-01": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "y0=1": "1/(1-x) on (-oo,1)",
+        "y0=-1": "-1/(1+x) on (-1,oo)",
+        "general": "1/(C-x) and y=0"
+      },
+      "limits": "Explicit solutions substituted; intervals from the pole location."
+    },
+    "grok-r1-ode-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "solution": "e^-x - e^-2x"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-03": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "second solution": "x e^(2x)",
+        "IVP": "(1-2x)e^(2x)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-04": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "resonant y_p": "(x/2) sin x (unbounded)",
+        "omega != omega0": "bounded cos(wx)/(1-w^2)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-05": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "solution": "tan x on (-pi/2, pi/2)",
+        "PL step": "min(10, 1/2) = 1/2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-06": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x=0": "unstable",
+        "x=1": "stable"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-07": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "r'": "r^3",
+        "theta'": 1,
+        "linear eigenvalues": "+-i"
+      },
+      "limits": "Polar reduction symbolic; blow-up formula substituted."
+    },
+    "grok-r1-ode-08": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "potential": "x^2 y + 3x + 2y^2",
+        "y dx + 2x dy": "not exact; IF y gives x y^2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-09": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "W(x^3,|x|^3)": "0 on each side",
+        "independence": "a=b=0",
+        "W(e^x,e^2x)": "e^(3x)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-10": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "repeated root": "x^2(A + B ln x)",
+        "x y'' + ...": "A x + B/x on x != 0"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-11": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "y": "1 - e^-t",
+        "e^(t^2)": "no Laplace transform"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-12": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[[0,1],[-2,-3]]": "stable node (-1,-2)",
+        "[[1,2],[0,-1]]": "saddle (+-1)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "V'=-2x^4": true,
+        "solution": "x0/sqrt(1+2x0^2 t)",
+        "oscillator V'": 0
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-14": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "P(t)": "100/(1+9e^(-t/2))",
+        "t(P=50)": 4.394,
+        "topup: t to 0.9K": "ln(9(K-P0)/P0)/r",
+        "topup: P0 = K/2": "ln 9/r ~ 2.2/r"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-15": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "y(pi)=0": "B sin x, any B",
+        "y(pi)=1": "none",
+        "L=7/3": "only 0"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-16": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "y_p": "x sin x + cos x ln cos x"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-17": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "Euler y(1)": 2.59374,
+        "exact": "e",
+        "halving h error ratio": 0.522,
+        "|1+h lambda|": 4,
+        "topup: lambda=-10": "stable iff h <= 0.2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-18": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "T(pi/2)": 7.4163,
+        "small-angle": "2 pi",
+        "1 m pendulum": 2.006,
+        "topup: T/T0 at 90 deg": 1.1803
+      },
+      "limits": "Period via elliptic integral and direct ODE integration (rtol 1e-10)."
+    },
+    "grok-r1-ode-19": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Dirichlet": "(n pi/L)^2",
+        "Neumann": "(n pi)^2, n>=0",
+        "periodic": "(2 n pi)^2"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-20": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "series": "1 + x^3/6 + x^6/180 + ...",
+        "ratio a_(n+3)/a_n": "~1/n^2 -> 0 (entire)"
+      },
+      "limits": ""
+    },
+    "grok-r1-ode-21": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "rho=0.5 origin eigenvalues": [
+          -10.524937810560445,
+          -0.47506218943955486,
+          -2.6666666666666665
+        ],
+        "rho=28 separation growth": "9.5e-10 -> 8.8e+00"
+      },
+      "limits": "Eigenvalues symbolic at rho=0.5; separation growth from one numerical experiment (not a proof)."
+    },
+    "grok-r1-open-01": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "T=0 fixed point": "|0><0|",
+        "generalized AD fixed point": "thermal p1"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-02": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "populations": "unchanged",
+        "coherence factor": "1-2p"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-03": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "completeness": "I",
+        "wrong weights": "(1+2p) I"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-04": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "hf/kT": 12.0,
+        "p1 at 20 mK": 6.2e-06,
+        "T_eff for 1% (mK)": 52.2
+      },
+      "limits": ""
+    },
+    "grok-r1-open-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "dTr/dt": 0,
+        "without anticommutator": "nonzero"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "FID": "exp(-sigma^2 t^2/2)",
+        "echo (static)": "fully refocused"
+      },
+      "limits": "Ensemble of 200000 static detunings."
+    },
+    "grok-r1-open-07": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "F(t)": "(1+e^(-t/T2))/2 -> 1/2"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-08": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "same channel": true,
+        "mixing": "Hadamard"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-09": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "(T x I)|Phi+><Phi+|": "min eigenvalue -1/2",
+        "T on single qubit": "positive"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-10": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "P(52 ns)": 0.1353,
+        "half-life (ns)": 18.02
+      },
+      "limits": ""
+    },
+    "grok-r1-open-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "steady p1": "1/(1+e^(dE/kT))"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-12": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "|+> after unread Z": "I/2",
+        "purity": 0.5
+      },
+      "limits": ""
+    },
+    "grok-r1-open-13": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "rho_ee": "s/(2(1+s))",
+        "with dephasing": "lower",
+        "strong drive": "-> 1/2"
+      },
+      "limits": "Lindblad steady state; basis (e, g), hbar = 1."
+    },
+    "grok-r1-open-14": {
+      "status": "pass",
+      "kind": "Monte Carlo",
+      "facts": {
+        "ensemble": "matches e^(-Gamma t) within 0.01"
+      },
+      "limits": "20000 trajectories, seed fixed."
+    },
+    "grok-r1-open-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "fringe period (us)": 1.0
+      },
+      "limits": ""
+    },
+    "grok-r1-open-16": {
+      "status": "hand-proof-only",
+      "kind": "hand-proof-only",
+      "facts": {
+        "proof_sketch": "Conceptual: Born (weak coupling) and Markov (bath correlation time << system relaxation time) assumptions are the standard conditions in the Davies/Born-Markov derivation; a narrow-band, strongly coupled mode violates both, and treating it as part of the system with Markovian damping of the combined system is the standard remedy. No numerical content to execute."
+      },
+      "limits": "No executable check; proof sketch requires independent human review."
+    },
+    "grok-r1-open-17": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "0.999^200": 0.8186,
+        "coherent infidelity": 0.7081,
+        "stochastic infidelity": 0.00499
+      },
+      "limits": ""
+    },
+    "grok-r1-open-18": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "r": 0.001
+      },
+      "limits": ""
+    },
+    "grok-r1-open-19": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "purity under unitary": "constant"
+      },
+      "limits": ""
+    },
+    "grok-r1-open-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "gamma": 0.0004999,
+        "avg infidelity": 0.0001666
+      },
+      "limits": "Average fidelity from entanglement fidelity, F_avg = (d F_e + 1)/(d + 1), cross-checked by sampling."
+    },
+    "grok-r1-open-21": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "0.997^40": 0.8868
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-01": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "max": 25,
+        "min": "none (unbounded below)"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "quadratic": "PD, unique min 0",
+        "x^4-2x^2": "nonconvex, minima at +-1"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-03": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Hessian": "diag(2,-2) indefinite",
+        "f(0,0.1)": -0.01
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-04": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x*": 1,
+        "mu": 2,
+        "nonconvex KKT x=0": "global max of -x^2 on [-1,1]"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "alpha range": "(0, 0.2)",
+        "alpha=0.25": "diverges (factor -1.5)"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "fit": "a=7/6, b=3/2",
+        "rank-deficient": "a+b=3.5, min-norm (1.75,1.75)"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-07": {
+      "status": "pass",
+      "kind": "symbolic+numeric",
+      "facts": {
+        "x=1": "local max",
+        "GD from 0.9 / 1.1 / 1.0": "0 / 2 / stays 1"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-08": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "feasible set": "{0}",
+        "KKT multiplier": "none",
+        "LICQ": "fails (zero gradient)"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-09": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "E[X^2] vs (EX)^2": "2 vs 1",
+        "E[1/X]": "2/3",
+        "log example": [
+          1,
+          1.4338
+        ],
+        "topup: X in {1,4}": "E log X = log 2 < log 2.5"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-10": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "Newton sqrt2": [
+          "3/2",
+          "17/12"
+        ],
+        "cube root step": "-2x",
+        "x^2 step": "x/2"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-11": {
+      "status": "pass",
+      "kind": "exhaustive+linprog",
+      "facts": {
+        "max": "12 at (4,0)",
+        "x+y tie": "edge (4,0)-(3,1)",
+        "no sign constraints": "unbounded (linprog status 3)"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-12": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "MLE": "1/4",
+        "E[3/S]": "1.5 lambda (n=3)",
+        "normal MLE": "mean 4, var 14/3",
+        "topup: exponential MLE": "1/x-bar"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "x>0": "min 4 at 2",
+        "x<0": "unbounded below; max -4 at -2"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-14": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "inf e^-x": "0, not attained",
+        "x on (0,1]": "inf 0 not attained"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[[2,-1],[-1,2]]": "PD (1,3)",
+        "diag(0,-1)": "leading minors 0,0 but not PSD"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-16": {
+      "status": "pass",
+      "kind": "linprog",
+      "facts": {
+        "dual optimum": "12 at (3,0)",
+        "weak duality": "sampled pairs satisfy dual >= primal"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-17": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "min Rayleigh": 1,
+        "max on sphere": 3,
+        "unconstrained": "unbounded above"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-18": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "(x^2-1)^2": "f''(0) = -4, nonconvex",
+        "e^(x^2)": "convex"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-19": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "step 1/L": "one-step convergence",
+        "step 2/L": "x -> -x",
+        "nonconvex": "stuck at x=1",
+        "topup: nonconvex example": "min ||grad||^2 <= 2L(f0 - inf f)/k holds for k <= 200"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-20": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "tangent Hessian": 2,
+        "restricted f": "x^2"
+      },
+      "limits": ""
+    },
+    "grok-r1-opt-21": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "11/12": 0.9167,
+        "95% CP": [
+          0.615,
+          0.998
+        ]
+      },
+      "limits": "Clopper-Pearson exact interval via beta quantiles."
+    },
+    "grok-r1-pde-01": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "solution": "3e^-t sin x - e^-16t sin 4x",
+        "Neumann limit for sin x": "2/pi"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "d'Alembert": "half-sum of travelling Gaussians"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-03": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "u(0)": "1/2",
+        "x^2+y^2": "Laplacian 4, u(0)=0 vs avg 1",
+        "ln r^2": "singular at 0, circle avg 0"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-04": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "b_n": "4/(n pi) odd, 0 even"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Gibbs peak": 1.17898,
+        "persists for N up to": 1601
+      },
+      "limits": "Peak of partial sums N = 201..1601 vs (2/pi) Si(pi)."
+    },
+    "grok-r1-pde-06": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "half-plane nonuniqueness": [
+          "y",
+          "e^x sin y"
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-07": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "backward amplification n=10, T=1": "e^100 ~ 2.69e43"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-08": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "b_n": "2(-1)^(n+1)/n",
+        "value at pi": 0
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-09": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "steady state": "1/2",
+        "nonconstant modes": "zero mean, decay"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-10": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "solution": "f(x-3t)",
+        "f(x+3t) residual": "6 f'"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "lambda_1 (h=1)": 4.1159,
+        "h=-2 negative eigenvalue": "-3.6673",
+        "h=-1": "lambda=0, X=x"
+      },
+      "limits": "Roots by brentq; sign cases checked at h = 1, -0.5, -1, -2."
+    },
+    "grok-r1-pde-12": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "solution": "sin x sinh y / sinh 1"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "E": "pi/4 constant",
+        "damped dE/dt": "-int u_t^2 (checked on an explicit solution)"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-14": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "sum 1/n^2": "pi^2/6",
+        "|x|^-1/2": "not L^2"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-15": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "G": "s(1-x) | x(1-s)",
+        "u for f=1": "x(1-x)/2",
+        "Neumann f=1": "incompatible"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-16": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "t*": 1.1658,
+        "rarefaction x/t": "solves Burgers"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-17": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "u_xx+4u_xy+u_yy": "hyperbolic (12)",
+        "Tricomi": "-4y"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-18": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "Phi": "solves heat eq, mass 1",
+        "e^(x^2) data": "converges only for t < 1/4",
+        "topup: e^(x^2) data": "convolution diverges for t >= 1/4"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-19": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "[0,pi] sin x cos 2x": "-2/3",
+        "sin2x sin3x": 0
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-20": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "lambda=2": "sin x sin y",
+        "integer k": "solvable iff k even",
+        "k=3/2": "unique"
+      },
+      "limits": ""
+    },
+    "grok-r1-pde-21": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "r": 1.0,
+        "worst amplification": -3,
+        "dt max (dx=0.02)": 0.0002
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-01": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "exact shift": -0.045,
+        "second order": -0.045
+      },
+      "limits": "hbar = m = omega = 1; N = 80."
+    },
+    "grok-r1-pert-02": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "exact": "(1/2) sqrt(1+lambda)",
+        "series": "1 + l/2 - l^2/8"
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-03": {
+      "status": "pass",
+      "kind": "numeric+symbolic",
+      "facts": {
+        "alpha*": "8/(9 pi)",
+        "E (eV)": -11.549
+      },
+      "limits": "Atomic units."
+    },
+    "grok-r1-pert-04": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "levels": "E0 +- delta"
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-05": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "<2s|z|2p0>": "-3 a0",
+        "<1s|z|1s>": 0
+      },
+      "limits": "Atomic units, a0 = 1."
+    },
+    "grok-r1-pert-06": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "Gamma predicted": 0.2513,
+        "exponential match": "within 0.02 at t = 4, 8, 12",
+        "revival peak P0 near 2pi/Delta": 0.558
+      },
+      "limits": "hbar = 1; 1001-level flat band, eigendecomposition."
+    },
+    "grok-r1-pert-07": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "E_final/E_initial": 0.25
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-08": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "P_D numeric": 0.5659,
+        "LZ": 0.5681
+      },
+      "limits": "hbar = 1; RK45 rtol 1e-9."
+    },
+    "grok-r1-pert-09": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<0|x^4|0>": "3/4 = 3 (1/2)^2",
+        "level n": "(6n^2+6n+3)/4"
+      },
+      "limits": "hbar = m = omega = 1."
+    },
+    "grok-r1-pert-10": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "optimal N (terms)": 10,
+        "min error": 0.00018,
+        "error at 40 terms": 16000000.0
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-11": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "f_Born": "-2 m V0/(hbar^2 (mu^2+q^2))"
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-12": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "P(new 1)": 0.3603,
+        "P(new 2)": 0.5
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-13": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "a*": "1/2",
+        "E": "3/2"
+      },
+      "limits": "hbar = m = omega = 1."
+    },
+    "grok-r1-pert-14": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<1|0'>": "-lambda/sqrt2 (first order)"
+      },
+      "limits": "hbar = m = omega = 1."
+    },
+    "grok-r1-pert-15": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "max deviation Omega/omega0=0.02": 0.0047,
+        "Omega/omega0=0.5": 0.125
+      },
+      "limits": "hbar = 1; RK45."
+    },
+    "grok-r1-pert-16": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "shifts V0=0.5": [
+          0.2466,
+          0.2524,
+          0.2494
+        ],
+        "ground shift V0=20": 5.897
+      },
+      "limits": "Finite difference, L = 1, hbar = m = 1, 1999 interior points."
+    },
+    "grok-r1-pert-17": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "m omega <x^2>": "hbar (n + 1/2) = dE/domega"
+      },
+      "limits": "hbar = m = 1."
+    },
+    "grok-r1-pert-18": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "g(3/2)": "4/3",
+        "g(1/2)": "2/3",
+        "mu_B x 5 T (eV)": 0.000289
+      },
+      "limits": "Units mu_B B = 1 small parameter."
+    },
+    "grok-r1-pert-19": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "V/D=0.1 exact": 0.0099,
+        "V>>D eigenvalues": "+-1.00125"
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "exact lower shift (eV)": -0.0024938,
+        "second order": -0.0025
+      },
+      "limits": ""
+    },
+    "grok-r1-pert-21": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "He": -74.8,
+        "Li+": -193.8,
+        "H-": -10.2
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-01": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "S_z spin-1": [
+          -1,
+          0,
+          1
+        ]
+      },
+      "limits": "hbar = 1."
+    },
+    "grok-r1-spin-02": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "J+|1,0>": "sqrt2 |1,1>",
+        "J+|1,1>": 0
+      },
+      "limits": "Basis ordered m = j..-j."
+    },
+    "grok-r1-spin-03": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "two spins": "S^2 in {0, 2}",
+        "three spins": "4 states S=3/2, 4 states S=1/2 (two doublets)"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-04": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "<1,1;1/2,-1/2|3/2,1/2>": "sqrt(3)/3",
+        "<1,0;1/2,1/2|3/2,1/2>": "sqrt(6)/3"
+      },
+      "limits": "sympy CG (Condon-Shortley)."
+    },
+    "grok-r1-spin-05": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[Sx,Sy]": "i Sz",
+        "Sx^2 eigenvalues": [
+          0,
+          1,
+          1
+        ]
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-06": {
+      "status": "pass",
+      "kind": "exact",
+      "facts": {
+        "|L| for l=2": "sqrt(6) hbar"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-07": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "R(2pi) spin-1/2": "-I",
+        "R(2pi) spin-1": "I"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-08": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "precession": "cos(wt), sin(wt)",
+        "electron (GHz/T)": 28.02
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-09": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "1 x 1/2": "j=3/2 (4), j=1/2 (2)"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-10": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "<S_x^2>": "(s(s+1) - m^2)/2"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-11": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "L.S": "j=3/2: 1/2, j=1/2: -1",
+        "Na D splitting (meV)": 2.13
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-12": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "J=2": "sym",
+        "J=1": "antisym",
+        "J=0": "sym"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-13": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "spin-1/2 at 60deg": 0.75,
+        "spin-1 at 60deg": 0.5625
+      },
+      "limits": "Rotation about y."
+    },
+    "grok-r1-spin-14": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "1s^2 x singlet": "antisymmetric overall"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-15": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "splitting at 1 T (eV)": 0.0001159
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-16": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "[Lx,L^2]": 0,
+        "[Lx,Ly]": "i Lz"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-17": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "<Y00|cos|Y10>": "1/sqrt3",
+        "<Y00|cos|Y00>": 0
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-18": {
+      "status": "pass",
+      "kind": "symbolic",
+      "facts": {
+        "integral cos^2": "4pi/3",
+        "Y10": "sqrt(3/(4pi)) cos(theta)"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-19": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "J>0 ground": "singlet -3J/4",
+        "J<0 ground": "triplet J/4"
+      },
+      "limits": "hbar = 1."
+    },
+    "grok-r1-spin-20": {
+      "status": "pass",
+      "kind": "numeric",
+      "facts": {
+        "identity": "verified on random vectors"
+      },
+      "limits": ""
+    },
+    "grok-r1-spin-21": {
+      "status": "pass",
+      "kind": "exact arithmetic",
+      "facts": {
+        "lambda (m)": 0.21106
+      },
+      "limits": ""
+    }
+  }
+}
