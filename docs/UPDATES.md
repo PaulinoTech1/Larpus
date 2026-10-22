@@ -1,5 +1,33 @@
 # Updates while Larpus remains usable
 
+## 2026-10-22 Broker live check: contract-sized helpers and budget-safe readiness
+
+CI "Public contracts" failed on Ubuntu and Windows because `exercise_preemption` in
+`scripts/verify-broker-live.py` had 15 decision points; the complexity contract allows 12.
+The function is now split into small helpers (`broker_state`, `idle_state`,
+`wait_for_generation`, `preempt_running_note`, `assert_preempted`). The check proves the
+same things as before: it fails if the note ends early, if the note is not preempted, if
+chat does not complete, or if the broker records no confirmed preemption and recovery.
+
+Codex review: the old readiness wait retried `/api/chat` every 2 s for up to 90 s, so it
+could exhaust the broker's 12/min chat budget (429 `inference_budget`) before the real
+test. The broker exposes no endpoint for the first-use fence state without spending chat
+quota; `probe()` runs only inside a chat slot. Readiness now works in two steps:
+1. Wait up to 30 s on the status lane (`GET /api/ps`, filtered by the broker to the
+   approved model, and counted against the 120/min status budget) for the model to be
+   loaded.
+2. Send at most 4 chat probes, at least 10 s apart. An unconfirmed fence or a 429
+   `inference_budget` on an unfaulted broker means wait; a fault or any other refusal
+   fails at once.
+
+Worst case, a whole run makes 5 chat-lane requests. `/broker/state` polling during the
+note slowed from 0.25 s (240/min) to 0.75 s (80/min), keeping it under the status budget.
+The broker and notes worker are unchanged (they are source-pinned). Tests:
+`tests/test_verify_broker_live.py` gains a missing-recovery failure, a chat-budget wait,
+bounded and spaced probes, a status-lane-only resident wait, and a budget-arithmetic
+check against `runtime.broker_scheduler.LIMITS`. The fix was not run against the live
+station. Active release remains `346773e1`.
+
 ## 2026-10-21 Habit-source release activated after broker-check fix
 
 Activated `346773e17fd54b7784fd3148b07a4b0e` at 3:47:06 PM ET; previous
