@@ -1,5 +1,54 @@
 # Operational status
 
+## 2026-10-25 current station and checkout snapshot (20:24 EDT)
+
+This is a read-only observation, not a new release or quality acceptance. Production
+runs from frozen release `6200bb30d68348f080f2c1c723ff2fb6`, selected on
+2026-10-24; `python scripts/releases.py status` reports it running with no pending
+cutover. Release `346773e17fd54b7784fd3148b07a4b0e` is retained as previous.
+The recorded gateway PID is 35916. The local `/api/health` response reports
+`larpus3.8:27b-q4` online on GPU, and `/api/model-selection` reports
+`larpus-3.8` ready with no switch in progress. These endpoint checks do not
+measure answer quality, GPU headroom or reboot persistence.
+
+The saved health report (generated 20:24 EDT) has all required checks passing,
+including local skills, MCP surface, MCP Skills, model GPU placement, DLP and
+voice. Overall health is **degraded** because the selected release's saved scan
+receipt is `warning`: 70/70 targets complete, one warning target. This review
+did not rerun the scan or independently exercise chat, voice or a live MCP Skills
+protocol client. The selected index reports 413 documents and 76,850 passages;
+the release contains 69 hash-checked local prompt skills. Its MCP server source
+registers the read-only Skills extension. Discovery does not select a skill or
+grant execution rights. See [skills](SKILLS.md) and the historical
+[MCP Skills acceptance report](MCP_SKILLS_ACCEPTANCE_2026_10_19.md).
+
+The NVIDIA 621.01 update and selected release's read-only WSL driver mount are
+documented in [the October 24 update](UPDATES.md#2026-10-24-nvidia-62101-driver-maintenance-and-measured-http-run).
+That update records a successful GPU-resident HTTP run and a descriptive timing
+comparison, not a driver-only speedup. The retained prior release still pins the
+old driver package; a working rollback under 621.01 has **not** been verified.
+Do not treat the release manager's ordinary rollback as a tested driver-recovery
+path. The owner status journal reports automatic recovery disabled and unarmed;
+backups remain synthetic-only.
+
+The checkout is on `feat/habit-source-and-broker-check` at `e64c9b6` with
+uncommitted work. Checkout files are not automatically served. Current
+development/evaluation state:
+
+| Work | State and limit |
+| --- | --- |
+| Prompt-only v2 | Prepared release `f46146f28d1742ec87acc4e157322ed3`; not activated. Heuristic dev gains need blinded human review and broader acceptance. |
+| QLoRA pilot1 | Trained and evaluated offline against an NF4 base; shelved and rejected for activation after heuristic regressions. It was not exported or served. The owner's blinded review and independent locked tests are outstanding; Grok-derived training rights are unresolved. See [decision record](DECISIONS.md). |
+| MTRAGEval-inspired local probes | A/B/C harness and five public synthetic smoke cases exist only in the checkout. The active frozen release lacks `runtime/rag_eval.py`, so the A/B probe cannot run there. Catalog validation and seven focused unit tests passed on October 25; no model-backed A/B/C evaluation or human scoring was performed in this status review. See [local protocol](MTRAGEVAL_LOCAL.md). |
+| MCP Skills | Implementation and registry are in the selected release; saved health verifies declaration and resources. The October 19 acceptance work had mixed timing and unresolved human quality review. This status review did not repeat a live protocol handshake or performance comparison. |
+
+The next quality investigation can use the local MTRAGEval-inspired A/B/C split
+to distinguish retrieval, fixed-evidence generation and end-to-end failures.
+Its five smoke cases cannot establish a system-wide quality score. Any live A/B
+probe needs a separately prepared and authorized release containing the evaluator;
+that would be a later change, not an effect of this documentation update. Earlier
+sections below are dated historical snapshots.
+
 ## 2026-10-21 active recovery/owner tools release
 
 Selected `b6dffca22d244953acb3a8574c232e69` is running; previous

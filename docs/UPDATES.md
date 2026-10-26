@@ -1,5 +1,63 @@
 # Updates while Larpus remains usable
 
+## 2026-10-24 NVIDIA 621.01 driver maintenance and measured HTTP run
+
+Startup held before gateway launch: the retained `larpus-model` mounted the
+595.79 WSL driver package, could not query NVML, and loaded the selected
+`larpus3.8:27b-q4` model on 100% CPU. The host and WSL reported 621.01. A
+temporary model container with only the new package mounted read-only passed
+`nvidia-smi` and loaded the same model at 131072 context with q8_0 cache on
+100% GPU. The old model container remains stopped under the name
+`larpus-model-driver-595-previous` as a preservation artifact. The startup
+readiness check held before opening the gateway; the CPU-loaded model was not
+accepted as a user-facing fallback. The strict check exposed an incompatible
+driver mount instead of silently weakening the GPU placement policy.
+
+The staged release `6200bb30d68348f080f2c1c723ff2fb6` reused the prior
+frozen payload except for a catalog count correction: the approved index has
+one passage for `cyber-20261015-unit42`, while the prior catalog declared two.
+No passage or model weight changed. Its deployment profile pins only
+`/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b`. Preparation
+passed public contracts, UI and isolation checks. The scan completed 70 targets
+and retained the source-pinned MCP warning. Activation selected this release,
+retained `346773e17fd54b7784fd3148b07a4b0e` as previous, and reached an
+HTTP 200 gateway with full GPU residency. The previous release still pins the
+595.79 package. It and the stopped old model container are **not a verified
+working rollback** under host driver 621.01; that package already failed the
+live GPU probe. A rollback would need a compatible host driver, model mount and
+release profile, then the same placement and isolation checks. This combined
+driver/model/release recovery was not tested, and the ordinary release manager's
+automatic rollback must not be assumed sufficient for a GPU driver change.
+
+The security boundary remained narrow: only the model container received
+`/dev/dxg`, `/usr/lib/wsl/lib` and one read-only NVIDIA package directory. The
+agent, broker and notes worker gained no GPU device or driver mount. The new
+release profile records that exact package path; `--gpu-driver` on owner-side
+`releases.py prepare` checks its shape and `libcuda.so.1.1` existence, while
+isolation preflight checks the actual container mount. Those checks are not a
+signature or integrity attestation of the Windows driver. The host driver and
+WSL kernel remain trusted, and driver replacement had an interruption; no
+zero-downtime, hostile-driver resistance or reboot-persistence claim follows.
+See [Windows Home isolation](WINDOWS-HOME-ISOLATION.md#gpu-driver-updates-and-failure-behavior).
+
+Fixed local HTTP run `abaec1c30b8b48efbdf068effd7fb5b0` completed 27/27
+measured requests after nine excluded warm-ups. First checked text was 5.624 s
+median and 7.528 s nearest-rank p95; completion was 7.679 s median and
+9.272 s p95. The earlier same-protocol run `91940e8da4d1456e8891a299d147c84d`
+on the prior release measured 5.709/6.845 s first-text median/p95 and
+7.221/9.387 s completion median/p95. Both runs reported zero unknown citation
+identifiers. The new median is 85 ms lower, but p95 is 683 ms higher and
+completion median is 458 ms higher. This is a descriptive comparison, not a
+driver-only causal result or answer-quality certification; source fingerprint,
+gateway process, timing conditions and the catalog count changed. About
+450 MiB GPU memory remained free after the run, so another desktop allocation
+could break full GPU residency. NVIDIA Overlay was closed with owner consent;
+the user container had respawned it after the first process stop.
+
+Release, benchmark and scratch receipts are under `E:`. The Larpus WSL distro
+base path is `E:\WSL\Larpus`. The test suite used Windows temporary folders on
+`C:` and removed the observed folders when it finished.
+
 ## 2026-10-22 Broker live check: contract-sized helpers and budget-safe readiness
 
 CI "Public contracts" failed on Ubuntu and Windows because `exercise_preemption` in

@@ -10,6 +10,23 @@ spec=importlib.util.spec_from_file_location('releases',Path(__file__).resolve().
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
+    def test_driver_repin_requires_one_narrow_existing_package(self):
+        old={'gpu_driver':'/usr/lib/wsl/drivers/nv_dispi.inf_amd64_aaaaaaaaaaaaaaaa'}
+        new='/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b'
+        with patch.object(release,'wsl',return_value='') as check:
+            selected=release.select_gpu_driver(old,new)
+        check.assert_called_once_with('/usr/bin/test','-f',new+'/libcuda.so.1.1')
+        self.assertEqual(selected['gpu_driver'],new)
+        self.assertEqual(old['gpu_driver'],'/usr/lib/wsl/drivers/nv_dispi.inf_amd64_aaaaaaaaaaaaaaaa')
+        with patch.object(release,'wsl') as check:
+            for invalid in ('/usr/lib/wsl/drivers','/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b/../other'):
+                with self.assertRaisesRegex(ValueError,'narrow NVIDIA'):
+                    release.select_gpu_driver(old,invalid)
+            check.assert_not_called()
+        with patch.object(release,'wsl',side_effect=RuntimeError('missing')):
+            with self.assertRaisesRegex(RuntimeError,'missing'):
+                release.select_gpu_driver(old,new)
+
     def test_ui_checks_use_the_candidates_manifest(self):
         import contextlib,io
         with tempfile.TemporaryDirectory() as temporary:

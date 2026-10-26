@@ -259,12 +259,20 @@ print(json.dumps({'initial':initial,'numpy':numpy,'assembly':assembly,'optimized
         raise ValueError('Pipeline switch/restore readiness failed')
     print('Candidate Assembly/NumPy worker switching verified; initial pipeline restored.',flush=True)
 
-def prepare(identifier):
+def select_gpu_driver(profile,gpu_driver):
+    if gpu_driver is None:return profile
+    if not re.fullmatch(r'/usr/lib/wsl/drivers/nv_[a-z0-9]+\.inf_amd64_[a-f0-9]{16}',gpu_driver):
+        raise ValueError('Invalid narrow NVIDIA driver package')
+    wsl('/usr/bin/test','-f',gpu_driver+'/libcuda.so.1.1')
+    return {**profile,'gpu_driver':gpu_driver}
+
+def prepare(identifier,gpu_driver=None):
     dest=release_path(identifier);meta=read(dest/'release.json')
     if payload(dest)!=meta['files']:raise ValueError('Candidate changed after staging')
     active=read(STORE/'active.json');old=release_path(active['id'])
     profile=read(old/'deployment.json');profile['agent_name']='larpus-agent-'+identifier
     profile['source_fingerprint']=meta['source_fingerprint']
+    profile=select_gpu_driver(profile,gpu_driver)
     # Fixed offline cache; GPU model stays shared, voice candidate stays separate.
     linux='/home/larpus/releases/'+identifier
     wsl('/bin/mkdir','-p',linux)
@@ -566,17 +574,22 @@ def prune():
     print(json.dumps({'kept':sorted(keep),'stopped':idle}),flush=True)
     return idle
 
+def validate_cli_args(parser,args):
+    if args.source is not None and args.operation!='stage':parser.error('--source is only valid with stage')
+    if args.gpu_driver is not None and args.operation!='prepare':parser.error('--gpu-driver is only valid with prepare')
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('operation',choices=('stage','prepare','activate','rollback','start','status','prune'));parser.add_argument('id',nargs='?')
     parser.add_argument('--source',type=Path,help='Explicit prepared source tree for stage; owner data/store remain unchanged')
+    parser.add_argument('--gpu-driver',help='Reviewed narrow WSL driver package for a newly prepared release')
     args=parser.parse_args()
-    if args.source is not None and args.operation!='stage':parser.error('--source is only valid with stage')
+    validate_cli_args(parser,args)
     if os.name!='nt':raise SystemExit('Owner Windows release manager required')
     if args.operation=='status':
         state=read(STORE/'active.json');print(json.dumps({'id':state['id'],'running':running(state),'previous':state.get('previous'),'pending':(STORE/'pending.json').exists()},indent=2));return
     with exclusive():
         if args.operation=='stage':stage(args.source)
-        elif args.operation=='prepare':prepare(args.id)
+        elif args.operation=='prepare':prepare(args.id,args.gpu_driver)
         elif args.operation=='activate':cutover(args.id);prune()
         elif args.operation=='rollback':cutover(read(STORE/'active.json')['previous'])
         elif args.operation=='start':start();prune()

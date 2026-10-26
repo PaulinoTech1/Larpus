@@ -1,9 +1,12 @@
 # Local multi-turn RAG evaluation, inspired by MTRAGEval
 
-Status (2026-10-22): scoped capability probes prepared in the checkout; **no test run**.
-The owner asked to wait for the Grok Bot fine-tuning work to finish before any
-GPU-backed or latency test. This is a local adaptation of the three-task design
-in [MTRAGEval, SemEval 2026](https://aclanthology.org/2026.semeval-1.447/),
+Status (2026-10-25): scoped capability probes remain checkout-only. Catalog
+validation and seven focused unit tests passed on October 25; **no model-backed
+A/B/C run or human answer review** has been performed for this status update.
+The original owner instruction deferred GPU-backed and latency tests while Grok
+Bot fine-tuning was in progress. Pilot1 has since been shelved; this status note
+authorizes no live run or release activation. This is a local adaptation of the
+three-task design in [MTRAGEval, SemEval 2026](https://aclanthology.org/2026.semeval-1.447/),
 **not** an official leaderboard run or a reproduction of its dataset. Its five
 public synthetic cases are smoke fixtures, not a statistically representative
 benchmark or secret held-out set.
@@ -70,8 +73,9 @@ snapshot makes that arm unstable for comparison. The two flags are owner
 attestations, not automatic detection that training has ended or the GPU is
 idle. Check those conditions before launching. Run A/B after C for each arm;
 they require the same station identity and a release whose sealed agent image
-contains `runtime.rag_eval`. The current active frozen release predates this
-checkout code, so these commands are **not yet runnable against it**. A later
+contains `runtime.rag_eval`. The current active frozen release
+`6200bb30d68348f080f2c1c723ff2fb6` lacks `runtime/rag_eval.py`, so the
+A/B commands are **not yet runnable against it**. A later
 stage/prepare and separate owner-approved activation are needed before a live
 probe; building this code has not changed the serving release.
 

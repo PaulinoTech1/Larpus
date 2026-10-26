@@ -92,6 +92,46 @@ than mounting the entire DriverStore. The profile pins that path; driver updates
 require review/redeployment. This matches
 [NVIDIA's explanation of WSL driver forwarding](https://developer.nvidia.com/blog/?p=18337).
 
+## GPU driver updates and failure behavior
+
+The pinned package is an **exact mount allowlist**, not an automatic driver
+selector or a cryptographic attestation. A Windows driver update may leave the
+old WSL package directory present, so a valid-looking old path can still be
+incompatible with the updated host driver. On 2026-10-24, host/WSL driver
+621.01 coexisted with the retained 595.79 package mount. `nvidia-smi` inside
+the old model container reported `Driver Not Loaded`; Ollama reported the
+selected model on 100% CPU. Startup's full-GPU residency check refused to open
+the gateway. It did not turn a CPU-generated model reply into a successful chat
+response. The incident and measured recovery are in [Updates](UPDATES.md#2026-10-24-nvidia-62101-driver-maintenance-and-measured-http-run).
+
+For reviewed maintenance, identify the new package containing
+`libcuda.so.1.1` and test it with `/dev/dxg` and `/usr/lib/wsl/lib` in a
+temporary model-only, network-disabled container. Confirm the observed driver
+version and a model load with the intended context, KV cache and full GPU
+placement. Preserve the old container, then replace the model container in a
+scoped interruption. A newly staged release can use owner-side
+`python scripts/releases.py prepare ID --gpu-driver <reviewed-package-path>` to record the new
+exact path. That option validates the path shape and file presence; it does
+**not** update the model container, establish driver provenance, or waive the
+normal preparation scan and isolation checks. The new profile and the actual
+read-only model mount must match before preflight can pass. Never widen the
+mount to the whole DriverStore or enable host/CPU inference to recover service.
+
+| Security property | Effect and limit |
+| --- | --- |
+| Narrow exposure | Only the model container has `/dev/dxg` and the WSL GPU libraries plus one read-only NVIDIA package directory. The agent, broker, notes worker and CPU voice get no driver package or GPU device from this maintenance. |
+| Drift detection | `isolation.preflight/validate_container` checks the pinned source and destination, read-only mount and GPU device. A mismatched profile/container fails before inference. It does not prove that the selected driver binary is benign or compatible. |
+| Output hold | Startup and request-time placement checks require Ollama's `size_vram >= size > 0`. If the model moves partly or wholly to CPU, readiness or the request holds; CPU fallback does not become an approved answer path. |
+| Frozen-release integrity | The active frozen profile and scan receipts are not edited. A new prepared release carries the new pin and passes its own checks before activation. An application-only cutover is not a substitute for driver/model maintenance. |
+| Recovery | A retained prior release that pins the old package may be unusable under the new host driver. The old container and release are preservation artifacts, not proof of a working rollback. Verify a compatible host driver, model mount, profile, placement and isolation before calling recovery successful. The ordinary release manager cannot promise an automatic rollback across a driver replacement. |
+
+The 621.01 incident passed a temporary GPU probe, candidate preparation and
+active-release readiness, but did not establish reboot persistence, hostile
+driver resistance, availability during replacement, or the usability of the
+previous release as a rollback target. Windows, WSL and the GPU driver remain
+inside the trusted host boundary. Record an unresolved package identity, model
+fit or rollback path as a hold indicator before future driver cutovers.
+
 ## Offline deployment and Windows connection
 
 Inside /home/larpus/build, as larpus:

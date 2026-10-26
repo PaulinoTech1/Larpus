@@ -39,11 +39,13 @@ not live knowledge until admitted and integrated. The checkout includes
 [offline freshness detection](docs/SOURCE_FRESHNESS.md); age-based review warnings
 and scoped lifecycle signals do not certify current accuracy.
 
-Verified against the owner's active frozen release on **2026-10-11**. Counts and
-settings below describe that deployment; a fresh clone does not include its
-private models, credentials, downloaded corpus or prepared runtime.
+Historical snapshot verified against the owner's frozen release on **2026-10-11**.
+The [operational status](docs/STATUS.md) records the later selected release.
+Counts and settings below describe the October 11 deployment; a fresh clone
+does not include its private models, credentials, downloaded corpus or prepared
+runtime.
 
-| Component | Current deployment |
+| Component | October 11 deployment snapshot |
 | --- | --- |
 | Host | Windows 11 Home; Ryzen 9 5900X, 64 GB RAM, RTX 3090 Ti with 24 GB VRAM |
 | Isolation | Dedicated WSL2 distro, rootless Podman; separate offline agent and model namespaces connected through a private inference broker; separate offline CPU voice container |

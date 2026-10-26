@@ -1,5 +1,13 @@
 # Fine-tuning drafts (Grok Bot teacher loop, round zero)
 
+Current status is recorded in [the operational snapshot](../STATUS.md) and
+[the pilot1 decision](../DECISIONS.md). The sections below preserve the original
+October 22 draft state; later owner review corrected the held opt-05/d variant.
+Pilot1 was trained and evaluated offline, then shelved after heuristic regressions.
+It was not exported or activated. Blinded human review, independent locked tests
+and Grok-derived training rights remain unresolved. None of the draft files below
+should be read as a currently admitted training set.
+
 Owner content-review signoff for the 264 train/dev families was recorded on
 2026-10-22. See [the owner review receipt](OWNER_REVIEW_2026-10-22.md). The
 original draft files below are retained unchanged; reviewed copies are in a

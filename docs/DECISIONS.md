@@ -1174,3 +1174,181 @@ The original drafts are retained. The false gradient-descent claim in
 The signoff does not resolve rights, synthetic student attempts, the frozen
 baseline or the independently authored locked-test gap; no training, model
 switch or production activation follows from it.
+
+## Round-zero baseline started on Qwen3.8; owner rights choice recorded; opt-05/d correction proposed (2026-10-22, 10:45 AM ET)
+
+**What and why.** Evaluation only. The plan requires a frozen untuned baseline and real round-zero student attempts,
+which replace the synthetic `student_answer`s, before any teacher review or tuning. **Nothing was trained.** The run
+did not stop or restart the gateway, activate or roll back a release, or switch models. The run is
+`data/evals/tuning/round0-20261022-0940/` (git-ignored). `identity.json` and `data-manifest.json` were frozen at 09:40 ET. The
+pinned served model is `larpus3.8:27b-q4`, manifest sha256 `9db1c57adceb2172ca2e0b183dcf12f2b295cf6117247095e97cc096ea38464f`,
+GGUF `322e194f…3482`, running on Ollama 0.40.0 inside `larpus-model` under release `346773e17fd54b7784fd3148b07a4b0e`.
+The sampling settings were the production ones: think=false (Qwen3.8's default thinking is off because the broker requires it), temperature 0.4,
+num_ctx 131072 and num_predict 1024. The supported path cannot set a seed, and each prompt got one sample. Requests used the normal
+`127.0.0.1:8080/api/chat` path (broker, DLP, normal RAG) with the Mathematician and Quantum Mechanics Professor personas and no skill. Requests were sequential, at no more than 10 per minute, and
+the runner retried on 429 or 503. The prompt set was 701 prompts: 12 public smoke cases, all 122 dev variants and all 567 train variants, from the hash-verified
+owner-reviewed package (receipt `66b98153…88e4`). No locked-test prompt exists, and none was created. The run started at 09:41 ET. Smoke and dev
+finished by 10:39 ET with 0 final failures. One output was held by DLP and released on retry. Median completion latency was 25.3 s, and p95 was 33.6 s.
+The train capture continues in the background and resumes if restarted. The ETA is about 14:30 ET.
+
+**Scoring.** No automated six-behaviour rubric exists. The official 0-2 blinded scores and technical correctness are
+**pending** a human or independent judge using `dev-review-sheet.csv`. `heuristic-scores.json` records only labelled keyword
+checks. One heuristic flag stands out: 35 of 122 dev outputs (29%) hit the 1024-token cap, and brevity on direct-answer items passed
+only 9 of 41 times. This is a possible communication-layer failure to test with a prompt-only control first. No regex matched a
+fabricated tool-execution claim. Grok Bot agreement verifies nothing.
+
+**Owner rights decision (09:36 ET).** The owner said: "Mark them for local training only on my PC, no external sharing". A new versioned copy,
+`grok-finetune-staging/owner-rights-20261022-094356`, sets three fields on all 264 families: `training_use` = "local training on the owner's PC only",
+`external_sharing_approval` = "denied: no external sharing" and `license` = "owner-internal, local-use only". It adds a
+`rights_decision` record and recomputes every family hash. The receipt is `OWNER-RIGHTS-RECEIPT.json`, sha256
+`57869b49de134dc862661577234f722c25955c16613d1e72d5644a52755befd4`. The `owner-signoff-20261022-092213` package and the
+`docs/finetune` drafts are unchanged. `grok-r1-opt-05` remains held.
+
+**opt-05/d.** `docs/finetune/opt-05-d-correction.proposed.md` proposes a corrected target. It scopes the claim to two cases: a convex quadratic
+with Hessian eigenvalues in [mu, L] and mu > 0 converges, and an L-smooth function that is bounded below gets f-decrease and gradient norm tending to 0, but not
+iterate convergence. It uses `f=-x^2`, `L=2`, `alpha=0.5` as the counterexample. Its local numpy/sympy check passed, and it is
+**pending owner approval**. opt-05 is a dev family, so this edit changes a dev reference. The baseline excluded
+`dev/grok-r1-opt-05/d` from target scoring.
+
+**Still blocked before any training:** opt-05/d approval and reviewer disposition; official review of the dev baseline and failure-layer
+labels; the prompt-only control; the 72 independently authored locked tests; a recorded check of current Grok/xAI terms
+(the owner rights choice does not record one); per-family admission; and the vision/MTP export chain. A no-RAG fixed-evidence arm is not available on the
+live supported path. Nothing was committed or pushed.
+
+
+## opt-05/d correction approved; dev reference changed (2026-10-22, 1:10 PM ET)
+
+Owner decision at 1:10 PM ET: "Approve the opt-05/d correction". The new package `C:\Users\PS5Killer\grok-finetune-staging\owner-opt05-20261022-1311` is a copy of `owner-rights-20261022-094356`. That source package was not edited.
+- In the new package, `grok-r1-opt-05` variant d's `reviewed_target` is the corrected target from `docs/finetune/opt-05-d-correction.proposed.md` (as committed in cd9f726), and the family hold is removed. The family is now `owner-reviewed-content-pending-admission`, and the earlier hold is kept under `review.hold_history`. The family hash changed from `9a3da320…c35d` to `ee4be6cc…6a1b`. The receipt `OWNER-OPT05-APPROVAL-RECEIPT.json` has sha256 `a494c9ce85ef70e9a5c5f0e7d0ed0f86292d175d58c2b40c08c9995bcfc5d913`. All 264 family hashes verify, and there are no remaining holds or null targets.
+- Variant c's wording is unchanged. The correction doc suggests reviewing its iterate-convergence claim. Variant d's `teacher_critique` was left as authored.
+- `check_opt05d.py` was rerun in the new package at 1:11 PM ET. It printed ALL CHECKS PASS (exit 0).
+- **This changes a dev reference.** `dev/grok-r1-opt-05/d` can now be scored against the new target. The round-zero run folder and its eval receipt still exclude it, because they use the earlier signoff package and were not edited.
+- An automatic heuristic score of the existing round-zero output was computed. It is not an official score. The missing_assumption check passes, target number recall is 1.0, and the output was truncated at 1024 tokens. The answer gives 1/L, line search and convexity. It does not give the 0 < alpha < 2/L range, the bounded-below condition or the f = -x^2 counterexample. The result is in `opt05d-round0-heuristic.json` in the new package.
+- This is content approval only, not training admission. Nothing was trained, and nothing was committed.
+
+
+## Prompt-only control run; candidate prepared, not activated (2026-10-22, 5:40 PM ET)
+
+Owner approval at 4:24 PM ET ("yeah lets start it now"). Nothing was trained.
+- **Treatment:** the same 1547-char evidence-first tutoring block was appended to the Mathematician and Quantum Mechanics Professor system prompts. The block covers answering first and concisely, one hint and one question in practice, correcting false premises, asking about missing assumptions, keeping source qualifications, stating what was and was not verified, and no padding. System prompt sha changes: Mathematician `1dc4b116…` → `e2e8d3a2…`; Quantum `3e3286a1…` → `8486d1d3…`. The candidate files and diff are in `data/evals/tuning/prompt-control-20261022-1629/candidate-prompts/`. The live `agents/personas/*.json` and the active release 346773e1 are unchanged.
+- **Route:** candidate release `5e0c47d72ec643639a53c98574e5f32c` was staged and then prepared. It was **not activated**. It was exercised through its own `runtime.mcp_client.chat`, the same path the gateway uses: isolation preflight, then the candidate agent, retrieval, DLP gate, and candidate broker. There was no live-gateway HTTP layer, no direct Ollama call, and the gateway was not restarted. Model and sampling were unchanged. The stage step needed the documented `knowledge_counts.py --write` catalog-metadata fix (unit42 2→1; the DB is byte-identical) and a read-only `research/` junction for the provenance check.
+- **Run:** 134/134 ok (122 dev + 12 smoke), 4:48–5:30 PM ET, one DLP hold that passed on retry (fa-20/a).
+- **Automatic heuristic, dev, baseline → prompt-only. Not official.**
+  - direct_answer 9/41 → 27/41
+  - practice_one_hint 4/8 → 7/8
+  - false_premise 28/34 → 34/34
+  - verification_status 70/88 → 81/88
+  - missing_assumption 24/26 → **21/26**
+  - Variants passing all checks: 74 → 100 of 122
+  - Families passing all variants: 11 → 28 of 48
+  - Truncated: 35 → 8 of 122
+  - Mean output tokens: 708 → 411
+  - Median latency: 25.3 → 17.3 s
+  - Target-number recall: 0.863 → **0.781**
+- **opt-05/d** against the approved target:
+  - Baseline: truncated, recall 1.0.
+  - Prompt-only: 167 words, not truncated, recall 0.5. It asks for the convexity and batch regime but misses the 2/L range, the bounded-below condition and the −x² counterexample.
+- **Decision:** keep as the leading candidate and revise the missing-assumption wording. Adoption waits for blinded human 0–2 review of `blinded-review-sheet.csv` (the key is stored separately) and a repeat with three samples per arm. This is a single sample at T=0.4 with no seed.
+- **Candidate containers left running:** agent, broker and notes for 5e0c47d7. The earlier prepared candidates are also still running. Nothing was committed or pushed.
+
+## 2026-10-22 6:25 PM ET - Prompt-only control round 2 (candidate v2 + 3-sample repeat), owner-approved 5:49 PM ET
+
+- Owner approval: "go for it" (5:49 PM ET 2026-10-22). No training, no activation, no gateway restart, no broker/DLP bypass, no commits, no deletions, no installs.
+- Stopped (not removed) the idle containers of old prepared/staged candidates 1fecc97e, b5d30447, 1d49ff55 (agent/broker/notes, 9 containers) at 5:50 PM ET with `podman stop --time 5` (the same stop `releases.py prune` issues; prune itself would have kept them as prepared candidates newer than the active release). Live 346773e1 and candidate 5e0c47d7 untouched; `releases.py status` running true afterwards. Release folders and images kept.
+- Candidate v2 f46146f28d1742ec87acc4e157322ed3 staged from 5e0c47d7's source; only the Mathematician and Quantum persona prompts (and regenerated config/broker-prompts.json) differ from v1; the other 10 personas are byte-identical to live. Prepared 6:13 PM ET, NOT activated. Diffs: data/evals/tuning/prompt-control-r2-20261022-1754/candidate-prompts-v2/v2-vs-v1.diff and v2-vs-live.diff.
+- v2 changes vs v1 (general rules, no item-specific text): unstated-assumption replies name the assumption in the first sentence, give per-case results with exact conditions only when short, and always end with one question asking which case applies; new "conditions and scope" rule (precise hypotheses, exact thresholds/ranges incl. strict vs non-strict, what is and is not guaranteed, one short counterexample for commonly over-generalised claims); evidence rule keeps stated conditions and numbers.
+- 3-sample repeat launched 6:14 PM ET in data/evals/tuning/prompt-control-r2-20261022-1754/ (baseline=live text via gateway loopback, v1=5e0c47d7, v2=f46146f2 via prepared-release mcp_client route; 122 dev + 12 smoke; round0 reused as baseline s1 and prompt-control-20261022-1629 as v1 s1 after comparability checks; <=10 calls/min). Results, opt-05/d scoring against owner-opt05-20261022-1311, and the blinded sheet land there automatically on completion (summary.md, heuristic-comparison-r2.json, eval-receipt.json).
+- Other-persona regression (25 companion cases, 1 sample per route): live 25/25 released, 24/25 under 120 words; v2 25/25, 25/25; 0 claimed live actions, 0 FAB flags, 0 DLP holds on both.
+- Decision: pending results and the owner's blinded review. Activation of either candidate requires a separate owner approval.
+
+## pilot1 QLoRA adapter: output degradation measured; shelved, not activated or exported (2026-10-25, 7:55 PM ET)
+
+**What and why.** The owner asked on 2026-10-25 to "evaluate the fine tuning results" and then to "also document the degradation of the output". This entry records the first trained adapter (pilot1) after the fact. No earlier pilot entry exists in this file: the backup `DECISIONS.md.pre-pilot1-20261023-080458.bak` is byte-identical to the file before this entry (sha256 `642241a12777fd3df30a2dd530216a011bb06a53171b3c1ccdc8a77a2d5f0e58`). Writing this entry trained, exported, merged, activated and committed nothing.
+
+**Training (2026-10-23, 07:53-09:10 ET).** QLoRA SFT of `Qwen/Qwen3.8-27B` revision `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`. The bf16 weights were loaded as NF4 with double quant and bf16 compute. It ran in the Larpus WSL distro, folder `/home/larpus/train-models/pilot1-20261023-0742`.
+- LoRA: r 16, alpha 32, dropout 0.05, on 400 language-model modules (q/k/v/o, in_proj_qkv, in_proj_z, out_proj, gate/up/down), 108,789,760 trainable params.
+- Optimiser: AdamW at lr 1e-4 with 5 warmup steps and cosine decay to 1e-5. Accumulation 8, micro-batch 1, clip 1.0, 2 epochs, 142 optimizer steps, seed 20261023, max_len 1536.
+- Loss on assistant tokens only, with thinking disabled in the template.
+- Data: 562 examples from 214 owner-reviewed train families in package `owner-opt05-20261022-1311`. 2 families and 5 variants were skipped. The system prompt is the candidate v2 persona text (release `f46146f2`). The user turn is the round-0 form, with fixed evidence where present. No dev family and no locked test was used.
+- `data-manifest.json` sha256 `9ed42ee0c6ef85754905a327db0023bc1082ed224f297b71f58fb96a2b408c91`. `train-examples.jsonl` sha256 `04f69de7dece796decaac443df00997ca0641a72ce05e52b202becb66f3acbe7`.
+- Launch history: the first launch at 07:48 failed 3 times (`OSError: Too many open files`). The 07:53 fresh start was deliberately stopped at step 15 (08:02) as a resume test and resumed at 08:03.
+- Loss: mean step loss went from 1.384 (steps 1-5) to 0.510 (steps 138-142). Epoch means were 0.916 and 0.560. No held-out loss was computed.
+- Compute: 4,498 s of step time, about 284 tokens/s, torch peak 19.87 GiB allocated, sampled whole-GPU peak 23,888 MiB (DONE.json).
+- Adapter: `adapter-final/adapter_model.safetensors`, sha256 `0650d88389e0af36257fac335f18cf4ee5a535e0ca7a34f865d79dff0ed05c05`, 435,280,528 bytes.
+- The station was taken offline for the run. Live release `346773e1` was not activated or rolled back (RESTORE-NOTE.md).
+
+**Evaluation (2026-10-25; generation 02:12-03:33 ET, scored 04:57 ET).**
+- Arm A is base + v2 prompt with the adapter disabled. Arm B is the same plus adapter-final.
+- Both arms ran HF/PEFT on the same NF4 base. This is **not** the served Ollama Q4 model. Evidence was fixed in the prompt, with no retrieval and no gateway/DLP.
+- Sampling: T 0.4, top_p 0.95, top_k 20, max_new_tokens 1024, 1 sample per prompt.
+- Prompts: 48 dev families (122 scored dev prompts) plus 12 unscored smoke prompts.
+- Scoring was automatic heuristic checks only: the round-0 `score.py` regexes and the r2 opt-05/d key points. There has been no human review.
+
+**Measured degradation (observation).** The figures below are family-level means, given as B-A in pp with a 95% bootstrap CI over families. They were recomputed from `eval-responses.jsonl` and match `family-level-comparison.json`.
+- All checks pass, per variant: 75.7% -> 44.6%, -31.1 [-42.9, -19.1]. Families better/worse/tie: 6/29/13. Raw count: 93 -> 55 of 122 variants.
+- Family passes every variant: 47.9% -> 8.3%, -39.6 [-56.2, -22.9]. Raw count: 23 -> 4 of 48.
+- verification_status: 89.6% -> 37.5%, -52.1 [-65.3, -38.5] (77 -> 34 of 88 variants). Outputs containing a "Verification status" line: 92 -> **0** of 122.
+- applicability (19 families): 68.4% -> 18.4%, -50.0 [-76.3, -21.1].
+- meaningful_checks (33 families): 93.9% -> 69.7%, -24.2 [-39.4, -9.1].
+- Target-number recall: 0.836 -> 0.682, -0.154 [-0.210, -0.098].
+- Small or uncertain changes:
+  - false_premise: 100 -> 94.1, -5.9 [-14.7, 0.0].
+  - evidence_qualifications: 100 -> 92.3, -7.7 [-23.1, 0.0].
+  - missing_assumption: 81.2 -> 79.2, -2.1 [-25.0, +20.8].
+  - practice_one_hint: 100 in both arms.
+- Gains: direct_answer (41 families) 68.3% -> 100%, +31.7 [+17.1, +46.3]. Truncation 8.3% -> 0%.
+- Length: mean output tokens 399 -> 66, mean words 183 -> 40.
+- Largest family regressions (all checks):
+  - -1.00: ent-10, lim-20, ode-05, ode-10, spin-10.
+  - -0.67: dyn-15, dyn-20, fa-10, meas-20, open-10. summary.md lists only the first 8 of these 10.
+- opt-05/d:
+  - Both arms named L-smoothness, convexity and 1/L, and asked a question.
+  - Both missed the bounded-below condition, the -x^2 counterexample, f-decrease versus iterate convergence, and line search.
+  - The arms differed on two points, one each: the 0<alpha<2/L range and a non-convex mention. Per-arm detail is kept out of this entry until the blinded review is done.
+- No refusal phrases in either arm. Arm B gave 2 short question-only replies on direct-answer items, arm A gave 0.
+- Cost:
+  - Amortised seconds per answer: mean 23.6 vs 10.0, median 22.3 vs 9.2.
+  - Aggregate decode: 15.9 vs 6.6 tok/s. B ran in smaller, OOM-split batches.
+  - Torch peak: 19,893 vs 20,954 MiB. Whole-GPU peak: 24,278 MiB (including about 2.4 GB of Windows apps).
+
+**Interpretation (inference, not verified).** The adapter learned brevity and answer-first directness, at the cost of the verification-status and applicability lines the system prompt asks for. Supporting observations from the training data:
+- 0 of 562 `reviewed_target`s contain a "Verification status" line, although both training system prompts require one.
+- Only 149 of the 420 verification-tagged targets (35.5%) match even the loose verification heuristic.
+- 17 of the 89 applicability-tagged targets (19.1%) match the applicability heuristic. That is close to arm B's 18.4%.
+- Targets average 42.6 words, against arm B's 39.5.
+
+Taken together, SFT plausibly taught the model to copy the target style rather than follow the prompt. max_len 1536 truncated no example (the longest is 1,277 tokens), so it is not implicated. Two epochs on 562 short examples may also have over-fitted the style. That effect was not isolated.
+
+**Decision.** pilot1 is **rejected for activation and shelved**.
+- It was not activated, exported, merged or deleted. The run folder is about 20 GB in the distro, and deleting it needs owner approval.
+- Prompt-only candidate v2 (release `f46146f28d1742ec87acc4e157322ed3`, prepared, not activated) remains the stronger candidate.
+- The live release is unchanged at `6200bb30d68348f080f2c1c723ff2fb6`. Its 2026-10-24 activation is described in UPDATES.md and has no entry here.
+
+**Caveats.**
+- These are heuristic regex checks, not the 0-2 rubric and not technical correctness. Base outputs may pass on boilerplate.
+- One sample per prompt at T 0.4.
+- Not the served route: NF4 HF/PEFT, not Ollama Q4, with no RAG and no DLP.
+- Dev only. No locked tests exist, so no keep decision is possible either way.
+- Seed pairing is weaker than summary.md and eval-receipt.json state. Arm B hit 25 OOM splits, and each split re-seeds its halves at +100/+200. So only 40 of 134 prompts (37 of 122 dev) had the same seed in both arms, and 38 had the same batch size. The arms also ran one after the other: A 02:12-03:03, B 03:04-03:33.
+- The blinded sheet is easy to unblind by length: the word ratio is about 4.6x.
+
+**Correction (recorded here; eval outputs not edited).** summary.md's latency header says "batch 12". The scored run actually used batch 6 with a 6,500 prompt-token budget (supervisor.log relaunch at 02:10; `eval-receipt.json` `decoding.batch` = 6). After OOM splits, B's batches ranged from 1 to 6. The batch-12 and batch-8 attempts were discarded.
+
+**Open issues.**
+1. xAI terms. All pilot1 targets are Grok-derived. The 2026-10-25 read-only compatibility check found the terms block training on Grok outputs, so there is no further training on this data until that is resolved.
+2. Ollama 0.40.0 rejects LoRA adapters. Serving would need a merge to a full GGUF, re-quantisation, an MTP-head decision and a new model tag.
+3. No locked tests exist, so no keep decision is possible.
+4. The owner's blinded review of `blinded-review-sheet-pilot1.csv` is pending. Do not open the PRIVATE key or the UNBLINDED examples first.
+
+**Possible next round (proposal only, not approved).**
+- Targets that keep the verification-status and applicability lines.
+- More direct-answer examples that still carry their qualifications.
+- Fixed-evidence and retrieval controls run first.
+
+**Files.**
+- `data/evals/tuning/pilot1-20261023-0742/` (git-ignored): `identity.json`, `train-receipt.json`, `decision.md`, `OUTPUT-DEGRADATION.md`, `OUTPUT-DEGRADATION-EXAMPLES.UNBLINDED.md` (open only after the blinded review), `data-manifest.json`, `RESTORE-NOTE.md`.
+- `eval-20261025-0117/` in the same folder: `summary.md`, `eval-receipt.json`, `family-level-comparison.json`, `eval-responses.jsonl`, `blinded-review-sheet-pilot1.csv`.
+- Distro run folder: `DONE.json`, `events.jsonl`, `train-log.jsonl`, `micro-log.jsonl`.
+- Backup taken before this entry: `LARPUS-backup-20261021-1405/round0-baseline/DECISIONS.md.pre-pilot1-eval-20261025-194819.bak`.
+
+Nothing was committed or pushed.
