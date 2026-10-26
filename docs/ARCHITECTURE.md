@@ -54,6 +54,10 @@ separate from the active release. The [Grok teacher loop](GROK_TEACHER_TUNING_LO
 and [local RAG evaluation probes](MTRAGEVAL_LOCAL.md) are preparation and
 evaluation work, not part of this production request path.
 
+## Proposed additional classifier (not deployed, 2026-10-25)
+
+A separate architecture proposal is recorded in [the prompt-injection guard plan](PROPOSED_PROMPT_INJECTION_GUARD.md): a **CPU-only**, offline Horizon-Labs/prompt-injection-guard-small (publisher-reported **141M** parameters, Apache-2.0, ungated model) for evaluation alongside existing Stegdetect. This is **not** an active scanner or a proved latency/security improvement. A future guard LLM such as **Llama Guard 4 12B** would require a separate or larger GPU and is outside the current experiment. Neither learned classifier would change the capabilities, tool allowlist, model access, isolation, or DLP enforced by trusted runtime code. Model suitability and performance require independent testing; increased parameter count is not a reason to infer better detection. Current active architecture is the diagram above.
+
 ## Deployed Windows 11 Home station
 
 ```text
