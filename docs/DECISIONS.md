@@ -2,6 +2,12 @@
 
 Dated historical decisions and observations; deployment IDs and settings describe their recorded time. See [STATUS.md](STATUS.md) for the current dated snapshot. Older entries do not override later decisions.
 
+## Proposed layered classifier selection (2026-10-25; not activated)
+
+The owner proposes evaluating **Horizon-Labs/prompt-injection-guard-small** on CPU as an additional probabilistic prompt-injection classifier beside Stegdetect. The model card identifies **141M parameters** (correcting the initial 131M estimate), Apache-2.0 licensing, ungated access, and an ONNX option. This was preferred for offline/local access, less identifying information at download, and permissive licensing, **not** because 141M parameters establishes superiority over Meta's **Llama Prompt Guard 2 86M**. Actual accuracy, calibration, model quality, latency, memory fit, and license compatibility need validation. No live model, CPU service, policy change, or deployment is claimed.
+
+A possible second **guard LLM**, e.g. **Llama Guard 4 12B**, is future work contingent on a separate GPU or higher-VRAM GPU; Llama Guard 4 is a content-safety model, not an automatically interchangeable prompt-injection detector. No such hardware or model is included in the current experiment. Existing broker, isolation, Stegdetect, skill integrity and output DLP retain independent enforcement. Full decision rationale, baseline comparison, safeguards, and acceptance criteria: [proposed guard design](PROPOSED_PROMPT_INJECTION_GUARD.md).
+
 ## Name, author credits and clean speech (2026-10-09)
 
 Every persona prompt now states "Your name is LARPUS; if asked your name, say
