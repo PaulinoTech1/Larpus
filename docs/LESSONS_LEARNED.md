@@ -55,21 +55,23 @@ stderr as a terminating error under `ErrorActionPreference = Stop`. The
 launcher now lets that stream continue and returns the Linux exit code. The
 first sweep had written only an initializing receipt before that abort.
 
-## Horizon quarantined the cyber-pentest case
+## Horizon blocked the cyber-pentest prompt and that turn froze
 
 Horizon was added after the existing allow checks, for chat messages only.
 Evidence, skills, and voice stay on the earlier gate. A Horizon injection
-label quarantines that message and the gateway keeps serving. The first live
-cutover was release `4388d01cef2f46d89d80749045ed3cd7`.
+label quarantines that message and the gateway process keeps serving. The
+first live cutover was release `4388d01cef2f46d89d80749045ed3cd7`.
 
-The verified performance suite `8b0ab6414c6e49aea7d4dac81a0401ab` then failed
-`cyber-pentest` on every warmup and measured attempt. The gateway returned
-HTTP 200 in about 1.0–1.1 seconds with no text. The suite stored
-`invalid_protocol`. A replay showed the stream was a quarantine event and
-then `done` with `local: true`. The lexical filter had allowed the sentence.
-Horizon's own label was `INJECTION` at probability 0.5336, so the message
-was removed before the model. The suite did not understand the quarantine
-event and called the parse a protocol error.
+The incident was the verified `cyber-pentest` case. The lexical filter
+allowed the sentence. Horizon labeled it `INJECTION` at probability 0.5336
+and blocked it before the model. The gateway answered HTTP 200 in about
+1.0–1.1 seconds with a quarantine event, then `done` and `local: true`, and
+no text. The performance runner did not recognize that event, so the turn
+never completed. The suite stored `invalid_protocol` and the case looked
+frozen: no first text and no finished reply. This happened on every warmup
+and every measured attempt in run `8b0ab6414c6e49aea7d4dac81a0401ab`. The
+other eight cases in that same run still completed, so the gateway process
+itself did not stop. The frozen part was the blocked cyber-pentest turn.
 
 Scores on the same snapshot, one segment, six threads:
 

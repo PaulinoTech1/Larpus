@@ -1407,9 +1407,11 @@ Nothing was committed or pushed.
 Recorded in [lessons learned](LESSONS_LEARNED.md). The Codex unelevated
 sandbox denied `WslService` before Python started. The manual path is an
 owner PowerShell outside that token, through `scripts/invoke-larpus.ps1`.
-Larpus does not mount `C:`. Horizon later quarantined the original
-`cyber-pentest` sentence at injection probability 0.5336. Raising the cutoff
-to 0.9 would also allow a 0.7053 injection label, so the gate stayed at the
-model's 0.5 label. The suite sentence now says the lab must confirm the
-finding itself, which scored 0.3567. Live release
+Larpus does not mount `C:`. Horizon blocked the original `cyber-pentest`
+sentence as prompt injection at probability 0.5336. That turn returned no
+text and the suite recorded `invalid_protocol`, so the case looked frozen.
+The gateway process kept serving the other cases. Raising the cutoff to 0.9
+would also allow a 0.7053 injection label, so the gate stayed at the model's
+0.5 label. The suite sentence now says the lab must confirm the finding
+itself, which scored 0.3567. Live release
 `882c959c3d4540a5ba4b4b89f1596b17`.
