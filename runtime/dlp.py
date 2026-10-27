@@ -113,6 +113,25 @@ def secure_directory():
         if QUARANTINE.stat().st_uid!=os.getuid():
             raise OSError('Quarantine owner mismatch')
 
+def store_held_input(text, reason='prompt_injection'):
+    """Keep one blocked chat message for owner inspection. Never execute it."""
+    if reason!='prompt_injection' or not isinstance(text,str) or not text.strip() or len(text.encode('utf-8'))>32000:
+        raise ValueError('Invalid quarantined input')
+    settings=policy()
+    secure_directory()
+    files=list(QUARANTINE.iterdir())
+    if any(not f.is_file() or f.is_symlink() for f in files):
+        raise OSError('Unexpected quarantine artifact')
+    record={'id':uuid.uuid4().hex,'created_at':datetime.now(timezone.utc).isoformat(),'state':'held','kind':'input','reasons':[reason],'text':text}
+    raw=json.dumps(record,ensure_ascii=True).encode()
+    if len(files)>=settings['max_records'] or sum(f.stat().st_size for f in files)+len(raw)+1024>settings['max_quarantine_bytes']:
+        raise OSError('Quarantine capacity exceeded')
+    staged=QUARANTINE/(record['id']+'.json')
+    descriptor=os.open(staged,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+    with os.fdopen(descriptor,'wb') as stream:
+        stream.write(raw);stream.flush();os.fsync(stream.fileno())
+    return record['id']
+
 def gate(text,system_prompt=''):
     try:
         settings=policy()

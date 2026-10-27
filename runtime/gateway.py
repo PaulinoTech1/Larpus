@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
-from runtime.agents import ROOT, CatalogRejected, load_personas, messages_for, persona_rejections, require_persona, skill_rejections, summaries
+from runtime.agents import ROOT, CatalogRejected, load_personas, prepare_conversation, persona_rejections, require_persona, skill_rejections, summaries
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
 from runtime.execution_profiles import resolve, to_wire
@@ -33,7 +33,9 @@ def validate_chat_request(data):
         raise ValueError('Invalid speech flag')
     execution=execution_kwargs(data)
     persona = require_persona(data['persona'])
-    messages_for(persona, data['messages'],data.get('skill'))
+    kept,info=prepare_conversation(persona, data['messages'],data.get('skill'))
+    data['messages']=kept
+    data['_horizon']=info
     return execution
 
 def add_queue_timing(result,execution,elapsed):
@@ -234,14 +236,24 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError('Request must be 1-524288 bytes')
             data = json.loads(self.rfile.read(size))
             execution=validate_chat_request(data)
+            horizon=data.pop('_horizon',{'classified':[],'removed':[],'local':False})
         except TextHeld as exc:
             return self.reply(503 if exc.unavailable else 422, {
-                'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.',
+                'error':'Text held by the local input filter. Remove hidden controls, instruction overrides, or blocked prompt text and try again.',
                 'reason':exc.reason, 'message_index':exc.index,
             })
         except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
         except (ValueError, TypeError):
             return self.reply(400, {'error': 'Invalid chat request. Use a known persona and alternating messages, up to 8000 characters each.'})
+        if horizon['local']:
+            notice={'removed':horizon['removed'],'incidents':[item['incident'] for item in horizon['classified']]}
+            if self.path=='/api/chat/stream':
+                self.headers_out(200,'application/x-ndjson',None,{'X-Accel-Buffering':'no'})
+                for event in ({'type':'quarantine',**notice},{'type':'done','local':True,'sources':[]}):
+                    self.wfile.write((json.dumps(event)+'\n').encode())
+                self.wfile.flush()
+                return
+            return self.reply(200,{'content':'That message was set aside and was not sent onward.','quarantine':notice})
         if not LOCK.acquire(blocking=False):
             return self.reply(409, {'error': 'Inference busy. Try again shortly.'})
         ticket=ADMISSION.interactive()
@@ -257,6 +269,8 @@ class Handler(BaseHTTPRequestHandler):
                 def event(value):
                     self.wfile.write((json.dumps(value)+'\n').encode());self.wfile.flush()
                 try:
+                    if horizon['removed']:
+                        event({'type':'quarantine','removed':horizon['removed'],'incidents':[item['incident'] for item in horizon['classified']]})
                     result=mcp_stream(data['persona'],data['messages'],data.get('skill'),lambda text:event({'type':'text','content':text}),**execution)
                     add_queue_timing(result,execution,admission_ms)
                     if result.get('status')==200:
@@ -271,6 +285,8 @@ class Handler(BaseHTTPRequestHandler):
                         pass  # Browser disconnected; never start another HTTP response.
                 return
             result = mcp_chat(data['persona'], data['messages'],data.get('skill'),**execution)
+            if horizon['removed']:
+                result['quarantine']={'removed':horizon['removed'],'incidents':[item['incident'] for item in horizon['classified']]}
             add_queue_timing(result,execution,admission_ms)
             status = result.pop('status', 502)
             if status == 200 and data.get('speak'):
@@ -361,9 +377,12 @@ def main():
                     server.shutdown()
                     return
         threading.Thread(target=drain_when_requested,daemon=True,name='larpus-release-drain').start()
+        from runtime.horizon_guard import install, shutdown
+        install()
         try:
             server.serve_forever()
         finally:
+            shutdown()
             stop_monitor.set()
             if lan is not None:
                 local.shutdown()

@@ -107,6 +107,12 @@ class PerformanceSuiteTests(unittest.TestCase):
         self.assertIn('identity_changes',result)
         self.assertEqual(result['identity_changes']['model_id'],{'before':'3.5','after':'3.8'})
 
+    def test_quarantine_stream_is_a_named_failure(self):
+        transport=self.module('performance_transport')
+        opener=Mock();opener.open.return_value=BytesIO(b'{"type":"quarantine","removed":[0],"incidents":["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]}\n{"type":"done","local":true,"sources":[]}\n')
+        row,answer=transport.probe(opener,{'persona':'it-larp-coach','messages':[]},retain=False)
+        self.assertFalse(row['ok']);self.assertEqual(row['error'],'quarantined');self.assertIsNone(answer)
+
     def test_transport_close_failure_never_reports_success(self):
         transport=self.module('performance_transport')
         class BrokenClose(BytesIO):

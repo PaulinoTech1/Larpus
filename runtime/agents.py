@@ -2,7 +2,7 @@
 import json
 import re
 from pathlib import Path
-from runtime.text_filter import filter_messages, DEFENSE_PROMPT
+from runtime.text_filter import DEFENSE_PROMPT, TextHeld, screen_conversation
 from runtime.skills import CatalogRejected, PersonaRejected, load_skills, selected_prompt, skill_rejections, summaries
 
 _KNOWN_PERSONAS=None
@@ -99,7 +99,7 @@ def require_persona(identifier):
     if reason:raise PersonaRejected(reason)
     raise ValueError('Unknown persona')
 
-def messages_for(persona, history, skill=None):
+def normalize_history(history):
     if not isinstance(history, list) or not 1 <= len(history) <= 402:
         raise ValueError('Send 1–40 conversation messages')
     clean = []
@@ -113,5 +113,16 @@ def messages_for(persona, history, skill=None):
         clean.append(msg)
     if clean[-1]['role'] != 'user':
         raise ValueError('Last message must be from user')
-    filter_messages(clean)
-    return [{'role': 'system', 'content': persona['system_prompt'] + selected_prompt(persona,skill) + DEFENSE_PROMPT + CONVERSATION_PROGRESS}] + clean
+    return clean
+
+def prepare_conversation(persona, history, skill=None):
+    clean=normalize_history(history)
+    selected_prompt(persona,skill)
+    return screen_conversation(clean)
+
+def messages_for(persona, history, skill=None):
+    kept,info=prepare_conversation(persona,history,skill)
+    if info['local'] or not kept or kept[-1]['role']!='user':
+        index=info['classified'][-1]['index'] if info['classified'] else None
+        raise TextHeld('prompt_injection',index=index)
+    return [{'role': 'system', 'content': persona['system_prompt'] + selected_prompt(persona,skill) + DEFENSE_PROMPT + CONVERSATION_PROGRESS}] + kept

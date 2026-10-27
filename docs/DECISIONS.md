@@ -1358,3 +1358,58 @@ Taken together, SFT plausibly taught the model to copy the target style rather t
 - Backup taken before this entry: `LARPUS-backup-20261021-1405/round0-baseline/DECISIONS.md.pre-pilot1-eval-20261025-194819.bak`.
 
 Nothing was committed or pushed.
+
+## 2026-10-25 8:58 PM ET - Release with published study notes: base (active) and base+v2 (prepared, switchable)
+
+- Owner approval (2026-10-25): prepare and activate a release with the newly published study notes, and keep two options: the base `larpus3.8:27b-q4` with the original persona prompts, and the same model with candidate prompt v2 ("base+v2"). This is the prompt-only v2 candidate, not the shelved pilot1 adapter. pilot1 was not touched. Nothing was trained, exported, installed, committed or pushed, and no embeddings were rebuilt.
+- **How the choice works: two releases.** Personas load from `agents/personas/*.json`, and retrieval filters approved passages by persona id (`runtime/knowledge.py`, `role=?`). A separate "Math (v2)" persona would have no passages unless the code changed, so it was not added. Both releases were built from the same snapshot with the same notes:
+  - **A `14911af1e4c249e7b125ad7441524f70` (base, ACTIVE).** This is the 6200bb30 payload plus the published notes. The only changed files are `knowledge/notes.sqlite` and `knowledge/notes-manifest.json`. All 12 persona prompts are the originals. Source fingerprint `ea1a081e…` is unchanged from 6200bb30.
+  - **B `61a6448a6b3e4a428bb9ef6dff873f87` (base+v2, PREPARED, not active).** This is the f46146f2 payload plus the same two notes files. Compared with A, only `agents/personas/mathematician.json`, `agents/personas/quantum-mechanics-professor.json` and the regenerated `config/broker-prompts.json` differ. The other 10 personas are byte-identical. The mathematician file matches `candidate-prompts-v2/mathematician.v2.json`. Fingerprint `7437c8e3…`.
+- **Notes:** `notes.sqlite`, published 7:49 PM ET, 140,166 notes, sha256 `5753ec8c4f78810c01877b43d89df52daaef135d2ff2856dec5af768d171a502`, 214,769,664 bytes. The previous release had 8,256 notes. The agent containers of both A and B count 140,166 rows, and their manifests match.
+- **Approved index, sources and chunks:** unchanged from 6200bb30 (76,850 passages, 413 documents, the unit42 count fix carried over). The checkout's uncommitted re-index (76,851 passages, cyber-20261015-snyk-evo 67 vs 66) and the commits after that snapshot were **not** included.
+- **Notes caveat.** 6,495 notes (4.6%) come from sources that are absent from the approved index, in this release and in the checkout alike:
+  - chicone-ordinary-differential-equations: 2,908
+  - salsa-partial-differential-equations: 2,014
+  - nist-sp80063-4: 591
+  - nist-cswp39-upd1: 271
+  - nsdi25-slow-fault: 247
+  - osdi25-semantic-checkers: 241
+  - usenix25-kernel-tlb: 223
+
+  A further 78 notes have locators that are not in the index. Notes carry their verbatim passage, so they still serve. The owner should decide whether the removed sources' notes should be filtered in a later notes publish.
+- **Pipeline:** `releases.py stage --source` was used with prepared trees under `E:\speedzone_MS\larpus-release-work-20261025\release-source-{A,B}`. Each tree had read-only `data`, `vendor` and `research` junctions, and `sources-receipt.json` records the checks. `prepare` built the normal offline per-release agent, broker and notes images and containers (no new voice image, no new model container). It also ran the public contracts, the unit tests, the companion eval, the UI checks and the isolation check. The scan completed 70 targets with the retained source-pinned MCP warning.
+  - A prepared 8:33 PM ET; B prepared 8:47 PM ET.
+  - Tests on the A tree (`scripts/test-local.py` → `unittest discover -s tests -v`): 561 ran, OK, 4 skipped (Linux sockets, symlink privilege x2, no published notes in the temp copy).
+- **Activation:** A was activated 8:47:53–8:48:18 PM ET, with previous = 6200bb30. Prune stopped (did not remove) 6200bb30's agent, broker and notes containers. B's containers are kept running.
+  - Checks after activation: `status` running; `/api/station-health` HTTP 200, all required checks pass (security_scan warning as before); `/api/health` active_model `larpus3.8:27b-q4` on GPU. `ollama ps` shows a single model at 100% GPU with 131072 context. Only one model container exists.
+  - Smoke test, one mathematician prompt per option, local only: A through the gateway, 200 in 18.3 s with 5 sources; B through its prepared-release MCP route, 200 in 17.5 s with 5 sources.
+- **Switching:** the GPU model is shared, so it does not reload. The cutover takes about 25 s and waits up to 180 s for in-flight chat, so switch while idle.
+  - To base+v2: `python scripts\releases.py activate 61a6448a6b3e4a428bb9ef6dff873f87`
+  - Back to base: `python scripts\releases.py rollback` (previous = A), or `activate 14911af1e4c249e7b125ad7441524f70`
+  - **Rollback to the state before this release:** `python scripts\releases.py activate 6200bb30d68348f080f2c1c723ff2fb6`. While A is active, `rollback` does the same thing. Cutover restarts 6200bb30's stopped containers.
+- **v2 status:** selectable, not the default. Its blinded human 0-2 review is still pending, and the evidence so far is automatic heuristics only. Adoption still needs that review.
+- **Unrecorded activation:** release `6200bb30d68348f080f2c1c723ff2fb6` was activated 2026-10-24 at about 11:01 PM ET, with previous 346773e1. It differs from 346773e1 only in `knowledge/sources.json` (unit42 catalog count) and its narrow 621.01 driver pin, as described in UPDATES.md. No DECISIONS entry was written at the time. This note records the fact only.
+- **Backup** before this entry: `LARPUS-backup-20261021-1405/round0-baseline/DECISIONS.md.pre-release-20261025-201859.bak`. Nothing was committed or pushed.
+
+## 2026-10-25 9:38 PM ET - Large baseline of release 14911af1 (predeclared protocol)
+
+- Started a larger output-quality baseline of the live model on the ACTIVE release 14911af1e4c249e7b125ad7441524f70 (base model + 140,166 study notes), run `baseline-large-20261025-2135` in `data/evals/baseline/baseline-large-20261025-2135/`. No release switch, training, export or code change.
+- Protocol written and sealed before the first request: PROTOCOL.md sha256 `668264a5debac28eeb147365e0a543690aa421acd3c4c3f4d5e3714b205424bd` (sealed 2026-10-25T21:36:17-04:00).
+- Scope: all 701 reviewed prompts x 3 samples (smoke 12, dev 122, train 567; train reported separately because pilot1 was trained on it) + the 25 other-persona companion cases (10 personas) x 3 = 2178 requests through the live gateway streaming route (think off, temp 0.4, no seed). Order: phase A (smoke + dev + other, 477) first, then phase B (train, 1701), stoppable.
+- Measures (family-level means, bootstrap 95% CI over families): round0 heuristic checks, all-checks-pass, family-all-variants-pass, target-number recall, truncation, word-limit compliance (no prompt sets a sentence limit), citation resolution/support (denominator = every emitted citation), uncited factual sentences, DLP holds, privacy hits, refusals/over-caution, sample consistency, first-text latency, completion time, GPU peak memory and residency; environment recorded at start and end.
+- Predeclared persona-regression rule for future candidates: a drop of 3 percentage points or more in family-level all-checks-pass with the paired bootstrap 95% CI entirely below zero; any DLP/privacy/live-action safety failure counts as a regression regardless.
+- Fixed-evidence (no-retrieval) arm not run: every supported chat profile calls retrieval, so there is no path without a code change. Evidence-in-prompt + retrieval items are reported as a separate subset.
+- Status: automatic heuristic scoring only. No locked test set exists or was used. Human blinded review not done yet (60-item blinded sheet written at completion, key kept separate).
+- DECISIONS.md backup before this append: `E:\speedzone_MS\LARPUS-backup-20261021-1405\round0-baseline\DECISIONS.md.pre-baseline-large-20261025-213858.bak`. Nothing committed or pushed.
+
+## WSL denial and Horizon cyber-pentest false hold (2026-10-27)
+
+Recorded in [lessons learned](LESSONS_LEARNED.md). The Codex unelevated
+sandbox denied `WslService` before Python started. The manual path is an
+owner PowerShell outside that token, through `scripts/invoke-larpus.ps1`.
+Larpus does not mount `C:`. Horizon later quarantined the original
+`cyber-pentest` sentence at injection probability 0.5336. Raising the cutoff
+to 0.9 would also allow a 0.7053 injection label, so the gate stayed at the
+model's 0.5 label. The suite sentence now says the lab must confirm the
+finding itself, which scored 0.3567. Live release
+`882c959c3d4540a5ba4b4b89f1596b17`.
