@@ -111,3 +111,50 @@ reports the selected release and `"running": false`.
 
 Details: [WSL sandbox access](WSL_SANDBOX_ACCESS.md) and
 [local input filtering](TEXT_FILTER.md).
+
+## Broker refusal hid the actionable cause - 2026-10-28
+
+The owner saw "Local inference is busy or held by the broker. Retry
+shortly; no direct fallback is used." The same display text covered queue
+contention, rolling request/token limits, admission timeout, model
+switching, failed readiness/cancellation confirmation and other broker
+refusals. The gateway already preserved a structured refusal code, but the
+HUD ignored it. A generic retry instruction did not distinguish a temporary
+wait from a fault that needs owner investigation.
+
+The original refusal code and contemporaneous broker state were not
+captured. Its root cause remains unknown. A later streamed localhost
+greeting released text and completed in 12.0 seconds on active release
+`1022de11b0df4ce6be2915f49f1286ba`. That proves one later request worked,
+not that the earlier refusal was harmless or that availability is sustained.
+Do not diagnose an MCP skill failure or restart the model from this message
+alone.
+
+The repository correction displays allowlisted broker codes with distinct
+guidance and adds `python scripts/broker-status.py`, an owner-only read-only
+admission-status command. Capture the code, request time and selected
+release's `active`, `waiting_chat` and `faulted` state before retrying.
+A failed cancellation fence must remain closed; do not clear it or add a
+direct inference fallback just to restore a reply. Investigate active work,
+model readiness and selected container identities before any scoped recovery.
+The diagnostic changes are committed but were not activated during this
+investigation.
+
+The preceding speech error was a separate browser defect:
+HTMLCollection has no `.at()`. Its `lastElementChild` fix is verified in
+the served JavaScript. The repair initially failed staging because its
+copied source lacked `research/catalog.json`, a provenance build input.
+Supplying the matching reviewed catalog restored exact equality with all
+421 provenance entries unchanged; the check was kept intact. This is a
+lesson to preserve build inputs when assembling an isolated release source,
+not a reason to blindly rebuild provenance or bypass validation.
+
+Verification: all 11 configured Node UI suites, four owner-status tests and
+seven existing broker tests passed; one Unix-only integration test was
+skipped on Windows. A coded refusal after partial text is covered: speech
+stops, incomplete output stays out of history, and no automatic generation
+retry occurs. Physical audio playback and reproduction of the original
+broker refusal remain unverified.
+
+Details: [broker follow-up](BROKER_FAILURE_FOLLOWUP_2026-10-28.md) and
+[speech repair/provenance report](SPEECH_CUTOFF_REPAIR_BLOCKER_2026-10-28.md).
