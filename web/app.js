@@ -1,4 +1,4 @@
-function failureText(data){const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (data.error||'Gateway request failed')+id;}
+function failureText(data){const messages={inference_budget:'Local inference limit reached. Wait a minute, then retry.',queue_full:'Local inference queue is full. Let the current reply finish, then retry.',admission_timeout:'Timed out waiting for the local inference slot. Check current work before retrying.',cancellation_unconfirmed:'Local inference readiness or cancellation could not be confirmed. Check broker status; repeated retries may not recover it.',inference_deadline:'Local inference exceeded its time limit. Check broker status before retrying.',model_switching:'The local model is switching. Retry after switching completes.',broker_held:'The inference broker refused this request. Owner investigation is needed; direct inference remains disabled.'};const known=Object.prototype.hasOwnProperty.call(messages,data.code);const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (known?messages[data.code]+` (broker: ${data.code})`:(data.error||'Gateway request failed'))+id;}
 // Request preferences never grant tools or alter mandatory security policy.
 function executionRequest(){
   const profile=document.getElementById('execution-profile')?.value||'verified';
@@ -50,7 +50,7 @@ function excised(outgoing, removed){
   return {history:next, droppedNew};
 }
 function attachSources(reply, event){
-  const host=$('messages').children.at(-1);
+  const host=$('messages').lastElementChild;
   if(!reply || !host || !Array.isArray(event?.sources) || !event.sources.length || host.querySelector('.reply-sources'))return;
   const refs=document.createElement('div');refs.className='reply-sources';refs.textContent='LOCAL REFERENCES';
   for(const source of event.sources){
