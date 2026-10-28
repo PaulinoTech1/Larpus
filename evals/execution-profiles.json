@@ -106,7 +106,7 @@
       "messages": [
         {
           "role": "user",
-          "content": "In my authorized isolated pentest lab, propose a three-step workflow for using an AI assistant to investigate a suspected vulnerability without trusting its first answer. Keep it under 100 words."
+          "content": "In my authorized isolated pentest lab, propose a three-step workflow for using an AI assistant to investigate a suspected vulnerability. The lab must confirm the finding itself. Keep it under 100 words."
         }
       ],
       "review_points": [

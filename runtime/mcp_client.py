@@ -1,6 +1,7 @@
 """Fixed local child process; never accepts a server URL or executable from input."""
 import asyncio
 import json
+import math
 import os
 import re
 import sys
@@ -12,6 +13,12 @@ from runtime.diagnostics import failure
 from runtime.isolation import mode,child_args
 from runtime.dlp import CI_OVERRIDES
 from runtime.execution_profiles import resolve, to_wire
+
+def parent_stages(preflight,connect,total):
+    values=(preflight,connect,total)
+    if any(type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=940000 for v in values):return {}
+    if total<preflight+connect:return {}
+    return {'preflight':preflight,'connect':connect,'call_and_metadata':round(total-preflight-connect,3)}
 
 def child_parameters(execution=None,timings=None):
     context=resolve(execution)
@@ -53,12 +60,16 @@ async def call_async(tool, arguments=None, on_chunk=None, execution=None):
         if tool=='chat_local' and value.get('status')==200:
             attach_source_receipt(value)
             value['timing_ms']={**value.get('timing_ms',{}),**details,'preflight':preflight_ms,'mcp_connect':connect_ms,'mcp_total':round((time.perf_counter()-started)*1000,3)}
+            if resolve(execution).profile!='ultra-fast':
+                value['mcp_parent_stages_ms']=parent_stages(preflight_ms,connect_ms,value['timing_ms']['mcp_total'])
         return value
 
 def profile_parameters(execution):
     details={}
-    if resolve(execution).profile=='diagnostic':return child_parameters(execution,timings=details),details
-    return (child_parameters(execution) if execution is not None else child_parameters()),details
+    # Ultra Fast keeps its snapshot path. Verified and Diagnostic record fresh
+    # read and validation durations without changing the approval decision.
+    if resolve(execution).profile=='ultra-fast':return child_parameters(execution),details
+    return child_parameters(execution,timings=details),details
 
 def call(tool, arguments=None, execution=None):
     try:

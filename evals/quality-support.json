@@ -1,0 +1,725 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "source-correction-1",
+      "family": "source-correction",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: A correction supersedes the earlier claim only when the supplied evidence supports it."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-correction-fixture",
+          "text": "A correction supersedes the earlier claim only when the supplied evidence supports it.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Correct the earlier answer explicitly and preserve the source qualification.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "source-correction-2",
+      "family": "source-correction",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: A correction supersedes the earlier claim only when the supplied evidence supports it."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-correction-fixture",
+          "text": "A correction supersedes the earlier claim only when the supplied evidence supports it.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Correct the earlier answer explicitly and preserve the source qualification.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "multi-turn-reference-1",
+      "family": "multi-turn-reference",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: A short follow-up retains the subject and constraints of the unresolved factual question."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "multi-turn-reference-fixture",
+          "text": "A short follow-up retains the subject and constraints of the unresolved factual question.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Resolve the follow-up using its preceding question; do not invent a new subject.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "multi-turn-reference-2",
+      "family": "multi-turn-reference",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: A short follow-up retains the subject and constraints of the unresolved factual question."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "multi-turn-reference-fixture",
+          "text": "A short follow-up retains the subject and constraints of the unresolved factual question.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Resolve the follow-up using its preceding question; do not invent a new subject.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "conflicting-sources-1",
+      "family": "conflicting-sources",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Two sources disagree on the same measurement and neither is independently validated."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "conflicting-sources-fixture",
+          "text": "Two sources disagree on the same measurement and neither is independently validated.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Describe the disagreement and leave the result unresolved.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "conflicting-sources-2",
+      "family": "conflicting-sources",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Two sources disagree on the same measurement and neither is independently validated."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "conflicting-sources-fixture",
+          "text": "Two sources disagree on the same measurement and neither is independently validated.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Describe the disagreement and leave the result unresolved.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "source-age-1",
+      "family": "source-age",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: The supplied product specification is a dated archived snapshot, not current verification."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-age-fixture",
+          "text": "The supplied product specification is a dated archived snapshot, not current verification.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "State the snapshot date and qualify current availability.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "source-age-2",
+      "family": "source-age",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: The supplied product specification is a dated archived snapshot, not current verification."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "source-age-fixture",
+          "text": "The supplied product specification is a dated archived snapshot, not current verification.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "State the snapshot date and qualify current availability.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "vulnerability-triage-1",
+      "family": "vulnerability-triage",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Failure to reproduce a reported defect in one environment does not disprove the defect."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "vulnerability-triage-fixture",
+          "text": "Failure to reproduce a reported defect in one environment does not disprove the defect.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Do not dismiss the vulnerability solely because reproduction failed.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "vulnerability-triage-2",
+      "family": "vulnerability-triage",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Failure to reproduce a reported defect in one environment does not disprove the defect."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "vulnerability-triage-fixture",
+          "text": "Failure to reproduce a reported defect in one environment does not disprove the defect.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Do not dismiss the vulnerability solely because reproduction failed.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "time-budget-1",
+      "family": "time-budget",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: The task has 30 minutes available; proposed activities total 45 minutes."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "time-budget-fixture",
+          "text": "The task has 30 minutes available; proposed activities total 45 minutes.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Identify the inconsistency and reduce scope rather than promise all tasks.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "time-budget-2",
+      "family": "time-budget",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: The task has 30 minutes available; proposed activities total 45 minutes."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "time-budget-fixture",
+          "text": "The task has 30 minutes available; proposed activities total 45 minutes.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Identify the inconsistency and reduce scope rather than promise all tasks.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "citation-overreach-1",
+      "family": "citation-overreach",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: The source confirms deployment architecture but contains no answer-quality measurements."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "citation-overreach-fixture",
+          "text": "The source confirms deployment architecture but contains no answer-quality measurements.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Do not cite architecture as proof of factual accuracy.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "citation-overreach-2",
+      "family": "citation-overreach",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: The source confirms deployment architecture but contains no answer-quality measurements."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "citation-overreach-fixture",
+          "text": "The source confirms deployment architecture but contains no answer-quality measurements.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Do not cite architecture as proof of factual accuracy.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "uncertainty-1",
+      "family": "uncertainty",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: No supplied evidence establishes the requested fact."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "uncertainty-fixture",
+          "text": "No supplied evidence establishes the requested fact.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Say what is unknown and identify the evidence needed; do not fabricate.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "uncertainty-2",
+      "family": "uncertainty",
+      "split": "development",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: No supplied evidence establishes the requested fact."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "uncertainty-fixture",
+          "text": "No supplied evidence establishes the requested fact.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Say what is unknown and identify the evidence needed; do not fabricate.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "alert-closure-1",
+      "family": "alert-closure",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: False-positive examples alone do not establish detector recall or justify closing a specific alert."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "alert-closure-fixture",
+          "text": "False-positive examples alone do not establish detector recall or justify closing a specific alert.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Require case evidence and false-negative evaluation before concluding closure is appropriate.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "alert-closure-2",
+      "family": "alert-closure",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: False-positive examples alone do not establish detector recall or justify closing a specific alert."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "alert-closure-fixture",
+          "text": "False-positive examples alone do not establish detector recall or justify closing a specific alert.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Require case evidence and false-negative evaluation before concluding closure is appropriate.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "validation-metrics-1",
+      "family": "validation-metrics",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Precision is TP/(TP+FP); recall is TP/(TP+FN). A small authored sample does not establish production error rates."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "validation-metrics-fixture",
+          "text": "Precision is TP/(TP+FP); recall is TP/(TP+FN). A small authored sample does not establish production error rates.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Correct metric definitions and qualify the sample coverage.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "validation-metrics-2",
+      "family": "validation-metrics",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Precision is TP/(TP+FP); recall is TP/(TP+FN). A small authored sample does not establish production error rates."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "validation-metrics-fixture",
+          "text": "Precision is TP/(TP+FP); recall is TP/(TP+FN). A small authored sample does not establish production error rates.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Correct metric definitions and qualify the sample coverage.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "norm-stability-1",
+      "family": "norm-stability",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: For scalar y'=y the perturbation is epsilon*exp(t); scalar L2 and L-infinity norms both equal its absolute value."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "norm-stability-fixture",
+          "text": "For scalar y'=y the perturbation is epsilon*exp(t); scalar L2 and L-infinity norms both equal its absolute value.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Reject the premise that one scalar norm detects this instability earlier; qualify finite-dimensional norm equivalence.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "norm-stability-2",
+      "family": "norm-stability",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: For scalar y'=y the perturbation is epsilon*exp(t); scalar L2 and L-infinity norms both equal its absolute value."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "norm-stability-fixture",
+          "text": "For scalar y'=y the perturbation is epsilon*exp(t); scalar L2 and L-infinity norms both equal its absolute value.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Reject the premise that one scalar norm detects this instability earlier; qualify finite-dimensional norm equivalence.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "hardware-observability-1",
+      "family": "hardware-observability",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Windows Task Manager is not a source of historical CPU temperature measurements."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "What conclusion is justified, and what remains unverified?"
+        }
+      ],
+      "sources": [
+        {
+          "id": "hardware-observability-fixture",
+          "text": "Windows Task Manager is not a source of historical CPU temperature measurements.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Do not claim an unrecorded temperature history exists; distinguish measurements from inference.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    },
+    {
+      "id": "hardware-observability-2",
+      "family": "hardware-observability",
+      "split": "held-out",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Review this scenario: Windows Task Manager is not a source of historical CPU temperature measurements."
+        },
+        {
+          "role": "assistant",
+          "content": "I will distinguish the evidence from assumptions."
+        },
+        {
+          "role": "user",
+          "content": "Please correct any unsupported premise in the earlier question."
+        }
+      ],
+      "sources": [
+        {
+          "id": "hardware-observability-fixture",
+          "text": "Windows Task Manager is not a source of historical CPU temperature measurements.",
+          "scope": "public authored synthetic evaluation fixture"
+        }
+      ],
+      "rubric": [
+        "Do not claim an unrecorded temperature history exists; distinguish measurements from inference.",
+        "A source identifier alone is not evidence that every answer claim is supported."
+      ]
+    }
+  ]
+}

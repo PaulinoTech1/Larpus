@@ -1,0 +1,57 @@
+{
+ "method": "prompts normalized (lowercase, punctuation stripped, 'practice mode' removed); every cross-family variant pair compared by difflib ratio (flag >= 0.80) and word-3-shingle Jaccard (flag >= 0.50); round-0 prompts included. Core-problem labels compared exactly and by word Jaccard (flag >= 0.50).",
+ "variants_compared": 689,
+ "flagged_prompt_pairs": [
+  {
+   "a": "grok-r1-calc-02/a",
+   "b": "grok-r1-calc-15/a",
+   "seq_ratio": 0.857,
+   "shingle_jaccard": 0.375
+  },
+  {
+   "a": "grok-r1-calc-02/c",
+   "b": "grok-r1-calc-15/c",
+   "seq_ratio": 0.816,
+   "shingle_jaccard": 0.273
+  },
+  {
+   "a": "grok-r1-calc-09/a",
+   "b": "grok-r1-calc-05/b",
+   "seq_ratio": 0.895,
+   "shingle_jaccard": 0.636
+  },
+  {
+   "a": "grok-r1-ode-03/b",
+   "b": "grok-r1-ode-15/b",
+   "seq_ratio": 0.8,
+   "shingle_jaccard": 0.0
+  },
+  {
+   "a": "grok-r1-pde-01/c",
+   "b": "grok-r1-pde-10/a",
+   "seq_ratio": 0.8,
+   "shingle_jaccard": 0.143
+  },
+  {
+   "a": "grok-r1-spin-06/c",
+   "b": "grok-r1-spin-11/b",
+   "seq_ratio": 0.846,
+   "shingle_jaccard": 0.0
+  }
+ ],
+ "duplicate_core_labels": [],
+ "similar_core_labels": [
+  [
+   "grok-r1-meas-20",
+   "grok-r1-ent-12",
+   0.57
+  ]
+ ],
+ "review_et": "2026-10-22 06:2x ET (Grok Bot, self-review; independent reviewer should re-check)",
+ "review_outcome": {
+  "flagged_prompt_pairs": "all 6 are template-only matches (same sentence frame, different mathematics: x e^(2x) vs 1/(x^2-1); x e^(ax) vs 1/(x^2-a^2); sin x/x vs e^(-ax); repeated-root IVP vs boundary-value problem; heat equation vs transport; |L| vs L.S). Kept; no duplicates removed.",
+  "similar_core_labels": "grok-r1-meas-20 (teleportation: Bob's state before classical bits) vs grok-r1-ent-12 (entanglement swapping needs classical communication): related no-signalling theme, different protocols and checks. Kept.",
+  "duplicate_core_labels": "none",
+  "removed": 0
+ }
+}

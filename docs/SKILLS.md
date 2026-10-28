@@ -1,5 +1,11 @@
 # Locally authored Larpus skills
 
+The [October 25 status snapshot](STATUS.md) reports this extension in the
+selected frozen release. The October 19 acceptance report linked below describes
+an earlier prepared candidate and remains historical evidence; its inactive
+status is not the current release selection. A fresh live protocol and quality
+acceptance check was not part of the status snapshot.
+
 The MCP Skills implementation publishes these reviewed files through
 `io.modelcontextprotocol/skills` at revision `2026-07-28`: `skills/list`,
 `skills/get` and standard `resources/read`. The canonical address is exactly

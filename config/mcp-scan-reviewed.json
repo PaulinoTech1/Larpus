@@ -1,8 +1,15 @@
 {
   "version": 1,
-  "reviewed_on": "2026-10-11",
-  "reason": "Retain one additional LOW diagnostics warning: getattr reads only the fixed errno/winerror/returncode tuple on a caught exception, and only exact integer values enter diagnostics. No request-selected attribute, invocation, exception message, prompt or subprocess output is released. Retain all ten existing warnings. The transition is exact source-pinned review, not a clean scan or independent audit.",
+  "reviewed_on": "2026-10-21",
+  "reason": "The distro policy probe remains a fresh subprocess.run. It is now submitted to the existing three-worker read pool, so the static subprocess call-site count in isolation.py is 5 rather than 6. No finding was deleted and no new MCP finding appeared. This is an exact source-pinned review of that count change, not a clean scan or an independent audit.",
   "previous": [
+    {
+      "category": "Dangerous Code Execution",
+      "pattern": "Dynamic attribute access via getattr()",
+      "severity": "LOW",
+      "file": "diagnostics.py",
+      "count": 1
+    },
     {
       "category": "Dangerous Code Execution",
       "pattern": "subprocess module call",
@@ -59,7 +66,7 @@
       "pattern": "subprocess module call",
       "severity": "MEDIUM",
       "file": "isolation.py",
-      "count": 6
+      "count": 5
     },
     {
       "category": "Privilege Escalation",
@@ -87,20 +94,20 @@
     "config/dlp.json": "85ff588ed6f9055187dd40751dc7c43a0b4777f1e8f33e90aa673d8821ca6284",
     "config/mcp-approved.json": "fb2d6a712a719de881feb9671f047e1f9a22e69161a323fabf040869aae3f384",
     "config/mcp-capabilities.json": "d33f3c8656a1b2a75380a4d998427e56047340f5fef20368bc40ba5c96cf5b01",
-    "runtime/broker_scheduler.py": "3f0c38c6dafdaa2465095d91659b69ab5db0403e2c9651f24530adfe51c1130d",
+    "runtime/broker_scheduler.py": "cde60f566ec2d77f7188d714c8980a3b48639022226782d90c1d472b06ed2ce6",
     "runtime/context.py": "42117b9d42004b40a6040988192bc81c7cb57f47d2eb37505ec010af37dd30d5",
-    "runtime/diagnostics.py": "8971e4f941696961a41c721dcb583192e2e547a81992b61b357e0f97a270d023",
-    "runtime/dlp.py": "1edf0e674b6ace5b9d955f9b28331dcab9dec2d437fe8428c785d7f886dd9d55",
-    "runtime/inference.py": "f983d1b9cec5b8dc0c32e8ee8f40c01a3a925e7fdd38ace03a39120c10fb703e",
-    "runtime/inference_broker.py": "6c87a7a5b231fa9f665f3caf0a23c80763b08bdcb02dde2554ff44db2a5227d4",
-    "runtime/isolation.py": "461237fdfee991fbea84f80d2c3976eef76de106f7c5611e5d456949472a1de8",
-    "runtime/knowledge.py": "26dde42e9d68b65d1677774dd102221a85d5c834d48fbbfa7f528b022332793c",
-    "runtime/local_ollama.py": "8f8760539d54b371974a4f703e5d14edde5ecda09d0a6d4701e0123184807d64",
-    "runtime/mcp_client.py": "a8a1374efa09726b2ad3078f427999ce69bb8481e3ed8a8bef1ee33060a42d32",
-    "runtime/mcp_server.py": "ec4e8ec75158c7a27da892df2d8367f2cf8c3b2ac3642ff6c12cc1ddcfeb5c0e",
+    "runtime/diagnostics.py": "e11916db056b7e83f59379280546c274ea46b4a52539411bc268b554c45fa02a",
+    "runtime/dlp.py": "ced97390b9f403bbe448a78cfdaabc66842d74440f14398588a9a5431903e394",
+    "runtime/inference.py": "ae1c2957f9861b3614506619c64d5ae58c12db41e3b9287800186336ea5d1b85",
+    "runtime/inference_broker.py": "530a21cb074180e5411c37b68055c1bdcef07fa782cdecce048478e37996b8a1",
+    "runtime/isolation.py": "0f126a8a7d2c3598f49200b5d7dceb3014a7833e985a8cdef008b7d631924145",
+    "runtime/knowledge.py": "f53eb3e793d36a8ade90e418807e7faacd89ef5bb5cb3abc091d75c6752212cf",
+    "runtime/local_ollama.py": "d9cabd86a264d531932c87ef1c3e0f8e266d262f01cbf6cf3af98bc53a9d5260",
+    "runtime/mcp_client.py": "05ab303dd62b2770c46a8dd4a8667c7ca3bcb29bd559bb5ade8c8abb56d25113",
+    "runtime/mcp_server.py": "af7da3502517d718be38d04f85e6c18f9b1e605a30df47ff8edad7e6fc6fbf37",
     "runtime/namespace_probe.py": "46a0b07405dabe86234c2518df837c91f62b64ea79384cf88048a688bcf88f92",
-    "runtime/notes_worker.py": "1b17b6be215e28ba69131f3d5636ae7f13422467a59878761eea76981deef1a0",
-    "runtime/security_scan.py": "edddda55b2e04ae309b2cf0a6cc17ee4471e718daf9bf024d2c8fb597e423452",
-    "scripts/protect-quarantine.ps1": "9c43e0f8d6edd2ed058610788c468a1085fd72957a13b781a5c7cfcc31ac2e06"
+    "runtime/notes_worker.py": "18e628bb64b1a41fdaae8e9c27fb59acb3f8fca00cfe7fd9ee014d46ff2e0e2d",
+    "runtime/security_scan.py": "dcc49c690f01f94adff155ce85dd5770993c4d0c898093dc66df0733f5e0981a",
+    "scripts/protect-quarantine.ps1": "d0beb2cff8a09530cf06983d1e9113de16f66e61095b55a2e8e89be24326c732"
   }
 }

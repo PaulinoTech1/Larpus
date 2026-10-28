@@ -26,7 +26,7 @@ class MicrosoftContextTests(unittest.TestCase):
 
     def test_both_inference_paths_attach_counts_after_dlp(self):
         frame={'message':{'content':'A useful reply.'},'done':True,'prompt_eval_count':700,'eval_count':12}
-        with patch.object(inference,'augment',side_effect=lambda p,r:(p,[])),patch.object(inference,'gpu_placement',return_value='GPU'),patch.object(inference,'gate',side_effect=lambda t,p:{'status':200,'content':t}),patch.object(inference,'ollama',return_value=frame),patch.object(inference,'chat_stream',return_value=iter([frame])):
+        with patch.object(inference,'augment',side_effect=lambda p,r,timings=None:(p,[])),patch.object(inference,'gpu_placement',return_value='GPU'),patch.object(inference,'gate',side_effect=lambda t,p:{'status':200,'content':t}),patch.object(inference,'ollama',return_value=frame),patch.object(inference,'chat_stream',return_value=iter([frame])):
             for callback in (None,lambda t:None):
                 result=inference.chat('home-assistant',[{'role':'user','content':'Hello'}],on_chunk=callback)
                 self.assertEqual(result['context']['prompt_tokens'],700)

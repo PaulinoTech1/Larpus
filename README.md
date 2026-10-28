@@ -1,5 +1,10 @@
 # larpus
 
+Owner tooling candidate: [verification, status, encrypted synthetic restores,
+quality evidence and timing](docs/OWNER_OPERATIONS.md). Run
+`python scripts/verify.py` for the shared offline verification pipeline.
+This checkout/worktree is distinct from the active frozen release.
+
 ## TL;DR
 
 A local-first home AI station: voice-driven home assistant with an MCP agent pipeline, DLP output filtering, and local inference on commodity GPU hardware. Goal: a private AI assistant that never sends your data to the cloud.
@@ -34,11 +39,13 @@ not live knowledge until admitted and integrated. The checkout includes
 [offline freshness detection](docs/SOURCE_FRESHNESS.md); age-based review warnings
 and scoped lifecycle signals do not certify current accuracy.
 
-Verified against the owner's active frozen release on **2026-10-11**. Counts and
-settings below describe that deployment; a fresh clone does not include its
-private models, credentials, downloaded corpus or prepared runtime.
+Historical snapshot verified against the owner's frozen release on **2026-10-11**.
+The [operational status](docs/STATUS.md) records the later selected release.
+Counts and settings below describe the October 11 deployment; a fresh clone
+does not include its private models, credentials, downloaded corpus or prepared
+runtime.
 
-| Component | Current deployment |
+| Component | October 11 deployment snapshot |
 | --- | --- |
 | Host | Windows 11 Home; Ryzen 9 5900X, 64 GB RAM, RTX 3090 Ti with 24 GB VRAM |
 | Isolation | Dedicated WSL2 distro, rootless Podman; separate offline agent and model namespaces connected through a private inference broker; separate offline CPU voice container |
@@ -179,6 +186,13 @@ See the [persona/model strategy](docs/MODEL_STRATEGY.md) for when specialist
 models would justify their loading, memory and evaluation costs.
 
 ## Work in progress and validation
+
+The checkout includes [MTRAGEval-inspired local RAG evaluation probes](docs/MTRAGEVAL_LOCAL.md)
+for retrieval, fixed-evidence generation, and end-to-end checked responses.
+The runner and five synthetic smoke fixtures are committed as a working
+evaluation capability. Model-backed runs and latency comparisons are deferred
+until the Grok Bot fine-tuning work finishes; the probes have not been validated
+against the active frozen release or promoted to production.
 
 The active release includes optional [teaching-profile controls](docs/TEACHING.md).
 The [paired capability comparison tooling](docs/CAPABILITY_TRIALS.md) is available,

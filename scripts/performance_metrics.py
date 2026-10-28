@@ -4,6 +4,7 @@ import math
 import statistics
 
 STAGES=('input','retrieval','model_selection','model_first_frame','first_checked_text','inference_total','preflight','mcp_connect','mcp_total')
+DETAIL_STAGES=('preflight_initial_reads','preflight_namespace_reads','preflight_validation','retrieval_base','retrieval_notes','retrieval_provenance','retrieval_engine','mcp_child_import')
 
 
 def numeric(value):
@@ -24,11 +25,18 @@ def summarize(rows):
             'partial_failures':sum(not r['ok'] and r.get('characters',0)>0 for r in measured),
             'first_text_seconds':distribution(r.get('first_text_seconds') for r in successful),
             'total_seconds':distribution(r.get('total_seconds') for r in successful),
+            'first_after_idle_seconds':idle_first_text(successful),
             **timing_summary(successful)}
 
 
+def idle_first_text(rows):
+    waited=[r for r in rows if numeric(r.get('since_previous_seconds')) and r['since_previous_seconds']>=16]
+    return distribution(r.get('first_text_seconds') for r in waited)
+
+
 def timing_summary(successful):
-    return {'stages_ms':{stage:distribution(r.get('stage_ms',{}).get(stage) for r in successful) for stage in STAGES},
+    stages=STAGES+DETAIL_STAGES
+    return {'stages_ms':{stage:distribution(r.get('stage_ms',{}).get(stage) for r in successful) for stage in stages},
             'complete_stage_samples':sum(all(stage in r.get('stage_ms',{}) for stage in STAGES) for r in successful),
             'unknown_citation_samples':sum(r.get('unknown_citations',0)>0 for r in successful)}
 

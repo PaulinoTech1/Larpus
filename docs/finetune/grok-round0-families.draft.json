@@ -1,0 +1,1457 @@
+{
+  "schema": "larpus-grok-teacher-round0/draft-1",
+  "status": "DRAFT. Pending independent review. Not admitted. Not training data.",
+  "plan": [
+    "docs/GROK_TEACHER_TUNING_LOOP.md",
+    "docs/TEACHER_STUDENT_PILOT.md",
+    "docs/BEHAVIOR_TUNING_PLAN.md"
+  ],
+  "scope": "First bounded action: 12 synthetic training families, one per topic lane (6 Mathematician, 6 Quantum Mechanics Professor).",
+  "split_note": "All 12 are training families. No development or locked-test material is included or was generated.",
+  "student_answer_note": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review.",
+  "target_note": "teacher_target_draft is phrased as the student persona should answer. The persona has no tools, so targets describe hand checks only and never claim executed code. Executed checks belong to the dataset record (verification), not to the response.",
+  "verification_tool_versions": {
+    "python": "3.13.5",
+    "sympy": "1.14.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1"
+  },
+  "review_metrics_to_record": [
+    "review yield (admitted/12)",
+    "review minutes per admitted family"
+  ],
+  "families": [
+    {
+      "family_id": "grok-r0-math-limits-01",
+      "persona": "Mathematician",
+      "topic_lane": "Limits, continuity and convergence",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "applicability",
+        "direct_answer",
+        "false_premise",
+        "practice_one_hint",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer",
+            "verification_status"
+          ],
+          "prompt": "Let f_n(x) = x^n on [0,1]. What is the pointwise limit, and what is lim of the integral of f_n from 0 to 1?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "The limit is 0 everywhere, and the integrals go to 0.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Misses x = 1, where x^n = 1 for every n.",
+            "assumptions": [
+              "Pointwise means for each fixed x."
+            ],
+            "decisive_check": "Evaluate at x = 1; integral of x^n is 1/(n+1).",
+            "source_qualifications": [],
+            "uncertainty": "None for this fully specified problem."
+          },
+          "teacher_target_draft": "Pointwise, f_n(x) goes to 0 for 0 <= x < 1 and stays 1 at x = 1, so the limit is 0 on [0,1) and 1 at x = 1. The integral is 1/(n+1), which goes to 0. That also equals the integral of the limit function, since one point does not change the integral. Checked by hand: the value at x = 1 and the antiderivative x^(n+1)/(n+1).",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "verification_status"
+          ],
+          "prompt": "Each x^n is continuous on [0,1] and they converge uniformly, so the limit function is continuous, right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes. A uniform limit of continuous functions is continuous, so the limit is continuous.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Accepts 'uniformly' without checking it; the convergence is only pointwise.",
+            "assumptions": [
+              "Uniform convergence requires sup |f_n - f| -> 0."
+            ],
+            "decisive_check": "sup over [0,1) of |x^n - 0| = 1 for every n (take x close to 1), so it does not go to 0. The limit (0 on [0,1), 1 at 1) is discontinuous.",
+            "source_qualifications": [],
+            "uncertainty": "None; this is a standard counterexample."
+          },
+          "teacher_target_draft": "Not quite: the premise is false. The theorem is fine, but its hypothesis fails here. For every n, x^n gets arbitrarily close to 1 as x approaches 1, so sup |f_n - f| stays 1 and the convergence is not uniform. The limit is 0 on [0,1) and 1 at x = 1, which is discontinuous. That is exactly why the theorem needs uniform convergence. Checked by hand: the supremum and the value at x = 1.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "c",
+          "kind": "practice_hint",
+          "behavior_tags": [
+            "practice_one_hint",
+            "applicability"
+          ],
+          "prompt": "Practice mode: I want to work out myself whether x^n converges uniformly on [0,1]. Don't give me the answer.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "It converges uniformly because x^n -> 0, and the limit is 0, so it's continuous.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Asserts uniformity from pointwise behaviour.",
+            "assumptions": [],
+            "decisive_check": "Supremum test.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "Good start on the pointwise limit. Here is one question to try: for a fixed n, how large can x^n be when x is in [0,1), and does that worst case shrink as n grows?",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "M1",
+        "method": "sympy limits/integrals plus a hand argument for the supremum",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "pointwise_limit": "0 on [0,1), 1 at x=1",
+          "integral_n": "1/(n+1) -> 0",
+          "sup_[0,1)|x^n - 0|": "1 for every n (limit x->1-), so not uniform"
+        },
+        "limits": "Checks the specific sequence x**n on [0,1]; the non-uniformity argument (sup = 1) is a hand argument confirmed symbolically, not a general theorem."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "57fc0598e0f223813cdb3c0105c9ec5802ae51bff3e428d801fb99d609873046",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-math-calculus-01",
+      "persona": "Mathematician",
+      "topic_lane": "Differentiation and integration",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "applicability",
+        "direct_answer",
+        "false_premise",
+        "meaningful_checks",
+        "missing_assumption",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer"
+          ],
+          "prompt": "Compute the integral of 1/x from 1 to e.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "It's 1.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "None; the student answer is correct.",
+            "assumptions": [],
+            "decisive_check": "ln e - ln 1 = 1.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "1, since ln(e) - ln(1) = 1. The integrand is continuous on [1, e], so the fundamental theorem applies directly.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "The integral of 1/x from -1 to 1 is ln|1| - ln|-1| = 0 because 1/x is odd. Correct?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, 1/x is odd and the interval is symmetric, so the integral is 0.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Applies the fundamental theorem across a non-integrable singularity at x = 0. Odd symmetry only cancels convergent integrals.",
+            "assumptions": [
+              "Improper integrals are defined by separate limits at the singularity."
+            ],
+            "decisive_check": "The integral of 1/x from eps to 1 is -ln(eps), which goes to +infinity as eps -> 0+, so the improper integral diverges. The symmetric principal value is 0, which is a different notion.",
+            "source_qualifications": [],
+            "uncertainty": "None."
+          },
+          "teacher_target_draft": "No. 1/x blows up at 0, which is inside the interval, so the fundamental theorem doesn't apply. Split at 0: the integral from eps to 1 is -ln(eps), which diverges as eps goes to 0. So the integral does not exist as an improper Riemann or Lebesgue integral. What is 0 is the Cauchy principal value, where both sides shrink symmetrically. Worth naming that, but it isn't the ordinary integral. Checked by hand: the one-sided limit.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "c",
+          "kind": "missing_assumption",
+          "behavior_tags": [
+            "missing_assumption"
+          ],
+          "prompt": "Is the general antiderivative of 1/x just ln|x| + C?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, ln|x| + C.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Uses one constant across a domain made of two separate intervals.",
+            "assumptions": [
+              "The domain of 1/x is x < 0 or x > 0."
+            ],
+            "decisive_check": "ln|x| + C1 on x < 0 and ln|x| + C2 on x > 0 differentiates to 1/x for any C1 and C2.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "On a single interval, yes. But the domain of 1/x is two separate pieces, so the most general antiderivative is ln|x| + C1 for x < 0 and ln|x| + C2 for x > 0, with independent constants. Differentiating either piece gives 1/x.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "M2",
+        "method": "sympy definite, one-sided-limit and principal-value integrals; derivative check of both branches",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "int_1^e 1/x": 1,
+          "int_0^1 1/x": "diverges (+oo)",
+          "PV int_-1^1 1/x": 0,
+          "antiderivative": "ln|x| + C1 on x<0, ln|x| + C2 on x>0 (independent constants)"
+        },
+        "limits": "Divergence shown for the one-sided integral of 1/x on (0,1]; principal value computed separately and is a different notion."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "5e0b85b0d6f2d1d1268168e8ea7d3539c56d913aaa2e165b557d6c84ffcd5967",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-math-ode-01",
+      "persona": "Mathematician",
+      "topic_lane": "ODEs and dynamical systems",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "applicability",
+        "direct_answer",
+        "false_premise",
+        "meaningful_checks",
+        "practice_one_hint",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "Solve y' = 3 y^(2/3), y(0) = 0. By Picard–Lindelöf the solution y = 0 is the unique one, right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes. y = 0 satisfies the equation and the initial condition, and Picard–Lindelöf guarantees uniqueness.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Invokes Picard–Lindelöf without checking the Lipschitz condition in y, which fails at y = 0.",
+            "assumptions": [
+              "Uniqueness needs f(x, y) to be locally Lipschitz in y near the initial point."
+            ],
+            "decisive_check": "y = x^3 (for x >= 0) also works: y' = 3x^2 = 3 (x^3)^(2/3). The difference quotient |f(y) - f(0)|/|y| = 3|y|^(-1/3) is unbounded near 0.",
+            "source_qualifications": [],
+            "uncertainty": "None for the stated real-valued problem on x >= 0."
+          },
+          "teacher_target_draft": "Uniqueness fails here. y = 0 is a solution, but so is y = x^3 for x >= 0: its derivative 3x^2 equals 3(x^3)^(2/3). In fact, for any c >= 0, the function that is 0 up to c and (x - c)^3 after c works too. Picard–Lindelöf doesn't apply because 3y^(2/3) isn't Lipschitz at y = 0: its slope blows up like y^(-1/3). Existence holds by Peano, but uniqueness doesn't. Checked by hand: substitution into the ODE and the Lipschitz quotient.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "practice_hint",
+          "behavior_tags": [
+            "practice_one_hint",
+            "applicability"
+          ],
+          "prompt": "Practice mode: I think y' = 3y^(2/3), y(0)=0 has only the zero solution. Help me check without solving it for me.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Correct, only y = 0.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Accepts the learner's claim.",
+            "assumptions": [],
+            "decisive_check": "Lipschitz check.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "Let's test that. Which hypothesis of the uniqueness theorem would you need here, and does 3y^(2/3) satisfy it right at y = 0?",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "c",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer"
+          ],
+          "prompt": "Solve y' = 2y, y(0) = 3.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "y = 3e^(2x).",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "None.",
+            "assumptions": [],
+            "decisive_check": "Substitute: y' = 6e^(2x) = 2y; y(0) = 3.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "y = 3e^(2x). The right-hand side is Lipschitz, so this solution is unique. Check: y' = 6e^(2x) = 2y, and y(0) = 3.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "M3",
+        "method": "sympy substitution for y=x^3 and the shifted family; limit of the Lipschitz quotient",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "solutions_through_(0,0)": [
+            "y=0",
+            "y=x^3 (x>=0)",
+            "y=0 for x<=c, (x-c)^3 for x>c, any c>=0"
+          ],
+          "lipschitz_at_0": "fails: difference quotient 3*y^(-1/3) unbounded"
+        },
+        "limits": "Substitution verified for x>=0 and for the piecewise family on the region x>c with c>=0; the non-Lipschitz claim is checked through the unbounded difference quotient at y=0."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "c1381c5ae4c873af79db902bc515d5e6c826d18fbf95037fc8e9ac5ceda42127",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-math-pde-01",
+      "persona": "Mathematician",
+      "topic_lane": "PDE boundary problems",
+      "split": "train",
+      "difficulty": "upper undergraduate",
+      "behavior_tags": [
+        "applicability",
+        "false_premise",
+        "meaningful_checks",
+        "missing_assumption",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "missing_assumption",
+          "behavior_tags": [
+            "missing_assumption",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "On the unit square, solve Laplacian(u) = -pi^2 cos(pi x) with zero normal derivative on the whole boundary.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "u = cos(pi x) is the solution.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Calls the solution unique; with pure Neumann conditions it is determined only up to an additive constant.",
+            "assumptions": [
+              "Pure Neumann problems need a normalization (e.g. mean zero or a fixed value) for uniqueness."
+            ],
+            "decisive_check": "Residual: u_xx + u_yy = -pi^2 cos(pi x). Boundary: u_x = -pi sin(pi x) vanishes at x = 0 and 1, and u_y = 0. Compatibility: the integral of f over the square is 0.",
+            "source_qualifications": [],
+            "uncertainty": "None."
+          },
+          "teacher_target_draft": "u = cos(pi x) + C for any constant C. Pure Neumann conditions fix u only up to a constant, so add a normalization such as zero mean (which gives C = 0) if you need a single answer. Checks: the Laplacian of cos(pi x) is -pi^2 cos(pi x); u_x = -pi sin(pi x) is zero at x = 0 and 1; u_y = 0 on the top and bottom. The source term also integrates to zero, as a Neumann problem requires.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "verification_status"
+          ],
+          "prompt": "Same square, Laplacian(u) = 1 with zero normal derivative on the boundary. Find u.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "u = x^2/2 works since u_xx = 1.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Doesn't check the boundary condition (u_x = 1 at x = 1) or the compatibility condition.",
+            "assumptions": [
+              "Divergence theorem: the integral of the Laplacian over the domain equals the boundary flux of du/dn."
+            ],
+            "decisive_check": "The integral of 1 over the square is 1, but the boundary flux is 0, so no solution exists.",
+            "source_qualifications": [],
+            "uncertainty": "None."
+          },
+          "teacher_target_draft": "There is no solution. Integrating the equation over the square and applying the divergence theorem, the left side is the total outward flux of du/dn, which the boundary condition makes 0. The right side is the area, 1. Since 0 ≠ 1, the problem is incompatible. The candidate x^2/2 fails the boundary condition anyway: its x-derivative is 1 at x = 1. To get a solvable problem, change the source to have zero mean or allow a nonzero boundary flux. Checked by hand: the compatibility integral.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "M4",
+        "method": "sympy residual and boundary-derivative checks; compatibility integrals",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "f=-pi^2 cos(pi x)": "u = cos(pi x) + C, unique only up to C",
+          "compatibility": "int f = 0 required; f=1 gives 1 != 0 -> no solution"
+        },
+        "limits": "Residual and Neumann boundary checks on the unit square for one reference solution; the no-solution claim for f=1 uses the divergence theorem (hand argument), illustrated symbolically."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "f682bdca974cf87c7c1ef257eb6ba481fb9b8f49a3e78fdebecd20e6ea740884",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-math-opt-01",
+      "persona": "Mathematician",
+      "topic_lane": "Continuous optimization",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "false_premise",
+        "meaningful_checks",
+        "missing_assumption",
+        "practice_one_hint",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "Minimize f(x) = x^3 - 3x on [-3, 3]. f'(1) = 0 and f''(1) > 0, so x = 1 is the global minimum, right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, x = 1 is the global minimum with f(1) = -2.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Second-order conditions certify only a local minimum; the endpoints were not compared.",
+            "assumptions": [
+              "On a closed interval, the candidates are the stationary points and the endpoints."
+            ],
+            "decisive_check": "f(-3) = -18, f(-1) = 2, f(1) = -2, f(3) = 18. The minimum is at x = -3.",
+            "source_qualifications": [],
+            "uncertainty": "None."
+          },
+          "teacher_target_draft": "Only a local minimum. On a closed interval you also have to check the endpoints. The values are f(-3) = -18, f(-1) = 2, f(1) = -2 and f(3) = 18, so the global minimum is -18 at x = -3. f''(1) = 6 > 0 only tells you x = 1 is a local minimum. Checked by hand: the full candidate list.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "missing_assumption",
+          "behavior_tags": [
+            "missing_assumption"
+          ],
+          "prompt": "What is the global minimum of x^3 - 3x?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "-2 at x = 1.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Assumes a domain the question doesn't state.",
+            "assumptions": [
+              "The domain is unstated; on the real line the function is unbounded below."
+            ],
+            "decisive_check": "f -> -infinity as x -> -infinity.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "It depends on the domain. On all real numbers there is no global minimum, because x^3 - 3x goes to minus infinity as x goes to minus infinity. x = 1 is a local minimum with value -2. Give me an interval and I'll find the global minimum there.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "c",
+          "kind": "practice_hint",
+          "behavior_tags": [
+            "practice_one_hint"
+          ],
+          "prompt": "Practice mode: I found the stationary points of x^3 - 3x on [-3,3]. What should I do next? Just a nudge.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Pick the one with positive second derivative.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Skips the endpoints.",
+            "assumptions": [],
+            "decisive_check": "",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "Nice. Before you pick one, what other points in a closed interval can hold the minimum besides the stationary points?",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "M5",
+        "method": "sympy stationary points, endpoint values, second derivative, limit at -infinity",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "stationary": [
+            -1,
+            1
+          ],
+          "values": {
+            "-3": -18,
+            "-1": 2,
+            "1": -2,
+            "3": 18
+          },
+          "global_min_on_[-3,3]": "x=-3, f=-18",
+          "x=1": "local min, f=-2",
+          "on_R": "unbounded below, no global min"
+        },
+        "limits": "Exhaustive for this polynomial on a closed interval (stationary points plus endpoints)."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "349acd8530314dd4f632108fbfde49a4874c13e46e0bf183e6acc2fa5d20827b",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-math-fa-01",
+      "persona": "Mathematician",
+      "topic_lane": "Functional analysis",
+      "split": "train",
+      "difficulty": "graduate (introductory)",
+      "behavior_tags": [
+        "applicability",
+        "false_premise",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "verification_status"
+          ],
+          "prompt": "In l^2 the closed unit ball is closed and bounded, so it's compact by Heine–Borel. Right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, closed and bounded sets are compact.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Applies Heine–Borel, a finite-dimensional theorem, in an infinite-dimensional space.",
+            "assumptions": [
+              "Heine–Borel holds in R^n (finite-dimensional normed spaces)."
+            ],
+            "decisive_check": "The orthonormal vectors e_n lie in the ball, and ||e_n - e_m|| = sqrt(2) for n ≠ m, so no subsequence is Cauchy.",
+            "source_qualifications": [],
+            "uncertainty": "None for this standard counterexample."
+          },
+          "teacher_target_draft": "No. Heine–Borel is a finite-dimensional theorem. In l^2, the standard basis vectors e_1, e_2, ... are all in the closed unit ball, but any two distinct ones are sqrt(2) apart. So no subsequence is Cauchy, and none converges. The ball is closed and bounded but not compact. In fact, by Riesz's lemma, a normed space has a compact closed unit ball exactly when it is finite-dimensional. Checked by hand: the distance computation.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability"
+          ],
+          "prompt": "An injective bounded linear operator on a space is always surjective, by rank–nullity.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "True by rank–nullity.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Rank–nullity applies to finite-dimensional spaces only.",
+            "assumptions": [
+              "Rank–nullity: dim V = dim ker + dim im for finite-dimensional V."
+            ],
+            "decisive_check": "The right shift S(x1, x2, ...) = (0, x1, x2, ...) on l^2 is isometric and injective, but e_1 is not in its range.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "Only in finite dimensions. There, injective and surjective are equivalent by rank–nullity. On l^2, the right shift, which inserts a zero at the front, preserves norms and is injective. But nothing maps onto e_1 = (1, 0, 0, ...), so it isn't surjective.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "M6",
+        "method": "hand proof; numpy finite-truncation illustration (distances sqrt(2), truncated shift rank) is not a proof",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "||e_n-e_m||": "sqrt(2) for n != m (no Cauchy subsequence)",
+          "finite_dim": "injective <=> surjective (rank-nullity)",
+          "right_shift_l2": "isometric, injective, not surjective (e_1 not in range)"
+        },
+        "limits": "Finite truncations only illustrate ||e_n - e_m|| = sqrt(2); the infinite-dimensional claims rest on the hand argument."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "697649a23fe3cff5b83823e25aa7eae3175c647a65e2caa8ce27e65cac6bb82a",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-qm-measure-01",
+      "persona": "Quantum Mechanics Professor",
+      "topic_lane": "States and measurement",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "direct_answer",
+        "false_premise",
+        "meaningful_checks",
+        "practice_one_hint",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "A qubit is in |psi> = |0> + 2i|1>. The probability of measuring 1 is |2i| = 2, right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "The probability is 2i squared, which is -4, so something's off; let's say 2.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Uses the amplitude, not its squared modulus, and ignores normalization.",
+            "assumptions": [
+              "Born rule: P(k) = |<k|psi>|^2 / <psi|psi>."
+            ],
+            "decisive_check": "<psi|psi> = 1 + 4 = 5, so P(0) = 1/5 and P(1) = 4/5, which sum to 1.",
+            "source_qualifications": [],
+            "uncertainty": "None."
+          },
+          "teacher_target_draft": "No. Probabilities must be between 0 and 1, and this state isn't normalized. Its squared norm is 1^2 + |2i|^2 = 5, so P(0) = 1/5 and P(1) = 4/5. Use the squared modulus of the amplitude, |2i|^2 = 4, not 2i or (2i)^2, then divide by the norm. Check: 1/5 + 4/5 = 1.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer",
+            "meaningful_checks"
+          ],
+          "prompt": "Same state, normalized. Probability of the outcome + in the X basis?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "1/2.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "None.",
+            "assumptions": [],
+            "decisive_check": "<+|psi> = (1 + 2i)/sqrt(2), with |.|^2 = 5/2; divided by 5 that gives 1/2.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "1/2. <+|psi> = (1 + 2i)/sqrt(2), whose squared modulus is 5/2; dividing by the norm squared, 5, gives 1/2. The minus outcome also gets 1/2, so the two add to 1.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "c",
+          "kind": "practice_hint",
+          "behavior_tags": [
+            "practice_one_hint"
+          ],
+          "prompt": "Practice mode: I'm stuck finding P(1) for |0> + 2i|1>. One hint please.",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "It's 4/5.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Gives the answer when the learner asked for a hint.",
+            "assumptions": [],
+            "decisive_check": "",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "One hint: before using the Born rule, check whether the state is normalized. What is <psi|psi>?",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "Q1",
+        "method": "numpy inner products and probability sums (tolerance 1e-12)",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "norm^2": 5,
+          "P(0),P(1)": [
+            0.2,
+            0.8
+          ],
+          "P(+),P(-)": [
+            0.5,
+            0.5
+          ]
+        },
+        "limits": "Exact for the stated two-level state (floating point, tol 1e-12)."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "151e9ec86c344d9ad0649c92ae29c169d4368df8bcaf30694014ecd27bcc87c8",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-qm-dynamics-01",
+      "persona": "Quantum Mechanics Professor",
+      "topic_lane": "Dynamics and stationary states",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "direct_answer",
+        "evidence_qualifications",
+        "false_premise",
+        "meaningful_checks",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "meaningful_checks",
+            "evidence_qualifications",
+            "verification_status"
+          ],
+          "prompt": "H = (hbar omega/2) sigma_z, initial state |+x>. Using U = exp(+iHt/hbar), I get <sigma_y>(t) = -sin(omega t). Is that right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, <sigma_y>(t) = -sin(omega t).",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Uses the wrong sign in the time-evolution operator; the Schrödinger equation gives U = exp(-iHt/hbar).",
+            "assumptions": [
+              "The sign of the precession depends on the stated Hamiltonian convention (here +(hbar omega/2) sigma_z)."
+            ],
+            "decisive_check": "With U = exp(-iHt/hbar): <sigma_x> = cos(omega t) and <sigma_y> = +sin(omega t). Also, d<sigma_y>/dt at t = 0 is omega, from the Heisenberg equation.",
+            "source_qualifications": [],
+            "uncertainty": "The answer depends on the Hamiltonian convention. With H = -gamma B S_z the direction reverses."
+          },
+          "teacher_target_draft": "Almost. The evolution operator is exp(-iHt/hbar), not exp(+iHt/hbar), so the sign flips: <sigma_x>(t) = cos(omega t) and <sigma_y>(t) = +sin(omega t). The spin precesses counterclockwise about z for this H. Check: the Heisenberg equation gives d<sigma_y>/dt = omega <sigma_x>, which is omega at t = 0, so it's positive. If your source writes H = -gamma B S_z, the direction reverses, so keep that convention attached to the answer.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer"
+          ],
+          "prompt": "Is |0> a stationary state of H = (hbar omega/2) sigma_z?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "None.",
+            "assumptions": [],
+            "decisive_check": "|0> is an eigenvector with E = hbar omega/2, so it only picks up a phase.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "Yes. It's an eigenstate with energy hbar omega/2, so it only picks up the phase exp(-i omega t/2), and all measurement probabilities stay constant.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "Q2",
+        "method": "scipy expm time evolution sampled at 29 times, hbar = omega = 1; wrong-sign contrast",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "<sx>(t)": "cos(omega t)",
+          "<sy>(t)": "+sin(omega t) with U=exp(-iHt/hbar)",
+          "wrong_sign_U": "gives -sin(omega t)",
+          "|0>": "stationary (phase only)"
+        },
+        "limits": "Checked at sampled times for hbar=omega=1; the sign depends on the stated Hamiltonian convention H=(hbar*omega/2)sigma_z."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "ae2d952e47124477ac1448519dedce51bc4abfd6413c2950eade3746d1e28604",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-qm-spin-01",
+      "persona": "Quantum Mechanics Professor",
+      "topic_lane": "Spin and angular momentum",
+      "split": "train",
+      "difficulty": "undergraduate",
+      "behavior_tags": [
+        "direct_answer",
+        "false_premise",
+        "meaningful_checks",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "For Pauli matrices, [sigma_x, sigma_y] = i sigma_z, same as for spin. Right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, [sigma_x, sigma_y] = i sigma_z.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Drops the factor of 2 relating S = (hbar/2) sigma.",
+            "assumptions": [
+              "S_i = (hbar/2) sigma_i for spin-1/2."
+            ],
+            "decisive_check": "Explicit matrices: sigma_x sigma_y - sigma_y sigma_x = 2i sigma_z, and hence [S_x, S_y] = i hbar S_z.",
+            "source_qualifications": [],
+            "uncertainty": "None."
+          },
+          "teacher_target_draft": "Close, but there's a factor of 2: [sigma_x, sigma_y] = 2i sigma_z. The spin relation [S_x, S_y] = i hbar S_z follows because S = (hbar/2) sigma. Each commutator brings (hbar/2)^2 on the left and hbar/2 on the right, which leaves a factor of 2 for the Pauli matrices. Check by multiplying the 2x2 matrices: sigma_x sigma_y = i sigma_z and sigma_y sigma_x = -i sigma_z.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer"
+          ],
+          "prompt": "What is the eigenvalue of S^2 for a spin-1/2 particle?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "hbar^2/4.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Confuses S^2 with S_z^2.",
+            "assumptions": [
+              "S^2 eigenvalue: s(s+1) hbar^2."
+            ],
+            "decisive_check": "S_x^2 + S_y^2 + S_z^2 = (3/4) hbar^2 I.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "(3/4) hbar^2, from s(s+1) hbar^2 with s = 1/2. hbar^2/4 is the value of S_z^2 alone. Each of S_x^2, S_y^2 and S_z^2 contributes hbar^2/4.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "Q3",
+        "method": "numpy matrix commutators and S^2 in the S_z basis, hbar = 1",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "[sx,sy]": "2i sz",
+          "[Sx,Sy]": "i hbar Sz",
+          "S^2": "(3/4) hbar^2 I"
+        },
+        "limits": "Exact matrix identities for spin-1/2 in the standard S_z basis, hbar=1."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "3c7516c956ca343b8c7bbab2109d12839d5d9fb69a11a27cc9a8f3d1ed24d7c4",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-qm-perturb-01",
+      "persona": "Quantum Mechanics Professor",
+      "topic_lane": "Perturbation and approximation",
+      "split": "train",
+      "difficulty": "upper undergraduate",
+      "behavior_tags": [
+        "applicability",
+        "direct_answer",
+        "false_premise",
+        "meaningful_checks",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "meaningful_checks",
+            "verification_status"
+          ],
+          "prompt": "H0 = diag(1, 1, 3) and V = eps(|1><2| + |2><1|). The second-order shift of level 1 is |V12|^2/(E1 - E2). What do I get?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "eps^2/(1 - 1), so the shift is infinite and perturbation theory breaks down.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Applies the nondegenerate formula inside a degenerate subspace (zero denominator).",
+            "assumptions": [
+              "Degenerate perturbation theory: diagonalize V within the degenerate subspace first."
+            ],
+            "decisive_check": "Exact eigenvalues are 1 - eps, 1 + eps and 3, so the first-order shifts are -eps and +eps.",
+            "source_qualifications": [],
+            "uncertainty": "None for this exact model."
+          },
+          "teacher_target_draft": "Levels 1 and 2 are degenerate, so the nondegenerate formula doesn't apply. The zero denominator signals that, not a breakdown of the physics. Diagonalize V in the degenerate subspace first: it has eigenvalues plus and minus eps, giving levels 1 + eps and 1 - eps at first order, with the new states (|1> ± |2>)/sqrt(2). This 2x2 block is exactly solvable, and the exact energies are 1 ± eps, which confirms it.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer",
+            "applicability",
+            "meaningful_checks"
+          ],
+          "prompt": "Now V = eps(|1><3| + |3><1|) with the same H0. Second-order shift of the lowest level, for small eps?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "-eps^2/2.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "None.",
+            "assumptions": [
+              "Valid for |eps| much less than the level spacing of 2."
+            ],
+            "decisive_check": "The exact lowest eigenvalue is 2 - sqrt(1 + eps^2) = 1 - eps^2/2 + O(eps^4).",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "-eps^2/2, from |V13|^2/(E1 - E3) = eps^2/(1 - 3). This holds when eps is small compared with the spacing of 2. Check: the coupled 2x2 block has exact lowest eigenvalue 2 - sqrt(1 + eps^2), which expands to 1 - eps^2/2 plus order eps^4.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "Q4",
+        "method": "sympy exact eigenvalues and series; numpy eigvalsh at eps = 0.01 and 0.1",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "degenerate_V": "exact 1-eps, 1+eps, 3 (first-order split +-eps)",
+          "nondegenerate_V": "lowest exact 2 - sqrt(1+eps^2) = 1 - eps^2/2 + O(eps^4)"
+        },
+        "limits": "Exact diagonalization of the stated 3x3 model; perturbative statements apply for |eps| << level spacing 2."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "d5740d1a19b0ffd58aa6945a9eb94e45eeff719bd2dff8b00b9884b60c142165",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-qm-entangle-01",
+      "persona": "Quantum Mechanics Professor",
+      "topic_lane": "Entanglement and reduced states",
+      "split": "train",
+      "difficulty": "upper undergraduate",
+      "behavior_tags": [
+        "direct_answer",
+        "evidence_qualifications",
+        "false_premise",
+        "meaningful_checks",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "valid",
+          "behavior_tags": [
+            "direct_answer",
+            "meaningful_checks"
+          ],
+          "prompt": "For the Bell state (|00> + |11>)/sqrt(2), what is Alice's reduced density matrix?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "It's |0><0| because she sees 0 half the time.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Confuses the mixed reduced state with a pure state.",
+            "assumptions": [],
+            "decisive_check": "Partial trace gives I/2, with Tr(rho_A^2) = 1/2 < 1; the global state has purity 1.",
+            "source_qualifications": [],
+            "uncertainty": ""
+          },
+          "teacher_target_draft": "rho_A = I/2, the maximally mixed state. Check: its trace is 1, its eigenvalues are 1/2 and 1/2, and its purity Tr(rho_A^2) is 1/2, which is less than 1. The joint state is still pure. That's the signature of entanglement here: a pure whole with mixed parts.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "evidence_qualifications",
+            "verification_status"
+          ],
+          "prompt": "Since measuring Alice's qubit instantly fixes Bob's, they can use the Bell state to send a message faster than light. Right?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Yes, entanglement allows instantaneous communication.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Exaggerates correlation into signalling.",
+            "assumptions": [
+              "No-signalling: Bob's reduced state is independent of Alice's measurement choice."
+            ],
+            "decisive_check": "After a non-selective Z or X measurement by Alice, Bob's reduced state is still I/2.",
+            "source_qualifications": [],
+            "uncertainty": "This check covers projective Z and X measurements; the general no-signalling theorem covers all local operations."
+          },
+          "teacher_target_draft": "No. The outcomes are correlated, but Bob can't see any change locally. Whether Alice measures in Z, in X, or not at all, Bob's reduced state stays I/2 until she tells him her results over an ordinary channel. Correlation without a classical message carries no information. I checked this for Z and X measurements; the general no-signalling theorem covers any local operation.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "Q5",
+        "method": "numpy partial traces, purity, positivity; non-selective Z and X measurements",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "rho_A": "I/2 (mixed, purity 1/2)",
+          "global_state": "pure (purity 1)",
+          "Bob_after_Alice_Z_or_X": "I/2 unchanged -> no signalling"
+        },
+        "limits": "Exact for the Bell state; no-signalling checked for Z and X measurement choices (non-selective), not for all POVMs."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "92c0a152d8b969df77836e70c67f0aa6992ddfc2f2d3b43e3d196901e9c66d8f",
+        "locked_test_material_included": false
+      }
+    },
+    {
+      "family_id": "grok-r0-qm-open-01",
+      "persona": "Quantum Mechanics Professor",
+      "topic_lane": "Open systems and experiments",
+      "split": "train",
+      "difficulty": "upper undergraduate",
+      "behavior_tags": [
+        "applicability",
+        "evidence_qualifications",
+        "false_premise",
+        "meaningful_checks",
+        "verification_status"
+      ],
+      "variants": [
+        {
+          "variant_id": "a",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "evidence_qualifications",
+            "false_premise",
+            "verification_status"
+          ],
+          "prompt": "Based on this excerpt, has it been demonstrated that the device has a 33 microsecond coherence time?",
+          "permitted_evidence": {
+            "text": "SYNTHETIC EXCERPT (authored for this exercise; not a real publication): 'In a Markovian Lindblad model of a single qubit with amplitude damping (T1 = 50 us) and pure dephasing rate gamma_phi = 0.01 per us, the simulated coherence decays with T2 of about 33 us. These are simulated values under the Markov and weak-coupling assumptions, not measurements on a device.'",
+            "qualifications": [
+              "Markovian, weak-coupling model",
+              "simulated, not measured",
+              "single qubit, stated rates only"
+            ],
+            "synthetic": true
+          },
+          "student_answer": {
+            "text": "Yes, the device was shown to have T2 = 33 us.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Turns a simulated model value into an experimental demonstration and drops the Markovian qualification.",
+            "assumptions": [
+              "The excerpt itself says simulated, Markovian and weak-coupling."
+            ],
+            "decisive_check": "Model check: 1/T2 = 1/(2 T1) + gamma_phi = 0.01 + 0.01 per us, so T2 = 50 us, not 33. The excerpt's 33 us matches only the alternative convention 1/T2 = 1/(2 T1) + 2 gamma_phi (33.3 us), so the convention is ambiguous. The excerpt was deliberately authored this way.",
+            "source_qualifications": [
+              "simulated, not measured",
+              "Markovian and weak-coupling model"
+            ],
+            "uncertainty": "The excerpt may define gamma_phi with a different convention (some authors use rho01 decaying as exp(-2 gamma_phi t)). That needs the full source."
+          },
+          "teacher_target_draft": "No, the excerpt doesn't support that. It reports a simulation of a Markovian, weak-coupling model, not a measurement, so it shows what the model predicts, not what a device does. Also, with the usual convention 1/T2 = 1/(2 T1) + gamma_phi, the stated rates give 0.01 + 0.01 per microsecond, so T2 = 50 microseconds, not 33. Either the excerpt uses a different dephasing convention or there's an error. I'd need the full source to tell which.",
+          "reviewed_target": null
+        },
+        {
+          "variant_id": "b",
+          "kind": "false_premise",
+          "behavior_tags": [
+            "false_premise",
+            "applicability",
+            "meaningful_checks"
+          ],
+          "prompt": "Can a qubit's T2 be 300 us if its T1 is 100 us?",
+          "permitted_evidence": null,
+          "student_answer": {
+            "text": "Sure, T2 and T1 are independent.",
+            "origin": "synthetic stand-in authored by Grok Bot; NOT a LARPUS/Qwen output. Replace with a real round-zero student attempt before teacher review."
+          },
+          "teacher_critique": {
+            "invalid_or_unsupported_step": "Ignores the T2 <= 2 T1 bound in the standard Markovian model.",
+            "assumptions": [
+              "The bound assumes Markovian amplitude damping plus non-negative pure dephasing; it refers to the intrinsic T2, not an echo-refocused or T2* figure."
+            ],
+            "decisive_check": "With pure damping only, coherence decays as exp(-t/(2 T1)), so T2 = 2 T1 = 200 us is the maximum.",
+            "source_qualifications": [],
+            "uncertainty": "Reports outside this model (non-Markovian noise, different T2 definitions) need their definition checked."
+          },
+          "teacher_target_draft": "Not in the standard Markovian picture. Energy relaxation alone already kills coherence at half the T1 rate, so T2 can be at most 2 T1, which is 200 microseconds here, and pure dephasing only lowers it. If you see a number above 2 T1, check how T2 was defined and what noise model was assumed.",
+          "reviewed_target": null
+        }
+      ],
+      "verification": {
+        "script": "verify_round0_families.py",
+        "check_id": "Q6",
+        "method": "scipy solve_ivp Lindblad integration (rtol 1e-10) vs closed form; model consistency only",
+        "box_run_status": "pass",
+        "owner_side_rerun": null,
+        "box_run_facts": {
+          "1/T2": "1/(2 T1) + gamma_phi",
+          "alt_convention_T2": "33.33 us (if rho01 ~ exp(-2 gamma_phi t))",
+          "T1=50us,gamma_phi=0.01/us": "T2=50.00 us",
+          "pure_damping": "T2 = 2 T1 = 100 us (upper bound in this model)"
+        },
+        "limits": "Integrates the stated Markovian Lindblad model (amplitude damping + pure dephasing); confirms model consistency only and is not experimental evidence."
+      },
+      "provenance": {
+        "author": "Grok Bot (hosted agent)",
+        "authored_et": "2026-10-22",
+        "method": "authored from scratch; no LARPUS corpus, notes, chats, logs, data/ or licensed source text was read or used",
+        "source_ids": [],
+        "evidence_origin": "none, or a synthetic excerpt written for this family (not a real publication; do not cite)",
+        "license": null,
+        "training_use": null,
+        "external_sharing_approval": null,
+        "rights_note": "Owner must check current Grok Bot/xAI service terms for output and training rights before admission (plan: 'Check the current service terms ... before importing any Grok response')."
+      },
+      "review": {
+        "status": "draft-pending-independent-review",
+        "reviewer": null,
+        "review_date_et": null,
+        "admission": null,
+        "reject_reason": null,
+        "review_minutes": null
+      },
+      "packet_manifest": {
+        "direction": "teacher-authored (Grok Bot -> owner); no packet was sent from the PC to Grok",
+        "outbound_from_pc": null,
+        "teacher_identity": "Grok Bot (hosted agent; underlying model not disclosed)",
+        "prompt_version": "owner task 2026-10-22 02:29 AM ET (relayed)",
+        "created_et": "2026-10-22",
+        "family_sha256": "7672a8da7a9a85ac9b44beb15b721292d06a4e8d3cf00d76416a7b01941b75d3",
+        "locked_test_material_included": false
+      }
+    }
+  ]
+}

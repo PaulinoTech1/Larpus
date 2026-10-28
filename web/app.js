@@ -1,4 +1,4 @@
-function failureText(data){const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (data.error||'Gateway request failed')+id;}
+function failureText(data){const messages={inference_budget:'Local inference limit reached. Wait a minute, then retry.',queue_full:'Local inference queue is full. Let the current reply finish, then retry.',admission_timeout:'Timed out waiting for the local inference slot. Check current work before retrying.',cancellation_unconfirmed:'Local inference readiness or cancellation could not be confirmed. Check broker status; repeated retries may not recover it.',inference_deadline:'Local inference exceeded its time limit. Check broker status before retrying.',model_switching:'The local model is switching. Retry after switching completes.',broker_held:'The inference broker refused this request. Owner investigation is needed; direct inference remains disabled.'};const known=Object.prototype.hasOwnProperty.call(messages,data.code);const id=typeof data.error_id==='string'&&/^[a-f0-9]{16}$/.test(data.error_id)?` / diagnostic ${data.error_id}`:'';return (known?messages[data.code]+` (broker: ${data.code})`:(data.error||'Gateway request failed'))+id;}
 // Request preferences never grant tools or alter mandatory security policy.
 function executionRequest(){
   const profile=document.getElementById('execution-profile')?.value||'verified';
@@ -30,6 +30,42 @@ function stopGeneration(){requestController?.abort();window.larpusVoice?.stopPla
 window.larpusCancelGeneration=stopGeneration;window.larpusPipeline=pipeline;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 function state(value) { $('core-state').textContent = `● ${value}`; }
+function excised(outgoing, removed){
+  const drop=new Set(removed), droppedNew=drop.has(outgoing.length-1);
+  if(!conversation?.record){
+    const kept=outgoing.filter((_,index)=>!drop.has(index));
+    const prior=droppedNew?kept:kept.slice(0,-1);
+    return {history:prior.map(message=>({role:message.role,content:message.content})), droppedNew};
+  }
+  const prefix=2, start=conversation.through, removeHist=new Set();
+  let dropRecord=false;
+  for(const index of drop){
+    if(index===outgoing.length-1)continue;
+    if(index<prefix){dropRecord=true;continue;}
+    removeHist.add(start+(index-prefix));
+  }
+  const next=history.filter((_,index)=>!removeHist.has(index));
+  if(dropRecord){conversation.record=null;conversation.through=0;}
+  else if(conversation.through>next.length)conversation.through=next.length-(next.length%2);
+  return {history:next, droppedNew};
+}
+function attachSources(reply, event){
+  const host=$('messages').lastElementChild;
+  if(!reply || !host || !Array.isArray(event?.sources) || !event.sources.length || host.querySelector('.reply-sources'))return;
+  const refs=document.createElement('div');refs.className='reply-sources';refs.textContent='LOCAL REFERENCES';
+  for(const source of event.sources){
+    const card=document.createElement('details'),heading=document.createElement('summary'),body=document.createElement('p');
+    const age=source.snapshot?Math.floor((Date.now()-Date.parse(source.snapshot))/86400000):NaN;
+    const provenance=source.provenance||{};
+    const authors=Array.isArray(provenance.document_authors)&&provenance.document_authors.length?provenance.document_authors.join('; '):'unknown / not inferred from citations';
+    const identity=`Document authors: ${authors}\nPublished: ${provenance.published_on||'unknown'} / Revised: ${provenance.revised_on||'unknown'}\nSection: ${provenance.section||'unknown'}\n`;
+    heading.textContent=`[${source.id}] ${source.title}`;
+    body.textContent=`${identity}Snapshot ${source.snapshot||'date unavailable'}${Number.isFinite(age)?` / ${age} days old`:''} / ${source.locator}\n${source.url}\n\n${source.preview||'Preview unavailable for this reference.'}\nA snapshot is not proof of current support or pricing.`;
+    card.append(heading,body);refs.append(card);
+  }
+  if(event.citation_check){const check=document.createElement('p');check.textContent=`Citation identifiers: ${event.citation_check.status}. This checks identifiers, not whether every claim is supported.`;refs.append(check);}
+  host.append(refs);
+}
 function message(role, content) {
   const el = document.createElement('div'); el.className = `message ${role}`;
   const label = document.createElement('strong'); label.textContent = role === 'user' ? 'YOU / TRANSMIT' : 'LARPUS / RESPONSE';
@@ -77,7 +113,7 @@ $('chat').onsubmit = async e => {
   if (history.length >= (conversation?400:38)) { $('notice').textContent = 'Transcript limit reached. Export a handoff, then start a new conversation from it.'; return; }
   $('messages').querySelector('.empty')?.remove(); message('user', content); $('prompt').value = ''; $('notice').textContent = ''; setBusy(true);
   const next = [...history,{role:'user',content}];
-  let reply,full='',complete=false;
+  let reply,full='',complete=false,removed=[],incidents=[],localHold=false,doneEvent=null;
   requestController=typeof AbortController==='function'?new AbortController():null;const started=Date.now();
   const requestExecution=executionRequest(),diagnosticStarted=requestExecution.execution?.profile==='diagnostic'?browserClock():null;
   window.larpusVoice?.beginReply();
@@ -100,6 +136,10 @@ $('chat').onsubmit = async e => {
         while((end=buffer.indexOf('\n'))>=0){
           const event=JSON.parse(buffer.slice(0,end));buffer=buffer.slice(end+1);
           if(event.type==='error')throw Error(failureText(event));
+          if(event.type==='quarantine'){
+            if(!Array.isArray(event.removed)||!event.removed.every(index=>Number.isInteger(index)&&index>=0)||!Array.isArray(event.incidents)||!event.incidents.every(id=>/^[0-9a-f]{32}$/.test(id)))throw Error('Invalid reply stream');
+            removed=event.removed;incidents=event.incidents;continue;
+          }
           if(event.type==='text'){
             if(complete || typeof event.content!=='string' || (full.length+event.content.length)>65536)throw Error('Invalid reply stream');
             if(!event.content)continue;
@@ -110,32 +150,29 @@ $('chat').onsubmit = async e => {
             if(diagnosticStarted!==null)recordFirstRender(reply.text,diagnosticStarted);
             window.larpusVoice?.enqueueSpeech(event.content);
           }else if(event.type==='done'){
-            complete=true;
+            complete=true;doneEvent=event;if(event.local===true)localHold=true;
             if(event.context)contextUsage(event.context);
-            if(reply && Array.isArray(event.sources) && event.sources.length){
-              const refs=document.createElement('div');refs.className='reply-sources';refs.textContent='LOCAL REFERENCES';
-              for(const source of event.sources){
-                const card=document.createElement('details'),heading=document.createElement('summary'),body=document.createElement('p');
-                const age=source.snapshot?Math.floor((Date.now()-Date.parse(source.snapshot))/86400000):NaN;
-                const provenance=source.provenance||{};
-                const authors=Array.isArray(provenance.document_authors)&&provenance.document_authors.length?provenance.document_authors.join('; '):'unknown / not inferred from citations';
-                const identity=`Document authors: ${authors}\nPublished: ${provenance.published_on||'unknown'} / Revised: ${provenance.revised_on||'unknown'}\nSection: ${provenance.section||'unknown'}\n`;
-                heading.textContent=`[${source.id}] ${source.title}`;
-                body.textContent=`${identity}Snapshot ${source.snapshot||'date unavailable'}${Number.isFinite(age)?` / ${age} days old`:''} / ${source.locator}\n${source.url}\n\n${source.preview||'Preview unavailable for this reference.'}\nA snapshot is not proof of current support or pricing.`;
-                card.append(heading,body);refs.append(card);
-              }
-              if(event.citation_check){const check=document.createElement('p');check.textContent=`Citation identifiers: ${event.citation_check.status}. This checks identifiers, not whether every claim is supported.`;refs.append(check);}
-              $('messages').children[$('messages').children.length-1].append(refs);
-            }
+            if(!removed.length)attachSources(reply,event);
           }
           else throw Error('Invalid reply stream');
         }
         if(done)break;
       }
     }finally{await reader.cancel();reader.releaseLock();}
-    if(!complete || !full.trim() || buffer.trim())throw Error('Reply stream ended early');
-    history=[...next,{role:'assistant',content:full}];reply.replay.disabled=false;saveChat();teaching?.completed(adaptation.token);
-    window.larpusVoice?.finishReply(full);
+    if(!complete || buffer.trim() || (!localHold && !full.trim()))throw Error('Reply stream ended early');
+    const outcome=removed.length?excised(outgoing,removed):{history,droppedNew:false};
+    if(localHold){
+      history=outcome.history;$('messages').replaceChildren();for(const item of history)message(item.role,item.content);
+      $('notice').textContent=`That message was quarantined${incidents.length?` (${incidents.join(', ')})`:''} and was not sent. The conversation continues without it.`;
+      saveChat();window.larpusVoice?.stopPlayback();
+    }else{
+      if(outcome.droppedNew)throw Error('Quarantine result did not match the reply');
+      history=[...outcome.history,{role:'user',content},{role:'assistant',content:full}];
+      if(removed.length){$('messages').replaceChildren();let built=null;for(const item of history)built=message(item.role,item.content);reply=built;}
+      if(reply)reply.replay.disabled=false;saveChat();teaching?.completed(adaptation.token);
+      window.larpusVoice?.finishReply(full);
+      if(removed.length)attachSources(reply,doneEvent);
+    }
   }
   catch (err) {if(err.name!=='AbortError')window.larpusVoice?.stopPlayback();if(reply)reply.label.textContent='LARPUS / INCOMPLETE — NOT SAVED';$('notice').textContent=err.name==='AbortError'?'Stopped. Incomplete reply excluded from chat memory.':err.message;$('prompt').value=content;}
   finally {requestController=null;setBusy(false); $('prompt').focus();}

@@ -153,10 +153,17 @@ def scan_gate(summary,report,baseline,targets=None,reviewed=None,source_hashes=N
         if reviewed_signatures(reviewed['previous'])!=issue_signatures(baseline) or reviewed_signatures(reviewed['approved'])!=issue_signatures(report):
             raise ValueError('MCP finding inventory differs from reviewed transition')
 
+def check_catalog_counts(root):
+    # Older retained releases predate this gate and remain valid rollback targets.
+    if (root/'scripts/knowledge_counts.py').is_file():
+        from scripts.knowledge_counts import reconcile
+        reconcile(root)
+
 def validate(root):
     meta=read(root/'release.json')
     if meta.get('version')!=1 or meta.get('id')!=root.name:raise ValueError('Invalid release metadata')
     if not meta.get('files') or payload(root)!=meta['files']:raise ValueError('Frozen release files changed')
+    check_catalog_counts(root)
     fingerprint=run(root,sys.executable,'-c','from runtime.security_scan import fingerprint;print(fingerprint())')
     if fingerprint!=meta['source_fingerprint'] or read(root/'deployment.json')['source_fingerprint']!=fingerprint:raise ValueError('Release fingerprint mismatch')
     if not meta.get('bootstrap'):
@@ -171,6 +178,8 @@ def stage(source=None):
     source=ROOT if source is None else Path(source)
     if source.is_symlink() or not source.is_dir():raise ValueError('Invalid staging source')
     source=source.resolve()
+    from scripts.knowledge_counts import reconcile
+    reconcile(source)
     if (source/'knowledge/provenance.json').exists():run(source,sys.executable,'scripts/source-provenance.py','check')
     import _winapi
     identifier=uuid.uuid4().hex;dest=release_path(identifier)
@@ -250,12 +259,20 @@ print(json.dumps({'initial':initial,'numpy':numpy,'assembly':assembly,'optimized
         raise ValueError('Pipeline switch/restore readiness failed')
     print('Candidate Assembly/NumPy worker switching verified; initial pipeline restored.',flush=True)
 
-def prepare(identifier):
+def select_gpu_driver(profile,gpu_driver):
+    if gpu_driver is None:return profile
+    if not re.fullmatch(r'/usr/lib/wsl/drivers/nv_[a-z0-9]+\.inf_amd64_[a-f0-9]{16}',gpu_driver):
+        raise ValueError('Invalid narrow NVIDIA driver package')
+    wsl('/usr/bin/test','-f',gpu_driver+'/libcuda.so.1.1')
+    return {**profile,'gpu_driver':gpu_driver}
+
+def prepare(identifier,gpu_driver=None):
     dest=release_path(identifier);meta=read(dest/'release.json')
     if payload(dest)!=meta['files']:raise ValueError('Candidate changed after staging')
     active=read(STORE/'active.json');old=release_path(active['id'])
     profile=read(old/'deployment.json');profile['agent_name']='larpus-agent-'+identifier
     profile['source_fingerprint']=meta['source_fingerprint']
+    profile=select_gpu_driver(profile,gpu_driver)
     # Fixed offline cache; GPU model stays shared, voice candidate stays separate.
     linux='/home/larpus/releases/'+identifier
     wsl('/bin/mkdir','-p',linux)
@@ -331,6 +348,14 @@ def running(state):
     actual=process(state['pid'])
     return actual==state['process'] if actual else False
 
+def _drop_unrecorded(child):
+    """Close the exact process handle when its identity was never stored."""
+    if child.poll() is not None:return
+    child.terminate()
+    try:child.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        child.kill();child.wait(timeout=15)
+
 def launch(identifier,settings):
     root=release_path(identifier);validate(root)
     gate=_startup_gate(identifier)
@@ -339,9 +364,16 @@ def launch(identifier,settings):
     env=os.environ.copy();env.update(LARPUS_HOST=settings['host'],LARPUS_LAN_CIDR=settings['subnet'],LARPUS_PORT=str(settings['port']),LARPUS_ISOLATION='wsl-podman',LARPUS_STARTUP_GATE=str(gate),PYTHONUTF8='1',PYTHONDONTWRITEBYTECODE='1')
     code='import sys,runpy;sys.path.insert(0,'+repr(str(root))+');runpy.run_module("runtime.gateway",run_name="__main__")'
     with (STORE/(identifier+'.gateway.log')).open('ab') as log:child=subprocess.Popen([sys.executable,'-c',code],cwd=root,env=env,stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW)
-    identity=process(child.pid)
-    if not identity:raise RuntimeError('Gateway exited before startup')
-    return {**settings,'version':1,'id':identifier,'pid':child.pid,'process':identity}
+    try:found=process(child.pid)
+    except (OSError,ValueError,subprocess.SubprocessError):
+        try:_drop_unrecorded(child)
+        except (OSError,subprocess.SubprocessError):raise RuntimeError('Unrecorded gateway still running') from None
+        raise
+    if not found:
+        try:_drop_unrecorded(child)
+        except (OSError,subprocess.SubprocessError):raise RuntimeError('Unrecorded gateway still running') from None
+        raise RuntimeError('Gateway exited before startup')
+    return {**settings,'version':1,'id':identifier,'pid':child.pid,'process':found}
 
 def stop(state):
     actual=process(state['pid'])
@@ -542,17 +574,22 @@ def prune():
     print(json.dumps({'kept':sorted(keep),'stopped':idle}),flush=True)
     return idle
 
+def validate_cli_args(parser,args):
+    if args.source is not None and args.operation!='stage':parser.error('--source is only valid with stage')
+    if args.gpu_driver is not None and args.operation!='prepare':parser.error('--gpu-driver is only valid with prepare')
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('operation',choices=('stage','prepare','activate','rollback','start','status','prune'));parser.add_argument('id',nargs='?')
     parser.add_argument('--source',type=Path,help='Explicit prepared source tree for stage; owner data/store remain unchanged')
+    parser.add_argument('--gpu-driver',help='Reviewed narrow WSL driver package for a newly prepared release')
     args=parser.parse_args()
-    if args.source is not None and args.operation!='stage':parser.error('--source is only valid with stage')
+    validate_cli_args(parser,args)
     if os.name!='nt':raise SystemExit('Owner Windows release manager required')
     if args.operation=='status':
         state=read(STORE/'active.json');print(json.dumps({'id':state['id'],'running':running(state),'previous':state.get('previous'),'pending':(STORE/'pending.json').exists()},indent=2));return
     with exclusive():
         if args.operation=='stage':stage(args.source)
-        elif args.operation=='prepare':prepare(args.id)
+        elif args.operation=='prepare':prepare(args.id,args.gpu_driver)
         elif args.operation=='activate':cutover(args.id);prune()
         elif args.operation=='rollback':cutover(read(STORE/'active.json')['previous'])
         elif args.operation=='start':start();prune()
