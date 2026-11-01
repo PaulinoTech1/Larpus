@@ -8,6 +8,7 @@ RESEARCH_HOSTS = {
     'dspace.mit.edu',             # MIT institutional repository
     'thesis.caltech.edu',         # CaltechTHESIS files
     'thesis.library.caltech.edu', # CaltechTHESIS records
+    'www.preskill.caltech.edu',   # Caltech Physics 219 lecture notes (2026-10-29)
     'repositori-api.upf.edu',     # Universitat Pompeu Fabra repository
     'www.cs.ru.nl',               # Radboud University computing science theses
     'csrc.nist.gov',              # NIST Computer Security Resource Center
@@ -18,6 +19,7 @@ RESEARCH_HOSTS = {
     # listed: those landing URLs were replaced by the institutional repository records.
     'www.repository.cam.ac.uk',   # University of Cambridge Apollo repository records
     'api.repository.cam.ac.uk',   # University of Cambridge Apollo repository files
+    'www.damtp.cam.ac.uk',        # University of Cambridge DAMTP faculty notes (2026-10-29)
     'spiral.imperial.ac.uk',      # Imperial College London Spiral repository
     'repository.gatech.edu',      # Georgia Institute of Technology SMARTech repository
     'textbooks.math.gatech.edu',  # Georgia Institute of Technology mathematics textbooks

@@ -169,8 +169,11 @@ load) and `prepare-knowledge.py` (before any text extraction):
   also the university repositories and mathematics department/faculty hosts of
   Cambridge, Imperial, Georgia Tech, Utrecht, ETH Zurich, MIT (OCW and math.mit.edu),
   Harvard, Wisconsin-Madison, Cornell, Princeton, Stanford, UC San Diego, UC Davis,
-  Chicago, Brown, Colorado State, Vienna and Whitman College. DOI and handle
-  resolvers are not allowlisted; records use the repository's own URL.
+  Chicago, Brown, Colorado State, Vienna and Whitman College. Since 2026-10-29
+  the list also includes www.damtp.cam.ac.uk, the Cambridge DAMTP faculty-note
+  host, and www.preskill.caltech.edu, the Caltech Physics 219 course host.
+  A personal domain is not added when a department page redirects to one.
+  DOI and handle resolvers are not allowlisted; records use the repository's own URL.
 - Title, authors, year and a rights statement are required; student works need
   degree evidence.
 - Downloaded text must have a pinned SHA-256 and byte size; files whose bytes
@@ -247,6 +250,33 @@ retrieval only). Entries without the field are treated as not cleared. Exporters
 - `cavalieri-math490-topology` - Introduction to Topology (Math 490 course notes) (Cavalieri, Renzo; students), et al. (Math 490, 2010; Colorado State University); level `references`; training_use `private-only`.
 - `shi-2023-unstable-periodic-homotopy` - Unstable Periodic Homotopy Theory (Shi, Yuqing, 2023; Utrecht University); level `phd`; training_use `allowed`.
 - `appenzeller-2024-affine-buildings` - Semialgebraic groups and generalized affine buildings (Appenzeller, Raphael, 2024; ETH Zurich); level `phd`; training_use `allowed`.
+
+## Mathematics and quantum lecture notes added 2026-10-29
+
+These are the eight courses approved for download. Each file is an uncounted
+`references` entry. `training_use` is omitted, so none of them is cleared for
+shareable fine-tuning. Author names come from the course page or the PDF title
+page. The Adams and Guillemin Fourier textbook, the Kuhnel geometry textbook,
+and the commercial quantum textbooks listed as readings were not downloaded.
+
+OCW files use CC BY-NC-SA 4.0. The 2026-08-11 OCW terms allow non-commercial AI
+training only with attribution and share-alike. David Tong's department PDF
+carries his 2017 copyright and the department page's grant to copy with
+attribution, no alterations, and no monetary profit. John Preskill's course page
+states no Creative Commons licence.
+
+- `mit-18103-01` through `mit-18103-10` — 18.103 Fourier Analysis supplements (Jerison, David, 2013; MIT OpenCourseWare). Ten notes. Not a full textbook.
+- `mit-18950-01` through `mit-18950-04` — 18.950 Differential Geometry chapters (Seidel, Paul, 2008; MIT OpenCourseWare).
+- `mit-18330-01` through `mit-18330-29` — 18.330 Introduction to Numerical Analysis handouts (Toomre, Alar, 2004; MIT OpenCourseWare). Lectures 12 and 21 are absent from the lecture-notes page.
+- `mit-804-01` through `mit-804-20` — 8.04 Quantum Physics I notes (Zwiebach, Barton, 2016; MIT OpenCourseWare).
+- `mit-805-01` through `mit-805-10` — 8.05 Quantum Physics II chapters (Zwiebach, Barton, 2013; MIT OpenCourseWare). The page links one wave-mechanics PDF twice; it is stored once.
+- `mit-806s16-01` through `mit-806s16-05` — 8.06 Quantum Physics III, Spring 2016 (Harrow, Aram, 2016; MIT OpenCourseWare).
+- `mit-806s16-06` — Canonical quantization of a charged particle in a magnetic field (Jaffe, R. L., 2007; MIT OpenCourseWare). The course page says Prof. Bob Jaffe. The title page names R. L. Jaffe and dates the notes February 8, 2007.
+- `mit-806s18-01` through `mit-806s18-07` — 8.06 Quantum Physics III, Spring 2018 (Zwiebach, Barton, 2018; MIT OpenCourseWare), including time-dependent perturbation and scattering. Chapter 5 is marked not available. `mit-806s18-07` is the identical-particles chapter; its OCW slug says connection formulas, and the PDF does not.
+- `tong-applications-quantum-mechanics` — Applications of Quantum Mechanics (Tong, David, 2017; Cambridge DAMTP). 370 pages. The HTML course page now redirects off the department host. The PDF remains at www.damtp.cam.ac.uk.
+- `preskill-ph219-ch01` through `preskill-ph219-ch07`, `preskill-ph219-ch09`, and `preskill-ph219-ch10` — Physics 219 / CS 219 current chapters (Preskill, John; California Institute of Technology). Chapter 8 has no typeset file. Older superseded chapters and handwritten notes were not taken.
+
+The checkout index was rebuilt on 2026-10-29 with `prepare-knowledge.py --reuse-research`. Sixty-seven files produced extracted passages, including Tong (926) and the Preskill chapters. All 29 numerical-analysis handouts have no text layer, so they are metadata-only until a separate OCR review. Checkout semantic embeddings were then rebuilt from the verified vectors in release `1022de11b0df4ce6be2915f49f1286ba` plus 4,660 new passages. The running gateway still serves that release. This rebuild does not replace its index.
 
 ## Linux kernel expert sources added 2026-10-10
 
