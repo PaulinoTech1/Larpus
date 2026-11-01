@@ -109,6 +109,13 @@ gateway failed readiness even after `activate` reported success. Start it
 from an owner PowerShell with `python scripts/releases.py start` if status
 reports the selected release and `"running": false`.
 
+A later verified run on release `882c959c3d4540a5ba4b4b89f1596b17`,
+`8959e76e92274684817ccb135a80dc8c`, completed 27/27 measured requests with
+no input quarantine and no output DLP hold. The reworded `cyber-pentest`
+case completed 3/3. First checked text median was 5.268 s and completion
+median was 7.021 s. Details:
+[output hold check](OUTPUT_HOLD_CHECK_2026-10-27.md).
+
 Details: [WSL sandbox access](WSL_SANDBOX_ACCESS.md) and
 [local input filtering](TEXT_FILTER.md).
 
