@@ -39,6 +39,15 @@ not live knowledge until admitted and integrated. The checkout includes
 [offline freshness detection](docs/SOURCE_FRESHNESS.md); age-based review warnings
 and scoped lifecycle signals do not certify current accuracy.
 
+**Current knowledge base (live data-only release `b788d9fd`, activated
+2026-11-01 6:55 AM ET):** 509 documents, 90,270 indexed passages, 88,191
+embedding rows and 178,365 study notes. The research catalog has 396 entries.
+The release notes are in [release b788d9fd](docs/releases/RELEASE-b788d9fd-2026-11-01.md).
+The OCR, page-limit, normalization and reviewed-hash changes behind these counts
+are in [knowledge ingest](docs/KNOWLEDGE-INGEST.md). Recent measurements:
+[quality and latency test, 2026-11-01](docs/evals/QUALITY-2026-11-01.md) and
+[latency-only benchmark, 2026-10-30](docs/evals/LATENCY-2026-10-30.md).
+
 Historical snapshot verified against the owner's frozen release on **2026-10-11**.
 The [operational status](docs/STATUS.md) records the later selected release.
 Counts and settings below describe the October 11 deployment; a fresh clone
@@ -52,7 +61,7 @@ runtime.
 | Model | `qwen3.5:27b-q4_K_M`, GPU inference, non-thinking replies |
 | Context | **131,072 tokens configured**; 1,024-token normal reply ceiling. The requested 262,144-token target is not the active setting. |
 | Personas and skills | 12 personas; 69 locally authored, hash-checked prompt skills |
-| Approved library | 404 documents / 76,660 indexed passages; all personas can retrieve across roles |
+| Approved library | 404 documents / 76,660 indexed passages (Oct 11; 509 / 90,270 since release `b788d9fd`); all personas can retrieve across roles |
 | Local access | **http://127.0.0.1:8080**, password-free |
 | Home LAN access | **https://192.168.1.2:8080**, password, rate limits and subnet checks; local CA trust required |
 
