@@ -1,11 +1,65 @@
 # Local multi-turn RAG evaluation, inspired by MTRAGEval
 
-Status (2026-10-25): scoped capability probes remain checkout-only. Catalog
-validation and seven focused unit tests passed on October 25; **no model-backed
-A/B/C run or human answer review** has been performed for this status update.
-The original owner instruction deferred GPU-backed and latency tests while Grok
-Bot fine-tuning was in progress. Pilot1 has since been shelved; this status note
-authorizes no live run or release activation. This is a local adaptation of the
+## Configuration follow-up - 2026-10-29
+
+The current selected release is `1022de11b0df4ce6be2915f49f1286ba`.
+The October 27 run described below is historical and must remain unchanged.
+A new baseline must use a new run ID; do not append attempts from the new
+release to that old station identity. No new live run or training is implied
+by validation, deferred configuration, or these commands.
+
+The runner's default minimum interval between generation starts is now six
+seconds for C and B. Set `--minimum-start-interval 6` explicitly in the live
+commands below; values from 6 through 60 are accepted. A performs retrieval
+without generation pacing. The interval is recorded with the C arm, B must
+use that same interval, and a comparison requires matched pacing across arms.
+Pacing wait occurs before the timed probe, so it is not response latency.
+
+This addresses a configuration risk: a fast 15-attempt B task can otherwise
+exceed the broker's 12 requests / 12288 reserved output tokens per minute.
+With 1024 output tokens reserved per request and exclusive use of the lane,
+six-second starts leave margin under both limits. A quiet window and cleared
+prior budget are still necessary; other consumers can still cause holds.
+The old B holds were attempts 13-15, consistent with budget exhaustion, but
+the original receipts contain only `sealed_agent_held`, so that cause is not
+proven. Do not erase those failures or weaken broker limits.
+
+C now retains bounded refusal codes, correlation IDs and HTTP statuses when
+available, saving failed-attempt metadata separately without saving partial
+reply text. This permits distinguishing budget holds from cancellation faults
+on a new run. No automatic retries or direct model fallback are added.
+
+The five-case configuration uses three repeats in order C, A, B: 45 total
+attempts for one baseline. Human correctness/support review remains unset.
+The current comparison gate is for distinct model weights with matched
+retrieval/corpus/context pins. A same-model retrieval experiment needs a
+separately defined comparison contract; do not relabel it as a tuned-model
+comparison or relax the gate merely to obtain `comparison_ready`.
+
+Status (2026-10-27): the active release
+`882c959c3d4540a5ba4b4b89f1596b17` contains `runtime/rag_eval.py`. The older
+note that release `6200bb30d68348f080f2c1c723ff2fb6` cannot run A/B is
+historical. Task C originally failed closed on the Qubes answerable case
+because the synthetic assistant line "specifications you supply" scored
+0.6728 for injection. Horizon removed that setup turn, and the runner
+treated the quarantine event as `invalid_protocol`, so the case produced no
+completed measurement. The fixture now states that exact figures depend on
+the versioned source, which scored 0.0018. The 0.5 label boundary is
+unchanged. Human review of answer quality is still unset. Baseline run
+`b11d49d6604d420fb84bb65f551f7e37` on that release completed task C 15/15
+and task A 15/15. Task B completed 12/15; the three holds were repeat 3 of
+the empty-evidence cases and were not reproduced by one immediate retry.
+`qubes-requirements` included its gold source on all three A repeats and all
+three C repeats. `qubes-followup`, whose last turn is only "And how much
+storage does it call for?", included that gold source on none of the six A
+or C repeats. Both tasks returned the same four MIT passage IDs instead.
+That is the multi-turn retrieval gap this probe is meant to show. The
+checkout now carries a platform named in an earlier user turn into the
+retrieval query when the latest turn names none. Assistant text is not
+used, and the model still sees the original question. A later release is
+required before the live agent uses that rule. No
+candidate arm was run, and `comparison_ready` is false. This is a local
+adaptation of the
 three-task design in [MTRAGEval, SemEval 2026](https://aclanthology.org/2026.semeval-1.447/),
 **not** an official leaderboard run or a reproduction of its dataset. Its five
 public synthetic cases are smoke fixtures, not a statistically representative
@@ -59,13 +113,13 @@ available. In a quiet window, run one arm at a time; the script neither switches
 models nor activates a release:
 
 ```powershell
-python -m scripts.mtrageval_local run-c RUN_ID --arm baseline --repeats 3 --tuning-finished --quiet-window
-python -m scripts.mtrageval_local run-a RUN_ID --arm baseline --repeats 3 --tuning-finished --quiet-window
-python -m scripts.mtrageval_local run-b RUN_ID --arm baseline --repeats 3 --tuning-finished --quiet-window
+python -m scripts.mtrageval_local run-c RUN_ID --arm baseline --repeats 3 --tuning-finished --quiet-window --minimum-start-interval 6
+python -m scripts.mtrageval_local run-a RUN_ID --arm baseline --repeats 3 --tuning-finished --quiet-window --minimum-start-interval 6
+python -m scripts.mtrageval_local run-b RUN_ID --arm baseline --repeats 3 --tuning-finished --quiet-window --minimum-start-interval 6
 # Switch models only through the separately approved local model-selection procedure.
-python -m scripts.mtrageval_local run-c RUN_ID --arm candidate --repeats 3 --tuning-finished --quiet-window
-python -m scripts.mtrageval_local run-a RUN_ID --arm candidate --repeats 3 --tuning-finished --quiet-window
-python -m scripts.mtrageval_local run-b RUN_ID --arm candidate --repeats 3 --tuning-finished --quiet-window
+python -m scripts.mtrageval_local run-c RUN_ID --arm candidate --repeats 3 --tuning-finished --quiet-window --minimum-start-interval 6
+python -m scripts.mtrageval_local run-a RUN_ID --arm candidate --repeats 3 --tuning-finished --quiet-window --minimum-start-interval 6
+python -m scripts.mtrageval_local run-b RUN_ID --arm candidate --repeats 3 --tuning-finished --quiet-window --minimum-start-interval 6
 ```
 
 `run-c` takes a station identity snapshot before and after each arm. A changed
@@ -73,11 +127,9 @@ snapshot makes that arm unstable for comparison. The two flags are owner
 attestations, not automatic detection that training has ended or the GPU is
 idle. Check those conditions before launching. Run A/B after C for each arm;
 they require the same station identity and a release whose sealed agent image
-contains `runtime.rag_eval`. The current active frozen release
-`6200bb30d68348f080f2c1c723ff2fb6` lacks `runtime/rag_eval.py`, so the
-A/B commands are **not yet runnable against it**. A later
-stage/prepare and separate owner-approved activation are needed before a live
-probe; building this code has not changed the serving release.
+contains `runtime.rag_eval`. Active release `882c959c3d4540a5ba4b4b89f1596b17` includes
+`runtime/rag_eval.py`, so A/B can run against that sealed agent. A release
+that does not contain that file still refuses A/B.
 
 A/B can also accept independently produced receipts with `import-task RUN_ID
 RECEIPT.json`; those are explicitly labeled operator supplied and are not
@@ -100,7 +152,8 @@ claim support from a matching ID. Compare per-class failures, complete hit rate,
 human-reviewed correctness/support, prompt tokens, first-text and completion
 distributions. Report absent token counts as missing, never as zero. Three repeats
 per case expose variability; they are not independent questions or a stable p95.
-A retrieves at most LARPUS's current three selected passages; B uses explicit
+A records at most three approved passages plus two study notes, which is
+the live retriever's own cap. B uses explicit
 fixtures from the catalog. A/B timings are measured within the sealed probe and
 exclude owner-to-container launch and gateway handling, so they must not be
 presented as end-to-end response latency. C supplies that measurement.

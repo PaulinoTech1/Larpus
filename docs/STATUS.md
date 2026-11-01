@@ -39,7 +39,7 @@ development/evaluation state:
 | --- | --- |
 | Prompt-only v2 | Prepared release `f46146f28d1742ec87acc4e157322ed3`; not activated. Heuristic dev gains need blinded human review and broader acceptance. |
 | QLoRA pilot1 | Trained and evaluated offline against an NF4 base; shelved and rejected for activation after heuristic regressions. It was not exported or served. The owner's blinded review and independent locked tests are outstanding; Grok-derived training rights are unresolved. See [decision record](DECISIONS.md). |
-| MTRAGEval-inspired local probes | A/B/C harness and five public synthetic smoke cases exist only in the checkout. The active frozen release lacks `runtime/rag_eval.py`, so the A/B probe cannot run there. Catalog validation and seven focused unit tests passed on October 25; no model-backed A/B/C evaluation or human scoring was performed in this status review. See [local protocol](MTRAGEVAL_LOCAL.md). |
+| MTRAGEval-inspired local probes | The harness is in active release `882c959c3d4540a5ba4b4b89f1596b17`, including `runtime/rag_eval.py`. The Qubes answerable fixture no longer uses the assistant line Horizon scored as injection at 0.6728. Human scoring is still unset. See [local protocol](MTRAGEVAL_LOCAL.md). |
 | MCP Skills | Implementation and registry are in the selected release; saved health verifies declaration and resources. The October 19 acceptance work had mixed timing and unresolved human quality review. This status review did not repeat a live protocol handshake or performance comparison. |
 
 The next quality investigation can use the local MTRAGEval-inspired A/B/C split

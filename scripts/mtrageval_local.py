@@ -20,6 +20,7 @@ from runtime.capability_trials import save
 CATALOG=ROOT/'evals/mtrageval-local.json'
 STORE=ROOT/'data/evals/mtrageval'
 CLASSES={'answerable','unanswerable','underspecified','non-standalone','unclear'}
+SOURCE_ID=re.compile('[a-z0-9_-]{3,100}')
 TASKS={'A','B','C'}
 MAX_LINE=400000
 
@@ -75,7 +76,7 @@ def checked_record(record,case_ids):
     keys={'task','case','arm','repeat','status','sources','first_text_seconds','total_seconds','prompt_tokens','output_tokens','review'}
     if type(record) is not dict or set(record)!=keys or any(type(record[k]) is not str for k in ('task','case','arm','status')) or record['task'] not in TASKS or record['case'] not in case_ids or record['arm'] not in {'baseline','candidate'} or type(record['repeat']) is not int or not 1<=record['repeat']<=10 or record['status'] not in {'complete','held','failed'}:
         raise ValueError('Invalid task record')
-    if not isinstance(record['sources'],list) or len(record['sources'])>30 or len(record['sources'])!=len(set(s for s in record['sources'] if type(s) is str)) or any(type(s) is not str or not re.fullmatch('[a-z0-9-]{3,100}',s) for s in record['sources']):
+    if not isinstance(record['sources'],list) or len(record['sources'])>30 or len(record['sources'])!=len(set(s for s in record['sources'] if type(s) is str)) or any(type(s) is not str or not SOURCE_ID.fullmatch(s) for s in record['sources']):
         raise ValueError('Invalid retrieved IDs')
     for key in ('first_text_seconds','total_seconds'):
         number=record[key]
@@ -136,7 +137,8 @@ def summarize(run,value):
         (imported['task']=='A' or imported['model_weight_sha256']==run['arms'].get(imported['arm'],{}).get('before',{}).get('model_weight_sha256')) for imported in imports)
     fixed={imported['arm']:imported['fixed_evidence_sha256'] for imported in imports if imported['task']=='B'}
     matched_evidence=set(fixed)=={'baseline','candidate'} and fixed['baseline']==fixed['candidate']
-    summary['comparison_ready']=coverage and schedules and stable and matched_station and distinct_model and fingerprints and matched_evidence and all(
+    matched_pacing=run['arms'].get('baseline',{}).get('generation_start_interval_seconds')==run['arms'].get('candidate',{}).get('generation_start_interval_seconds')
+    summary['comparison_ready']=matched_pacing and coverage and schedules and stable and matched_station and distinct_model and fingerprints and matched_evidence and all(
         summary[arm][task]['attempts'] and summary[arm][task]['human_reviewed']==summary[arm][task]['completed']
         and not summary[arm][task]['failed_or_held'] for arm in ('baseline','candidate') for task in ('A','B','C'))
     summary['limits']='Descriptive only; candidate must have a distinct recorded model weight and matched source/context/retrieval pins. B needs fixed supplied evidence without retrieval. C source IDs are not an independent A result. Human review is required; no automatic promotion.'
@@ -148,6 +150,30 @@ def distribution(numbers):
     if not values:return None
     return {'samples':len(values),'median':values[len(values)//2] if len(values)%2 else (values[len(values)//2-1]+values[len(values)//2])/2,
             'p95_nearest_rank':values[math.ceil(len(values)*.95)-1],'max':values[-1]}
+
+
+def interval_seconds(value):
+    value=float(value)
+    if not math.isfinite(value) or not 6<=value<=60:
+        raise ValueError('Generation start interval must be 6..60 seconds')
+    return value
+
+
+def paced_start(previous,interval):
+    interval=interval_seconds(interval)
+    if previous is not None:
+        remaining=interval-(time.monotonic()-previous)
+        if remaining>0:time.sleep(remaining)
+    return time.monotonic()
+
+
+def refusal_metadata(value):
+    if not isinstance(value,dict):return {}
+    result={}
+    code=value.get('code');identifier=value.get('error_id')
+    if isinstance(code,str) and re.fullmatch('[a-z_]{1,64}',code):result['refusal_code']=code
+    if isinstance(identifier,str) and re.fullmatch('[a-f0-9]{16}',identifier):result['error_id']=identifier
+    return result
 
 
 def probe_case(opener,case):
@@ -163,7 +189,14 @@ def probe_case(opener,case):
                 line=response.readline(MAX_LINE+1)
                 if not line or len(line)>MAX_LINE or time.perf_counter()-started>180:raise ValueError('Missing or oversized completion')
                 event=json.loads(line)
-                if event.get('type')=='error':state['error']='stream_rejected';break
+                if event.get('type')=='error':
+                    state['error']='stream_rejected';state.update(refusal_metadata(event));break
+                if event.get('type')=='quarantine':
+                    incidents=event.get('incidents')
+                    if state.get('quarantined') or not isinstance(incidents,list):
+                        raise ValueError('Invalid quarantine event')
+                    state['quarantined']=True
+                    continue
                 if event.get('type')=='text':
                     content=event.get('content')
                     if type(content) is not str:raise ValueError('Invalid text event')
@@ -178,31 +211,44 @@ def probe_case(opener,case):
                 context=event.get('context')
                 if isinstance(context,dict):
                     state['context']={k:context[k] for k in ('prompt_tokens','output_tokens') if type(context.get(k)) is int and 0<=context[k]<=131072}
-                state['ok']=bool(''.join(chunks).strip())
-                if not state['ok']:state['error']='empty_answer'
+                if state.get('quarantined') and not ''.join(chunks).strip():
+                    state['ok']=False
+                    state['error']='quarantined'
+                else:
+                    state['ok']=bool(''.join(chunks).strip())
+                    if not state['ok']:state['error']='empty_answer'
                 break
-    except urllib.error.HTTPError:state['error']='http_rejected'
+    except urllib.error.HTTPError as exc:
+        state['error']='http_rejected';state['http_status']=exc.code
+        try:
+            raw=exc.read(8193)
+            if len(raw)<=8192:state.update(refusal_metadata(json.loads(raw)))
+        except (OSError,ValueError):pass
     except OSError:state['error']='transport_error'
     except (ValueError,KeyError,TypeError):state['error']='invalid_protocol'
     state['total_seconds']=round(time.perf_counter()-started,3)
     return state,{'answer':''.join(chunks),'sources':sources} if state['ok'] else None
 
 
-def record_c(run,value,arm,repeats,opener):
+def record_c(run,value,arm,repeats,opener,interval=6):
+    interval=interval_seconds(interval)
     validate_run(run,value)
     if arm in run['arms']:raise ValueError('Arm already recorded; create a new run for retries')
-    before=station.snapshot(opener);run['arms'][arm]={'before':before,'after':None,'stable':False,'task':'C'}
+    before=station.snapshot(opener);run['arms'][arm]={'before':before,'after':None,'stable':False,'task':'C','generation_start_interval_seconds':interval}
     save(STORE/run['id']/'run.json',run)
+    previous=None
     for repeat in range(1,repeats+1):
         for case in value['cases']:
+            previous=paced_start(previous,interval)
             row,answer=probe_case(opener,case)
             context=row.get('context') if isinstance(row.get('context'),dict) else {}
-            record={'task':'C','case':case['id'],'arm':arm,'repeat':repeat,'status':'complete' if row['ok'] else 'failed',
-                    'sources':[s['id'] for s in answer['sources']] if answer else [],
+            record={'task':'C','case':case['id'],'arm':arm,'repeat':repeat,'status':'complete' if row['ok'] else 'held' if row.get('error')=='quarantined' else 'failed',
+                    'sources':list(dict.fromkeys(s['id'] for s in answer['sources'])) if answer else [],
                     'first_text_seconds':row.get('first_text_seconds'),'total_seconds':row.get('total_seconds'),
                     'prompt_tokens':context.get('prompt_tokens'),'output_tokens':context.get('output_tokens'),'review':None}
             checked_record(record,set(run['cases']))
             if answer:save(STORE/run['id']/f"{arm}-{repeat}-{case['id']}.json",{'answer':answer,'record_sha256':digest(record)})
+            else:save(STORE/run['id']/f"{arm}-{repeat}-{case['id']}-failure.json",{'failure':row,'record_sha256':digest(record)})
             run['records'].append(record)
             save(STORE/run['id']/'run.json',run)
     try:run['arms'][arm]['after']=station.snapshot(opener)
@@ -263,17 +309,18 @@ def probe_ab(profile,task,case):
         if type(reply) is not dict or type(reply.get('status')) is not int or type(reply.get('seconds')) not in (int,float):
             raise ValueError('Invalid probe response')
         if reply['status']!=200:
-            return {'status':'held','seconds':reply['seconds'],'error':'sealed_agent_held'}
+            return {'status':'held','seconds':reply['seconds'],'error':reply.get('error') or 'sealed_agent_held'}
         if task=='A':
-            if type(reply.get('passages')) is not list or len(reply['passages'])>3 or any(
+            # Retrieval returns at most three approved passages plus two study notes.
+            if type(reply.get('passages')) is not list or len(reply['passages'])>5 or any(
                     type(p) is not dict or set(p)!={'id','locator'} or
-                    type(p['id']) is not str or not re.fullmatch('[a-z0-9-]{3,100}',p['id']) or
+                    type(p['id']) is not str or not SOURCE_ID.fullmatch(p['id']) or
                     type(p['locator']) is not str or not 1<=len(p['locator'])<=200 for p in reply['passages']):
                 raise ValueError('Invalid retrieval probe')
         elif (type(reply.get('answer')) is not str or not reply['answer'].strip() or
               len(reply['answer'])>65536 or type(reply.get('sources')) is not list or len(reply['sources'])>3 or
               any(type(p) is not dict or set(p)!={'id','locator','preview'} or
-                  type(p['id']) is not str or not re.fullmatch('[a-z0-9-]{3,100}',p['id']) or
+                  type(p['id']) is not str or not SOURCE_ID.fullmatch(p['id']) or
                   type(p['locator']) is not str or not 1<=len(p['locator'])<=200 or
                   type(p['preview']) is not str or len(p['preview'])>8000 for p in reply['sources'])):
             raise ValueError('Invalid generation probe')
@@ -282,10 +329,13 @@ def probe_ab(profile,task,case):
         return {'status':'failed','seconds':None,'error':'sealed_agent_probe_invalid'}
 
 
-def record_ab(run,value,arm,task,repeats,opener):
+def record_ab(run,value,arm,task,repeats,opener,interval=6):
+    interval=interval_seconds(interval)
     validate_run(run,value)
     if task not in ('A','B') or arm not in run['arms'] or not run['arms'][arm]['stable']:
         raise ValueError('Record a stable C arm before A/B')
+    if task=='B' and run['arms'][arm].get('generation_start_interval_seconds')!=interval:
+        raise ValueError('B pacing differs from C; use the same interval in a fresh configured run')
     if any(r['arm']==arm and r['task']==task for r in run['records']):
         raise ValueError('Task already recorded; create a new run for retries')
     before=station.snapshot(opener)
@@ -297,9 +347,10 @@ def record_ab(run,value,arm,task,repeats,opener):
     profile=json.loads((release/'deployment.json').read_text(encoding='utf-8'))
     if profile.get('source_fingerprint')!=before['source_fingerprint']:
         raise ValueError('Sealed agent source fingerprint differs')
-    records=[];details=[]
+    records=[];details=[];previous=None
     for repeat in range(1,repeats+1):
         for case in value['cases']:
+            if task=='B':previous=paced_start(previous,interval)
             reply=probe_ab(profile,task,case)
             complete=reply.get('status')==200
             passages=reply.get('passages',[]) if task=='A' else reply.get('sources',[])
@@ -361,6 +412,8 @@ def main(argv=None):
         selected.add_argument('--repeats',type=int,choices=range(1,11),default=3)
         selected.add_argument('--tuning-finished',action='store_true');selected.add_argument('--quiet-window',action='store_true')
     live.add_argument('--tuning-finished',action='store_true');live.add_argument('--quiet-window',action='store_true')
+    for command in (live,*[sub.choices[name] for name in ('run-a','run-b')]):
+        command.add_argument('--minimum-start-interval',type=interval_seconds,default=6,help='Seconds between generation starts (6..60); A has no generation pacing')
     args=parser.parse_args(argv);value=catalog()
     if args.command=='validate':print(json.dumps({'cases':len(value['cases']),'catalog_sha256':digest(value),'live_requests':0}));return 0
     if args.command=='prepare':
@@ -379,8 +432,8 @@ def main(argv=None):
     if not args.tuning_finished or not args.quiet_window:
         parser.error('Live A/B/C requires --tuning-finished and --quiet-window owner attestations')
     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    if args.command=='run-c':record_c(run,value,args.arm,args.repeats,opener)
-    else:record_ab(run,value,args.arm,args.command[-1].upper(),args.repeats,opener)
+    if args.command=='run-c':record_c(run,value,args.arm,args.repeats,opener,args.minimum_start_interval)
+    else:record_ab(run,value,args.arm,args.command[-1].upper(),args.repeats,opener,args.minimum_start_interval)
     task=args.command[-1].upper()
     print(json.dumps({'run':run['id'],'arm':args.arm,'summary':summarize(run,value)[args.arm][task]}));return 0
 

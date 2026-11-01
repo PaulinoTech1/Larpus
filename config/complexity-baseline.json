@@ -1523,11 +1523,11 @@
       "lines": 80
     },
     "scripts/mtrageval_local.py:summarize": {
-      "decisions": 55,
+      "decisions": 56,
       "lines": 80
     },
     "scripts/mtrageval_local.py:probe_case": {
-      "decisions": 26,
+      "decisions": 33,
       "lines": 80
     },
     "scripts/mtrageval_local.py:import_task": {
@@ -1535,11 +1535,11 @@
       "lines": 80
     },
     "scripts/mtrageval_local.py:probe_ab": {
-      "decisions": 34,
+      "decisions": 35,
       "lines": 80
     },
     "scripts/mtrageval_local.py:record_ab": {
-      "decisions": 28,
+      "decisions": 31,
       "lines": 80
     },
     "runtime/horizon_worker.py:load": {
@@ -1548,6 +1548,10 @@
     },
     "scripts/performance_transport.py:stream": {
       "decisions": 14,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:main": {
+      "decisions": 13,
       "lines": 80
     }
   }

@@ -55,6 +55,13 @@ class MtragevalLocalTests(unittest.TestCase):
         m.import_task(self.run,self.catalog,receipt)
         with self.assertRaises(ValueError):m.import_task(self.run,self.catalog,receipt)
 
+    def test_recorded_source_ids_allow_underscores_and_one_copy(self):
+        row=self.record(self.catalog['cases'][0]['id'],'C')
+        row['sources']=['github-lock_down','qubes-requirements']
+        m.checked_record(row,set(self.run['cases']))
+        row['sources']=['github-lock_down','github-lock_down']
+        with self.assertRaises(ValueError):m.checked_record(row,set(self.run['cases']))
+
     def test_failure_stays_in_denominator_and_review_requires_completion(self):
         row=self.record(self.catalog['cases'][0]['id'],'A');row['status']='failed'
         self.run['records'].append(row)
@@ -79,6 +86,70 @@ class MtragevalLocalTests(unittest.TestCase):
         row,answer=m.probe_case(Opener(),self.catalog['cases'][0])
         self.assertTrue(row['ok']);self.assertEqual(row['context'],{'prompt_tokens':123,'output_tokens':19})
         self.assertEqual(answer['answer'],'Hello.')
+
+    def test_quarantine_without_text_is_a_hold_and_text_after_it_completes(self):
+        class Reply(io.BytesIO):
+            status=200
+            def __enter__(self):return self
+            def __exit__(self,*_args):self.close()
+        class Opener:
+            def __init__(self,payload):self.payload=payload
+            def open(self,*_args,**_kwargs):return Reply(self.payload)
+        held,answer=m.probe_case(Opener(b'{"type":"quarantine","removed":[0],"incidents":["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]}\n{"type":"done","local":true,"sources":[]}\n'),self.catalog['cases'][0])
+        self.assertFalse(held['ok']);self.assertEqual(held['error'],'quarantined');self.assertIsNone(answer)
+        done,answer=m.probe_case(Opener(b'{"type":"quarantine","removed":[0,1],"incidents":["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]}\n{"type":"text","content":"4 GB."}\n{"type":"done","sources":[],"context":{"prompt_tokens":10,"output_tokens":2}}\n'),self.catalog['cases'][0])
+        self.assertTrue(done['ok']);self.assertEqual(answer['answer'],'4 GB.')
+
+    def test_generation_interval_is_finite_and_budget_conservative(self):
+        self.assertEqual(m.interval_seconds('6'),6)
+        for value in (0,5.9,61,float('nan'),float('inf')):
+            with self.subTest(value=value),self.assertRaises(ValueError):m.interval_seconds(value)
+
+    def test_pacing_waits_only_for_remaining_start_interval(self):
+        with patch.object(m.time,'monotonic',side_effect=[12,16]),patch.object(m.time,'sleep') as sleep:
+            self.assertEqual(m.paced_start(10,6),16)
+            sleep.assert_called_once_with(4)
+        with patch.object(m.time,'monotonic',side_effect=[20,20]),patch.object(m.time,'sleep') as sleep:
+            self.assertEqual(m.paced_start(10,6),20);sleep.assert_not_called()
+
+    def test_stream_refusal_retains_only_bounded_metadata(self):
+        class Reply(io.BytesIO):
+            status=200
+            def __enter__(self):return self
+            def __exit__(self,*args):self.close()
+        class Opener:
+            def open(self,*args,**kwargs):
+                return Reply(b'{"type":"text","content":"Partial."}\n{"type":"error","code":"cancellation_unconfirmed","error_id":"aaaaaaaaaaaaaaaa","error":"private reply must not be retained"}\n')
+        row,answer=m.probe_case(Opener(),self.catalog['cases'][0])
+        self.assertFalse(row['ok']);self.assertIsNone(answer)
+        self.assertEqual(row['refusal_code'],'cancellation_unconfirmed');self.assertEqual(row['error_id'],'a'*16)
+        self.assertNotIn('private reply',str(row));self.assertNotIn('Partial.',str(row))
+        self.assertEqual(m.refusal_metadata({'code':'../private','error_id':'C:/private'}),{})
+
+    def test_http_refusal_retains_status_and_code(self):
+        class Opener:
+            def open(self,*args,**kwargs):
+                raise m.urllib.error.HTTPError('local',429,'Too many',{},io.BytesIO(b'{"code":"inference_budget","error":"must not be retained"}'))
+        row,answer=m.probe_case(Opener(),self.catalog['cases'][0])
+        self.assertFalse(row['ok']);self.assertIsNone(answer)
+        self.assertEqual(row['http_status'],429);self.assertEqual(row['refusal_code'],'inference_budget')
+        self.assertNotIn('must not',str(row))
+
+    def test_c_paces_and_saves_failed_attempt_metadata_without_retry(self):
+        error={'ok':False,'first_text_seconds':None,'total_seconds':1,'context':None,'error':'stream_rejected','refusal_code':'queue_full'}
+        with patch.object(m.station,'snapshot',return_value={'release':'f'*32}),patch.object(m,'paced_start',return_value=10) as pace,patch.object(m,'probe_case',return_value=(error,None)) as probe,patch.object(m,'save') as save:
+            m.record_c(self.run,self.catalog,'baseline',1,None)
+        self.assertEqual(pace.call_count,5);self.assertEqual(probe.call_count,5)
+        self.assertEqual(self.run['arms']['baseline']['generation_start_interval_seconds'],6)
+        failures=[call.args[1] for call in save.call_args_list if 'failure' in call.args[1]]
+        self.assertEqual(len(failures),5);self.assertTrue(all(f['failure']['refusal_code']=='queue_full' for f in failures))
+        self.assertTrue(all(row['status']=='failed' for row in self.run['records']))
+
+    def test_b_rejects_different_generation_pacing_before_execution(self):
+        self.run['arms']['baseline']={'stable':True,'generation_start_interval_seconds':6}
+        with patch.object(m.station,'snapshot') as snapshot,self.assertRaisesRegex(ValueError,'pacing differs'):
+            m.record_ab(self.run,self.catalog,'baseline','B',1,None,interval=7)
+        snapshot.assert_not_called()
 
     def record(self,case,task):
         return {'task':task,'case':case,'arm':'baseline','repeat':1,'status':'complete','sources':[],

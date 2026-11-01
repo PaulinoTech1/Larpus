@@ -8,7 +8,7 @@
       "persona": "home-assistant",
       "messages": [
         {"role": "user", "content": "I am checking Qubes OS requirements for a hypothetical computer."},
-        {"role": "assistant", "content": "I can compare the published requirements with specifications you supply."},
+        {"role": "assistant", "content": "The published requirements list processor, memory and storage. Exact figures depend on the versioned source."},
         {"role": "user", "content": "What memory requirement does the Qubes OS documentation state? Cite the source and keep any version qualification."}
       ],
       "gold_source_ids": ["qubes-requirements"],
