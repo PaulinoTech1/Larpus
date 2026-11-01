@@ -1,20 +1,20 @@
 {
   "version": 1,
-  "prepared_at": "2026-10-10T14:04:17.270773+00:00",
-  "database_sha256": "091904c0b66b3b1a846974c390ffa0867b8a483ef97f198a029b0503bc1b5040",
-  "database_bytes": 137220096,
-  "documents": 406,
-  "passages": 79497,
-  "metadata_only_documents": 16,
-  "rejected_passages": 8392,
+  "prepared_at": "2026-10-31T09:40:08.062485+00:00",
+  "database_sha256": "55d4ecd2daf16bf5622f05dfec614c0a73d0c1a86183812620b7e20bafd8612f",
+  "database_bytes": 158867456,
+  "documents": 509,
+  "passages": 90270,
+  "metadata_only_documents": 12,
+  "rejected_passages": 8843,
   "role_counts": {
     "cryptographer": 7642,
-    "home-assistant": 112,
-    "it-larp-coach": 13847,
+    "home-assistant": 174,
+    "it-larp-coach": 13914,
     "linux-kernel-expert": 11504,
-    "mathematician": 24471,
-    "psychologist": 1811,
-    "quantum-mechanics-professor": 6038,
+    "mathematician": 30614,
+    "psychologist": 1873,
+    "quantum-mechanics-professor": 10477,
     "statistician": 6707,
     "system-administrator": 7365
   },
@@ -510,6 +510,60 @@
       "sha256": "91f264e107d3184e7998ab05ede448996fb7aa1d569440f7c9407137c453d17f",
       "publication": null,
       "snapshot": "2026-10-09"
+    },
+    {
+      "id": "cyber-20261015-snyk-evo",
+      "sha256": "04bf93a3234fb3949904442a9c8ea1bcfd5d656e6e3ad4975881bdf66566582c",
+      "publication": "2026-10-15",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261015-soc-prime",
+      "sha256": "164b4e19b9572e53e290447d57fff0e60c4948f17522e64b5cf50570ee57e48b",
+      "publication": "2026-10-15",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261012-brookings",
+      "sha256": "5412bcfcd4f91d3585d4ec8e4a6fd99fec44bc9ee6b507d73d344ad754aee1c0",
+      "publication": "2026-10-12",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261013-servicenow",
+      "sha256": "ebb6cbc1b9f7860ddab344ff3788e54891513e4c7d79f4617e8149bb8974cfdd",
+      "publication": "2026-10-13",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261014-picus",
+      "sha256": "6b0d5fe1a47d4681d9ef73d4cd91fadc2e5ec18da297d2d5978b3e2edad457a1",
+      "publication": "2026-10-14",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261013-mythos",
+      "sha256": "81008dd69f5e584d244b0f0b7a38202c0e7eb63e088f8e7cf9a5a953414f23c1",
+      "publication": "2026-10-13",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261013-ai-pentesting",
+      "sha256": "6c321ccbc5c4d748ff7d74087e90574186d6e3e049da7c4fcf12bed5d7b7c5a6",
+      "publication": "2026-10-13",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "cyber-20261015-unit42",
+      "sha256": "0f6c9c13f3fe0890a28817b0d71b7ffb424b4b5a889ee6430209474ad7a30e6f",
+      "publication": "2026-10-15",
+      "snapshot": "2026-10-16"
+    },
+    {
+      "id": "singh-2024-habit-formation-review",
+      "sha256": "d60c91f1a33822dbd5733f0beb64f0f402761ff5f6bdd9b5cccaabd0a27aaa46",
+      "publication": "2024-12-09",
+      "snapshot": "2026-10-21"
     },
     {
       "id": "mit-71a3fc47-9d1c-4531-ba61-63ab03aa0606",
@@ -2312,22 +2366,586 @@
       "snapshot": "2026-10-10"
     },
     {
+      "id": "mit-18103-01",
+      "sha256": "43f66d2f1116283e6e2075ed162dc9dff2867094224e4134213df9efd417bf50",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-02",
+      "sha256": "1ee094aec6af5aaaeb4007dd0d215e630e512a3fe1cb15e3fd5c3b2b37f0d9d1",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-03",
+      "sha256": "477be5e839f67a578fbf43486873516f7a770eb97e73982293a8ed1b84b72a6e",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-04",
+      "sha256": "c576ccf54e2a765e35c9f26784e69a2bc69b095ec88091423437cc7090afd82e",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-05",
+      "sha256": "ae59435a4cbffc8f41b5026735ef474a9a343948c72183f0e5843db3bce7d30c",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-06",
+      "sha256": "21439269684b8ad924cfe11f3ce502aaf058c83863cdb8e5382db17285d004f0",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-07",
+      "sha256": "665e38933241703502b714e3e6171f442a22a60497935ba7375686a96074ef50",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-08",
+      "sha256": "16c4883040303d296bfe5928e4fb06bf065bac35713d4091259f46e678b400fd",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-09",
+      "sha256": "476de7d7df45205fd511d69b8be20ccd7eeefc0e3c596d13e1af088b185b5492",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18103-10",
+      "sha256": "0ab7d3ace2a97bc5b37f93297703d5abf8a3d9b58403d9fee7b5874731cf95e1",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18950-01",
+      "sha256": "63c0883504fd9c99b8c47fe4eb1019a80cfbf7829f244494d1b06b1f5f073a36",
+      "publication": "2008",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18950-02",
+      "sha256": "6abdbb23a6a9320d781826363f8ae311ef187988a84b36c787cbf5ce6ebda8d5",
+      "publication": "2008",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18950-03",
+      "sha256": "3775e736a9a5532c93e18f98f0373904d8c50569ff958fb82cd8e4198c1538c4",
+      "publication": "2008",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18950-04",
+      "sha256": "f7af9abd1fcacf69972c21dfedd6201b63696929da64f9c17f4579c061c2b8a9",
+      "publication": "2008",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-01",
+      "sha256": "2abe82c11a548e2f9f70472cbf3c1d81d0c5003405c8e121642f692ad81cd380",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-02",
+      "sha256": "b4fa4dd8baf3f13ea4120b83aa8d431c8aed2052e50646bf10585d3047f11642",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-03",
+      "sha256": "707ce9335c9df75164e23b8d1136617546f4bbeb775061d0ab2649a252de5e4b",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-04",
+      "sha256": "38f43992b3c3ad2ca22bc9ad1db23a948f793b088f8f25e213232ccc79e5f3ca",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-05",
+      "sha256": "866cfa151da6bcbe01f87d7fbc22b5d6af4af1a44c6a0bcdf07c63edac88d2d5",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-06",
+      "sha256": "54af14de70104d858f37ccbea666c009c70ce6514ccb8c71cd8d97afb4195775",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-07",
+      "sha256": "fe75950a27f875607b05cc1d8c3c16c786f5c651a5ab40e3078fa778dd7e7f16",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-08",
+      "sha256": "fe68bcab4efea8ee96a0d0dad743d41a13a04b0df645c5dc8fb0f8defa14498a",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-09",
+      "sha256": "d37ae7ab2e122dedb1ef2292b2830d8544a729c2582787060321190ba5f78dfe",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-10",
+      "sha256": "2eda9d46972622dc863b7786b42918763dc407a0cac002364766b6d4825dbd7a",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-11",
+      "sha256": "77647d46abe4e2d9280787087564661c7d38cdeeee7f38f8e2d2c06f060dc757",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-12",
+      "sha256": "0c7672efa85fb31290140502d3b3ecdcb0c051a87375cb2de203f1c967cb283c",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-13",
+      "sha256": "2a857869dd1ca008c4e07d24aef79db2d98092af59bef2620ee477f62d5c375d",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-14",
+      "sha256": "6b65acf81e67f0ae6480ceba5316e371aee6156749e4e620a6aaa3a5e3762706",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-15",
+      "sha256": "fd1f395e22b5de45705237530dc029c023dae3c1dabbad4cd55b0efa04ef0243",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-16",
+      "sha256": "670ebdfd99ea3d8b8b31d219c59d1a4c7f4c6dc2823d5e45cf412edb995dcd6d",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-17",
+      "sha256": "1b07d61e97452863409925c7c42f417b78cea205484d561475f2c3c02d1d3ff7",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-18",
+      "sha256": "161606df0bd39761361c318b7f8120b77c386e2bed3fe1035e8ca98560bf1a2d",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-19",
+      "sha256": "254c543b2de02c94cad32df0d2abf2e91f7342db59e11f2d18f865eb740c044d",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-20",
+      "sha256": "c1f4bf50dde0eea3d172f79a5795abb52b78defcc8a04b478af48ff5148978d9",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-21",
+      "sha256": "d821ce2d7b7365fd62b5800c29622fe68a3a2a3564f31f6c855e0abd790d1592",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-22",
+      "sha256": "21fb6598d52080f8b1e1e5dd3f0078e49d13f3c04af059f432a03c5795f42dbd",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-23",
+      "sha256": "d2ff6c6c4ab928298a72453fe6d2083b744b0e63f1ccc50f1e8639b5cf63b963",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-24",
+      "sha256": "d57533b8018923a30969f74130fed1733d9dd4b5d873d32cfbd79c639ff8b953",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-25",
+      "sha256": "810c36e0ae5794608ac9ad7672df9187a2707ea3ac53c002c3cc4b1ac9f8d669",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-26",
+      "sha256": "d104f6822bb69fff344e9b4cc44893a7e8ddc739810af3c648ca548fadab8f4a",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-27",
+      "sha256": "ccf65fe638a04a7d95247b8f78c436e2359523c833e2301bc9c8ba23598959c2",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-28",
+      "sha256": "d3d56a9fa7c4639390387ff589de2cc3f7e9eb407e2465287ede7647be044a87",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-18330-29",
+      "sha256": "469388101388cbeefa2092949404075692622dc5cfa6878b269ad0cebc5b4c6c",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-01",
+      "sha256": "df3742f6f0dfabbc46cd4120637308760fec1c0d9c5a0708e0b74d8b2ac14181",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-02",
+      "sha256": "2921abfb6621e4eb9daea07be7873a2cde0cd283f3d2cb8e23471121ce6a8b52",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-03",
+      "sha256": "090b5fe2e6808db83defa197410d3b25d6ad2e1fcb9fce7f755933917e50d660",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-04",
+      "sha256": "eb68e4d59ea7d565cb19b61dcbccf1b26fc6b996e356ad42b3e672da1cb68c47",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-05",
+      "sha256": "d78cb9a5e42f1c85029cc2a522bd43002d19ffe4e14c0f057c1bb82006c2ad5d",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-06",
+      "sha256": "94bdb289652d5ad03f217f451ba144519884f0359414f1e2530e3015a54fa5dd",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-07",
+      "sha256": "276be6115fb1c683b566f14a4b4220dd132a1978d501d78e64bcab130a729138",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-08",
+      "sha256": "211ec0d365577e50d59d325f8285dcbb48a364ac5c85e95d2df607a720bf54cc",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-09",
+      "sha256": "cde42766358a0ac3a2e862273522f35b1a4a9652145fe9ab563706ab9cf1c001",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-10",
+      "sha256": "bef493edb87dd3aa67f340a35d5c4f7359d7d63ddaa43503bf72d97aff70364a",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-11",
+      "sha256": "e297030f8fa2b4b9ad8f49436c206e3d3fb69cf2aee6e96132c91700a3d5ad60",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-12",
+      "sha256": "504390f25fe700c09ab33929dc027c11987300650a1df7c1e6638b1278d90a81",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-13",
+      "sha256": "a88f4830afcfd5849a243a40654941ca673fa64c279cb33e70d6fc24011e68e8",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-14",
+      "sha256": "8518d496b467eb18265315cad23207b8983d310ae8d9cd7bafa82b205d0c14a9",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-15",
+      "sha256": "d57a7c7b65795d4009c01e45b6ff61dc59863a06fe816341768bb7513f869275",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-16",
+      "sha256": "98522546a63adb01ce5084c1b0ec396659c84390748fd5760464d8021b979872",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-17",
+      "sha256": "e7cdcf8d92eb6709c904a254fe778c564535df459281fd6d3095e702418ea00d",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-18",
+      "sha256": "bcdf9b765df171b45610c83132cb7ab1d27e680dcb27fe84062230df538affcc",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-19",
+      "sha256": "a3fc2f1cd9888fa290f68084f69990a97782500194a24baee1187ae858d78715",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-804-20",
+      "sha256": "b9fb5af74d639ea2d0293e5bea4e0ffb70663f2c21c433e9dbf9b2efa4f26a4f",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-01",
+      "sha256": "60646b0a7e1303aa09ba962b83abe307a3b9a3b94dd86a9417b00b3db250a671",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-02",
+      "sha256": "ad1304a7c1aea96a536a723bad9a43db4b87334786e13680df49d2c767a39f40",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-03",
+      "sha256": "5f2fe91126099299450537ee22b80e758278e1ec95b47d6d027a2988b6607fdf",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-04",
+      "sha256": "4007226073cb08b8bfec8fac67f37b20c65778531ef2e135c13327ab374bc49a",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-05",
+      "sha256": "a23d810eaa01e7ed5fda352d9d3df5596f3e434bdc05bfe4e65e562ecd2b1d00",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-06",
+      "sha256": "4de0ffc54c76fec10402fbf95df7eefa11a821acd7e1b7b5c4d5cea3aa7448bc",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-07",
+      "sha256": "a6299201ef0ece84fe0d459c5905aae1fdf6508eb069efd7f8ef6440f3c98465",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-08",
+      "sha256": "45ce009e73358d06b6bb3829d758fbda885b47d3fcc6938bab4d4e135ae93b8f",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-09",
+      "sha256": "12e18c3c2666ca6aa6954ba8a38d14aae3100742e8c264c8ca02070bf057de95",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-805-10",
+      "sha256": "55f1f4acc699dd0e64001150097448aa6bff002dda59fc776b2ad42f04433530",
+      "publication": "2013",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s16-01",
+      "sha256": "75a02b0e2814498f6f9035bf86f140545f8de994be6d901baaa4a6470e0d1243",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s16-02",
+      "sha256": "1be22ff2986f57f3deb4db7c08356e7ab6ffa92e889b503d13fba5cc61cf734a",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s16-03",
+      "sha256": "c4e653cebef8735cbb80ef9d15c0d63e6e58ddf70fdcc1ea60bc6ac20c27ef3a",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s16-04",
+      "sha256": "cbcc7e5a25d604827237a4c1103a9b338a9011f536e18164c703e4ef509f8409",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s16-05",
+      "sha256": "be8bed304e45b781cd99da7fd014181cd2f568930e75aa1e51f8822eba982ad9",
+      "publication": "2016",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s16-06",
+      "sha256": "1d8dd4f9753de84f25d21017b4202c4ee4eb842579378cb9b6090af2a55b2078",
+      "publication": "2007",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-01",
+      "sha256": "cb2429f03ab92550e84c7cbd6e99b064cd488272e014a8cc898ad9cbdf853375",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-02",
+      "sha256": "e5db5d75669f4c87a5ad7c9d18717524f1be56b1650e3fcb1a9a3fba3607982b",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-03",
+      "sha256": "0ab889915738b0467a42868cbf2a9b8a2183e2bd72c78f6aa6b5559443ebdc36",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-04",
+      "sha256": "e1dceb9c16c4ae36b9b66b38b6e24b8d170f9e2be0aa9bf4d1a2a577f0522252",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-05",
+      "sha256": "a57005cd67b3852d5190787e2f5dc81477b2ae44826277f7b7d934d920573267",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-06",
+      "sha256": "91336f5685a8df31e97dacda42b88dddfd8561fd30adeec66bcae75d4750c256",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "mit-806s18-07",
+      "sha256": "4d178f0b4681cb358a2582542b32a1ed724f976375ffb9114645b8118638689b",
+      "publication": "2018",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "tong-applications-quantum-mechanics",
+      "sha256": "fbf0f2d4259a0dc6532bb72397b1c31d31c744517f890199727f8b535ca9416f",
+      "publication": "2017",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch01",
+      "sha256": "992f1c5469587aca584781f98d7b7bc6416345795cb702fa4baf583644f74e5b",
+      "publication": "1997",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch02",
+      "sha256": "709a8a52cfbc9afb65ed6fb9dfbd9b59afaa8eac21167cbaf37a43b2555b0d34",
+      "publication": "2015",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch03",
+      "sha256": "34141b215c144c0cc8fd86e9a4ba289e1e8eb73b9dc6cf1dccdf594d4f57e6ad",
+      "publication": "2015",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch04",
+      "sha256": "f534889a223492ca32873fe20bac3214cf0b2e7d35e0a8d26f44fa10503d0546",
+      "publication": "2001",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch05",
+      "sha256": "e5f011c45dd67810ae6de81276c8a15c02948a772264fdfd7b638e4006aa62c3",
+      "publication": "2015",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch06",
+      "sha256": "83afe653105520793ab37a56cfcce606dbec20e2ff67510887ae71dd0c6d6a28",
+      "publication": "2020",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch07",
+      "sha256": "ddb6901c73ca5732272164c03ef91696be01d697bc4c7c55eeeddcee7aafc8bc",
+      "publication": "2026",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch09",
+      "sha256": "b18e7631222d2fca486a962c63e149c2b6f44e8b51fef7b010112c90a643d18e",
+      "publication": "2004",
+      "snapshot": "2026-10-29"
+    },
+    {
+      "id": "preskill-ph219-ch10",
+      "sha256": "4cfb665bcc4a3c6a7658939ea36b9919bd354540a5a2a34e4d2611969f1ec16b",
+      "publication": "2025",
+      "snapshot": "2026-10-29"
+    },
+    {
       "id": "github-archive",
       "sha256": "563ecf1de8a40b9519fa34b2b9f0799f0a49a20c734314824780beda2e3d9a3b",
       "publication": null,
       "snapshot": "2026-10-09"
-    },
-    {
-      "id": "chicone-ordinary-differential-equations",
-      "sha256": "268a56ac0f66c1d7bd21f3c07cdf52a485029366c3520966f84d2976b060fbae",
-      "publication": null,
-      "snapshot": "2026-10-14"
-    },
-    {
-      "id": "salsa-partial-differential-equations",
-      "sha256": "79f22464e18550aa6d3092d45902e23663a0bfec640061234e557df77129a254",
-      "publication": "2008",
-      "snapshot": "2026-10-14"
     }
   ],
   "github": {
