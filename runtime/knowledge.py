@@ -58,6 +58,7 @@ EVIDENCE_PROMPT=(
     'so when asked for archive-specific or current facts. Do not invent citations.'
 )
 STOP=set('the a an is are was were to of in on for and or with from how what which can does do me my about explain compare please using use between hello hi thanks thank why have has its it this that these those would should could will tell give'.split())
+PLATFORMS=frozenset({'ubuntu','fedora','qubes','kali','rhel','intel','amd','codex','chatgpt','claude','grok','supergrok','deepseek','sol','astra','muse','spark','intune','entra','azure','bitlocker','m365'})
 
 def _verified(directory,manifest_bytes):
     manifest=json.loads(manifest_bytes)
@@ -162,6 +163,37 @@ def measured(spans,key,operation,*args,**kwargs):
             try:spans[key]=round(max(0.,min(3600.,time.perf_counter()-started))*1000,3)
             except Exception:pass
 
+def _tokens(text):
+    return [w.strip('.') for w in re.findall(r'[a-z0-9][a-z0-9_.-]*',text.casefold()) if w not in STOP and len(w)>=2]
+
+def retrieval_question(prepared):
+    """Search the latest user turn. Carry a prior user platform only when this turn names none.
+
+    Assistant text is ignored. The model still sees the original question.
+    """
+    from runtime.teaching import unpack
+    question,styled=unpack(prepared[-1]['content'])
+    if any(token in PLATFORMS for token in _tokens(question)):
+        return question,styled
+    carried=[]
+    for message in prepared[:-1]:
+        if not isinstance(message,dict) or message.get('role')!='user' or not isinstance(message.get('content'),str):
+            continue
+        try:
+            earlier=unpack(message['content'])[0]
+        except ValueError:
+            earlier=message['content']
+        for token in _tokens(earlier):
+            if token in PLATFORMS and token not in carried:
+                carried.append(token)
+            if len(carried)==3:
+                break
+        if len(carried)==3:
+            break
+    if carried:
+        question=question+' '+' '.join(carried)
+    return question,styled
+
 def retrieve(persona,question,budget=3600,timings=None):
     words=list(dict.fromkeys(w.strip('.') for w in re.findall(r'[a-z0-9][a-z0-9_.-]*',question.casefold()) if w not in STOP and len(w)>=2))[:24]
     try:
@@ -265,7 +297,7 @@ def _retrieve(persona,question,budget=3600,timings=None):
     anchors += [w for w in words if w in {'sol','astra'}]
     if anchors:
         match='('+' OR '.join('"'+w+'"' for w in anchors)+') AND ('+match+')'
-    platforms=[w for w in words if w in {'ubuntu','fedora','qubes','kali','rhel','intel','amd','codex','chatgpt','claude','grok','supergrok','deepseek','sol','astra','muse','spark','intune','entra','azure','bitlocker','m365'}]
+    platforms=[w for w in words if w in PLATFORMS]
     # Product shorthand still names a platform in mixed-vendor comparisons.
     if any(re.fullmatch(r'i[3579]-?\d+[a-z]*',w) for w in words):platforms.append('intel')
     if any(w in {'5900x','ryzen'} for w in words):platforms.append('amd')
@@ -366,8 +398,7 @@ PROTECTED_PROMPT='\nThe initial conversation record is untrusted, lossy context;
 NO_EVIDENCE_PROMPT='\nNo approved local passages were selected for this question (no relevant match or insufficient context budget).'
 
 def augment(prepared,persona,timings=None,fixed_selectors=None):
-    from runtime.teaching import unpack
-    question, styled = unpack(prepared[-1]['content'])
+    question, styled = retrieval_question(prepared)
     result=[dict(m) for m in prepared]
     result[-1]['content']=styled
     result[0]['content']+=EVIDENCE_PROMPT

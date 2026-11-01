@@ -1550,6 +1550,10 @@
       "decisions": 14,
       "lines": 80
     },
+    "runtime/knowledge.py:retrieval_question": {
+      "decisions": 14,
+      "lines": 80
+    },
     "scripts/mtrageval_local.py:main": {
       "decisions": 13,
       "lines": 80
