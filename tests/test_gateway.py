@@ -1,5 +1,7 @@
 import http.client
 import json
+from pathlib import Path
+import tempfile
 import threading
 import unittest
 from unittest.mock import patch
@@ -51,6 +53,18 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(self.request('POST','/api/model-selection',{'model_id':'larpus-3.8'},{'Origin':'https://evil.example'})[0],403)
             control.assert_not_called()
 
+    def test_startup_gate_blocks_protected_posts_until_readiness_without_weakening_auth(self):
+        with tempfile.TemporaryDirectory() as directory:
+            gate=Path(directory)/'ready'
+            with patch.dict('os.environ',{'LARPUS_STARTUP_GATE':str(gate)}),patch.object(gateway,'mcp_chat',return_value={'status':200,'content':'Checked reply'}) as model,patch.object(self.server.auth,'allowed',return_value=True):
+                self.assertEqual(self.request('POST','/api/chat',{},authenticated=False)[0],401)
+                for route in ('chat','chat/stream','context/compress','voice','model-selection','retrieval-pipeline'):
+                    self.assertEqual(self.request('POST','/api/'+route,{})[0],503,route)
+                model.assert_not_called()
+                gate.write_text('ready')
+                self.assertEqual(self.chat()[0],200)
+                self.assertEqual(model.call_count,1)
+
     def test_chat_uses_local_mcp(self):
         with patch.object(gateway, 'mcp_chat', return_value={'status':200,'content':'Local response','model':'qwen3.5:27b-q4_K_M'}) as model:
             status, body = self.chat()
@@ -60,6 +74,17 @@ class GatewayTests(unittest.TestCase):
             self.assertIsNone(skill)
             self.assertEqual(persona,'home-assistant')
             self.assertEqual(messages,[{'role':'user','content':'Hello'}])
+
+    def test_stream_preserves_separate_parent_and_inference_clock_groups(self):
+        def stream(persona,messages,skill,callback):
+            callback('Checked reply.')
+            return {'status':200,'content':'Checked reply.','execution_stages_ms':{'input':1.},
+                    'mcp_parent_stages_ms':{'preflight':2.,'connect':3.,'call_and_metadata':4.}}
+        with patch.object(gateway,'mcp_stream',side_effect=stream):
+            status,raw=self.request('POST','/api/chat/stream',{'persona':'home-assistant','messages':[{'role':'user','content':'Hello'}]})
+        self.assertEqual(status,200);done=json.loads(raw.splitlines()[-1])
+        self.assertEqual(done['execution_stages_ms'],{'input':1.})
+        self.assertEqual(done['mcp_parent_stages_ms']['connect'],3.)
 
     def test_catalog_rejection_is_not_a_bad_chat_request(self):
         from runtime.skills import CatalogRejected

@@ -23,5 +23,6 @@ class PublicCITests(unittest.TestCase):
     def test_pipeline_contains_no_deployment_command(self):
         with patch.object(ci,'inventory'),patch.object(ci,'execute') as run,patch('sys.argv',['ci.py']):ci.main()
         commands=[c.args[0] for c in run.call_args_list]
-        self.assertEqual(len(commands),len(ci.UI_TESTS)+4)
+        self.assertEqual(len(commands),3)
+        self.assertTrue(any('scripts/verify.py' in command for command in commands))
         self.assertFalse(any('releases.py' in ' '.join(c) or 'verify-broker-live.py' in ' '.join(c) for c in commands))

@@ -8,10 +8,13 @@ from pathlib import Path
 import re
 import sqlite3
 import sys
+import unicodedata
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from runtime.text_filter import inspect_message,TextHeld
+from runtime.reference_review import inspect_reference
 
 ROOT=Path(__file__).resolve().parents[1]
 KNOWLEDGE=ROOT/'knowledge'
@@ -38,6 +41,7 @@ AI_DOCUMENTS={
     'https://x.com/alexandr_wang/status/2100256890559308197',
 }
 MICROSOFT_DOCUMENTS={'https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access', 'https://learn.microsoft.com/en-us/azure/role-based-access-control/best-practices', 'https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/', 'https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/recovery-overview', 'https://learn.microsoft.com/en-us/intune/fundamentals/planning-guide', 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access', 'https://learn.microsoft.com/en-us/intune/fundamentals/platform-guide-windows', 'https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/landing-zone/design-areas', 'https://learn.microsoft.com/en-us/microsoft-365/enterprise/setup-overview-for-enterprises?view=o365-worldwide', 'https://learn.microsoft.com/en-us/intune/device-configuration/endpoint-security/encrypt-bitlocker-windows', 'https://learn.microsoft.com/en-us/intune/device-enrollment/guide'}
+REVIEWED_ARTICLES={'https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11641623/fullTextXML'}
 MAX_DOWNLOAD=8*1024*1024
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -45,11 +49,23 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 HTTP=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
 
+def reviewed_article(url):
+    return url in REVIEWED_ARTICLES
+
+def allowed_mime(url,mime):
+    return mime in ('text/html','text/plain','application/pdf','application/json') or (reviewed_article(url) and mime=='application/xml')
+
+def validate_review(entry,url):
+    expected='peer-reviewed-open-access-article' if reviewed_article(url) else 'official-publisher-documentation'
+    if entry.get('review')!=expected or not entry.get('reviewed_on'):
+        raise ValueError('Missing source review')
+
 def vetted_url(url):
     parsed=urllib.parse.urlsplit(url)
-    if parsed.scheme!='https' or (parsed.hostname not in HOSTS and url not in AI_DOCUMENTS and url not in MICROSOFT_DOCUMENTS) or parsed.username or parsed.password or parsed.port not in (None,443) or (parsed.query and url not in MICROSOFT_DOCUMENTS) or parsed.fragment:
+    exception=url in AI_DOCUMENTS or url in MICROSOFT_DOCUMENTS or reviewed_article(url)
+    if parsed.scheme!='https' or (parsed.hostname not in HOSTS and not exception) or parsed.username or parsed.password or parsed.port not in (None,443) or (parsed.query and url not in MICROSOFT_DOCUMENTS) or parsed.fragment:
         raise ValueError('Source URL is outside reviewed publisher scope')
-    if url not in AI_DOCUMENTS and url not in MICROSOFT_DOCUMENTS and not re.search(r'\.pdf$|\.html$|/index$|/$',parsed.path) and parsed.hostname!='fedoraproject.org':
+    if not exception and not re.search(r'\.pdf$|\.html$|/index$|/$',parsed.path) and parsed.hostname!='fedoraproject.org':
         raise ValueError('Only reviewed documentation URLs allowed')
     return url
 
@@ -57,8 +73,7 @@ def fetch(entry):
     if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,80}',entry.get('id','')):
         raise ValueError('Invalid source identity')
     url=vetted_url(entry['url'])
-    if entry.get('review')!='official-publisher-documentation' or not entry.get('reviewed_on'):
-        raise ValueError('Missing source review')
+    validate_review(entry,url)
     if entry.get('kind')=='reviewed-local-brief':
         raw=(KNOWLEDGE/'briefs'/(entry['id']+'.txt')).read_bytes()
         if len(raw)>8000 or hashlib.sha256(raw).hexdigest()!=entry['sha256']:
@@ -73,7 +88,7 @@ def fetch(entry):
     # Vet type and declared size before fetching any document body.
     with HTTP.open(urllib.request.Request(url,method='HEAD',headers=headers),timeout=30) as response:
         mime=response.headers.get_content_type()
-        if mime not in ('text/html','text/plain','application/pdf','application/json'):
+        if not allowed_mime(url,mime):
             raise ValueError('Unexpected document type')
         if int(response.headers.get('Content-Length','0'))>MAX_DOWNLOAD:
             raise ValueError('Document exceeds preparation limit')
@@ -109,23 +124,48 @@ class TextHTML(HTMLParser):
     def handle_data(self,data):
         if not self.skip:self.add(data)
 
+def extracted_pdf(raw):
+    import io
+    from pypdf import PdfReader
+    from pypdf.constants import UserAccessPermissions
+    reader=PdfReader(io.BytesIO(raw),strict=True)
+    if reader.is_encrypted:
+        # Respect extraction restrictions; never guess a key.
+        if not reader.decrypt('') or not reader.user_access_permissions & UserAccessPermissions.EXTRACT:
+            raise ValueError('PDF password/extraction permission prevents indexing')
+    if len(reader.pages)>1000:raise ValueError('PDF exceeds page limit')
+    total=0
+    for number,page in enumerate(reader.pages,1):
+        text=page.extract_text() or '';total+=len(text)
+        if total>2_000_000:raise ValueError('PDF text exceeds index limit')
+        yield 'page '+str(number),text
+
+def extracted_jats(raw):
+    # Europe PMC returns JATS with an external DTD. Strip only that known
+    # declaration; reject entities and other DTDs before parsing locally.
+    if re.search(br'<!\s*ENTITY',raw,re.I):raise ValueError('XML entities prohibited')
+    cleaned,count=re.subn(br'<!DOCTYPE article\s+PUBLIC\s+"[^"]+"\s+"[^"]+">',b'',raw,count=1)
+    if count!=1 or re.search(br'<!\s*DOCTYPE',cleaned,re.I):raise ValueError('Unexpected XML document type')
+    root=ET.fromstring(cleaned)
+    if root.tag!='article' or root.find('./body') is None:raise ValueError('Expected JATS article body')
+    sections=[('abstract',root.find('./front/article-meta/abstract'))]
+    sections.extend((f'body section {number}',node) for number,node in enumerate(root.findall('./body/*'),1))
+    total=0
+    for locator,node in sections:
+        if node is None:continue
+        text=' '.join(node.itertext());total+=len(text)
+        if total>2_000_000:raise ValueError('XML text exceeds index limit')
+        yield locator,text
+
 def extracted(raw,mime):
     if mime=='application/pdf':
-        import io
-        from pypdf import PdfReader
-        from pypdf.constants import UserAccessPermissions
-        reader=PdfReader(io.BytesIO(raw),strict=True)
-        if reader.is_encrypted:
-            # Publicly readable PDFs may use an empty user password with owner
-            # permissions. Respect extraction restrictions; never guess a key.
-            if not reader.decrypt('') or not reader.user_access_permissions & UserAccessPermissions.EXTRACT:
-                raise ValueError('PDF password/extraction permission prevents indexing')
-        if len(reader.pages)>700:raise ValueError('PDF exceeds page limit')
-        total=0
-        for number,page in enumerate(reader.pages,1):
-            text=page.extract_text() or '';total+=len(text)
-            if total>2_000_000:raise ValueError('PDF text exceeds index limit')
-            yield 'page '+str(number),text
+        yield from extracted_pdf(raw)
+    elif mime=='application/xml':
+        yield from extracted_jats(raw)
+    elif mime=='text/x-larpus-ocr-pages':
+        # Owner-reviewed offline OCR sidecar of an image-only PDF: '[page N]' headers, raw engine text.
+        pages=re.split(r'(?m)^\[page \d+\]\r?\n',raw.decode('utf-8',errors='strict'))
+        for number,text in enumerate(pages[1:],1):yield 'ocr page '+str(number),text
     else:
         text=raw.decode('utf-8',errors='strict')
         if mime=='text/html':
@@ -147,23 +187,32 @@ def passages(text):
         boundary=text.find(' ',overlap,end)
         offset=boundary+1 if boundary>=0 else overlap
 
-def build(fetch_docs,reuse_research=False):
-    catalog=json.loads((KNOWLEDGE/'sources.json').read_text(encoding='utf-8'))
-    records=[];rejected=[];documents=[]
-    reused=set()
-    if reuse_research:
-        from runtime.knowledge import database
-        from contextlib import closing
-        previous=json.loads((KNOWLEDGE/'manifest.json').read_text())
-        rejected=json.loads((CACHE/'rejected-passages.json').read_text())
-        research_ids={e['id']:e['sha256'] for e in json.loads((ROOT/'research/catalog.json').read_text())['entries']}
-        reused={e['id'] for e in previous['sources'] if research_ids.get(e['id'])==e['sha256']}
-        with closing(database()) as old:
-            records=[row for row in old.execute('SELECT source_id,title,url,snapshot,locator,text,role FROM chunks') if row[0] in reused]
-        reusable={r[0] for r in records if r[4]!='metadata only'}
-        reused &= reusable
-        records=[r for r in records if r[0] in reused]
+PDF_CONTROL_NORMALIZATION='pdf-control-format-to-fffd-v1'
+
+def normalized_pdf_text(text):
+    # Owner-approved per source (catalog text_normalization): PDF font-encoding debris, i.e. C0/C1
+    # controls and invisible format characters, becomes U+FFFD one for one. Offsets and every passage
+    # without such characters stay byte-identical; tab, newline, carriage return and form feed are kept.
+    # The ordinary screen still runs on the result.
+    return ''.join('\ufffd' if (unicodedata.category(c)=='Cc' and c not in '\t\n\r\f') or unicodedata.category(c)=='Cf' else c for c in text)
+
+def carried_rejections(previous,reused):
+    # Reuse mode re-parses every non-reused source and records its rejections again, so earlier rows
+    # are kept only for reused sources; a reused source has indexed text, so its old parse failures are stale.
+    return [r for r in previous if r.get('source_id') in reused and r.get('reason')!='parse_failed']
+
+OWNER_REFERENCE='owner-reviewed-local-reference'
+
+def owner_reference(entry):
+    # Owner-supplied references are admitted through config/reference-reviews.json,
+    # not this web-snapshot builder. Keep their reviewed catalog status.
+    return entry.get('status')==OWNER_REFERENCE
+
+def load_documents(catalog,fetch_docs):
+    documents=[]
     for entry in catalog['documents']:
+        if owner_reference(entry):
+            print(entry['id']+': '+entry['status'],flush=True);continue
         try:
             if fetch_docs:raw,mime=fetch(entry)
             elif entry.get('kind')=='reviewed-local-brief':raw,mime=fetch(entry)
@@ -176,6 +225,28 @@ def build(fetch_docs,reuse_research=False):
             entry['status']='unavailable';entry['error']=type(exc).__name__+': '+('Cached snapshot unavailable' if isinstance(exc,FileNotFoundError) else str(exc).replace(str(ROOT),'[project]')[:160])
         (KNOWLEDGE/'sources.json').write_text(json.dumps(catalog,indent=2)+'\n',encoding='utf-8')
         print(entry['id']+': '+entry['status'],flush=True)
+    return documents
+
+def build(fetch_docs,reuse_research=False):
+    catalog=json.loads((KNOWLEDGE/'sources.json').read_text(encoding='utf-8'))
+    records=[];rejected=[]
+    reused=set()
+    if reuse_research:
+        from runtime.knowledge import database
+        from contextlib import closing
+        previous=json.loads((KNOWLEDGE/'manifest.json').read_text())
+        rejected=json.loads((CACHE/'rejected-passages.json').read_text())
+        research_entries=json.loads((ROOT/'research/catalog.json').read_text())['entries']
+        research_ids={e['id']:e['sha256'] for e in research_entries}
+        renormalized={e['id'] for e in research_entries if e.get('text_normalization')}  # always parsed again
+        reused={e['id'] for e in previous['sources'] if research_ids.get(e['id'])==e['sha256'] and e['id'] not in renormalized}
+        with closing(database()) as old:
+            records=[row for row in old.execute('SELECT source_id,title,url,snapshot,locator,text,role FROM chunks') if row[0] in reused]
+        reusable={r[0] for r in records if r[4]!='metadata only'}
+        reused &= reusable
+        records=[r for r in records if r[0] in reused]
+        rejected=carried_rejections(rejected,reused)
+    documents=load_documents(catalog,fetch_docs)
     # Existing PDF bytes must match the reviewed archive catalog before parsing.
     research=json.loads((ROOT/'research/catalog.json').read_text(encoding='utf-8'))
     for source in research['entries']:
@@ -186,8 +257,16 @@ def build(fetch_docs,reuse_research=False):
         path=ROOT/'data/research'/source['role']/source['level']/(source['id']+'.'+fmt)
         raw=path.read_bytes()
         if hashlib.sha256(raw).hexdigest()!=source['sha256']:raise ValueError('Research PDF checksum mismatch: '+source['id'])
+        if source.get('ocr_sha256'):
+            # Image-only PDF with an owner-approved offline OCR sidecar pinned in the catalog (no OCR runs here).
+            ocr=path.with_name(source['id']+'.ocr.txt').read_bytes()
+            if hashlib.sha256(ocr).hexdigest()!=source['ocr_sha256']:raise ValueError('OCR sidecar checksum mismatch: '+source['id'])
+            raw,fmt=ocr,'ocr'
         entry={'id':source['id'],'title':source['title'],'url':source['source_url'],'roles':[source['role']],'snapshot':source.get('fetched_at','')[:10],'publication':source['year'],'sha256':source['sha256'],'topics':source.get('topics',[])}
-        documents.append((entry,raw,{'html':'text/html','txt':'text/plain'}.get(fmt,'application/pdf')))
+        if source.get('text_normalization'):
+            if source['text_normalization']!=PDF_CONTROL_NORMALIZATION or fmt!='pdf':raise ValueError('Unknown text normalization: '+source['id'])
+            entry['text_normalization']=source['text_normalization']
+        documents.append((entry,raw,{'html':'text/html','txt':'text/plain','ocr':'text/x-larpus-ocr-pages'}.get(fmt,'application/pdf')))
     for entry,raw,mime in documents:
         count=0
         try:
@@ -198,9 +277,11 @@ def build(fetch_docs,reuse_research=False):
                 for role in entry['roles']:records.append((entry['id'],entry['title'],entry['url'],entry['snapshot'],'metadata only',metadata,role))
                 continue
             for locator,text in extracted(raw,mime):
+                if entry.get('text_normalization'):text=normalized_pdf_text(text)
                 for offset,part in passages(text):
                     if len(part)<60:continue
-                    try:inspect_message(part)
+                    # Ordinary screen; exact owner-reviewed passages in config/reference-reviews.json only.
+                    try:inspect_reference(part,entry['id'])
                     except TextHeld as exc:
                         rejected.append({'source_id':entry['id'],'locator':locator,'offset':offset,'reason':exc.reason})
                         continue

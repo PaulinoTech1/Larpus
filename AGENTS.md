@@ -36,3 +36,13 @@ not from this working checkout. Read `docs/UPDATES.md` before deployment work.
   Only screened, checksum-pinned text enters the shared knowledge index.
 - Keep archive originals and private reports ignored by Git. Refresh through
   `scripts/github_archive.py`, rebuild knowledge and use the staged release flow.
+
+## WSL from this Windows session
+
+Codex `windows.sandbox = "unelevated"` runs shell commands with a restricted
+token. `WslService` denies that token before Larpus or Python starts. MXC
+denies WSL on this PC as well. Do not treat `Wsl/E_ACCESSDENIED` as a thread
+limit, a stopped service, or a `manage.lock` ACL defect, and do not restart
+WSL or change permissions to get past it. Run `scripts/invoke-larpus.ps1`
+from an owner PowerShell outside the sandbox, or have the owner approve that
+one command unsandboxed. See `docs/WSL_SANDBOX_ACCESS.md`.

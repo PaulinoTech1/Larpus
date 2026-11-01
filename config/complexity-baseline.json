@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reason": "Initial reviewed inventory preserves visible existing debt. Secure profiles explicitly add gateway +1 profile dependency, inference +2 profile/trace dependencies and mcp_client +1 profile dependency; global and function ceilings are unchanged. See docs/architecture/module-contracts.md. Stock-lab supervisor and runner keep their measured sizes.",
+  "reason": "Initial reviewed inventory preserves visible existing debt. Secure profiles explicitly add gateway +1 profile dependency, inference +2 profile/trace dependencies and mcp_client +1 profile dependency; global and function ceilings are unchanged. See docs/architecture/module-contracts.md. Stock-lab supervisor and runner keep their measured sizes. Horizon release 2026-10-27 records measured sizes for the gateway quarantine branch, Horizon screen, and checkout functions already over the prior allowance.",
   "new_function": {
     "decisions": 12,
     "lines": 80
@@ -14,7 +14,7 @@
     "runtime.context": 4,
     "runtime.diagnostics": 4,
     "runtime.dlp": 4,
-    "runtime.gateway": 12,
+    "runtime.gateway": 13,
     "runtime.health": 10,
     "runtime.inference": 10,
     "runtime.inference_admission": 4,
@@ -291,8 +291,8 @@
       "lines": 80
     },
     "runtime/gateway.py:Handler.do_POST": {
-      "decisions": 74,
-      "lines": 156
+      "decisions": 78,
+      "lines": 170
     },
     "runtime/gateway.py:Handler.do_POST.event": {
       "decisions": 12,
@@ -1496,6 +1496,66 @@
     },
     "scripts/verify-broker.py:main": {
       "decisions": 12,
+      "lines": 80
+    },
+    "runtime/horizon_guard.py:configured": {
+      "decisions": 16,
+      "lines": 80
+    },
+    "runtime/knowledge.py:fixed_evidence": {
+      "decisions": 17,
+      "lines": 80
+    },
+    "runtime/rag_eval.py:evaluate": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "runtime/text_filter.py:screen_conversation": {
+      "decisions": 18,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:catalog_from_value": {
+      "decisions": 47,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:checked_record": {
+      "decisions": 39,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:summarize": {
+      "decisions": 56,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:probe_case": {
+      "decisions": 33,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:import_task": {
+      "decisions": 31,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:probe_ab": {
+      "decisions": 35,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:record_ab": {
+      "decisions": 31,
+      "lines": 80
+    },
+    "runtime/horizon_worker.py:load": {
+      "decisions": 13,
+      "lines": 80
+    },
+    "scripts/performance_transport.py:stream": {
+      "decisions": 14,
+      "lines": 80
+    },
+    "runtime/knowledge.py:retrieval_question": {
+      "decisions": 14,
+      "lines": 80
+    },
+    "scripts/mtrageval_local.py:main": {
+      "decisions": 13,
       "lines": 80
     }
   }

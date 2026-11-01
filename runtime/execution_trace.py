@@ -3,6 +3,19 @@ import math
 from typing import Callable
 
 EVENTS=frozenset(('input','retrieval','model_selection','model_first_text','first_approved','complete'))
+
+def exclusive_stages(events):
+    """Adjacent local inference offsets only. Never add overlapping parent clocks."""
+    boundaries=(('input','input'),('retrieval','retrieval'),('model_selection','model_selection'),
+                ('first_approved','generation_to_approved'),('complete','after_first_approved'))
+    previous=0.;result={}
+    for boundary,name in boundaries:
+        value=events.get(boundary)
+        if type(value) not in (int,float) or not math.isfinite(value):return {}
+        if not previous<=value<=3600000:return {}
+        result[name]=round(value-previous,3);previous=value
+    return result
+
 class Trace:
     def __init__(self,enabled: bool,clock: Callable[[],float]):
         self.clock=clock;self.enabled=enabled;self.events={};self.started=self._time() if enabled else None;self.last_approved=None
@@ -20,7 +33,9 @@ class Trace:
         return dict(self.events)
     def attach(self,result):
         self.mark('complete')
-        if self.enabled:result['execution_trace_ms']=self.snapshot()
+        if self.enabled:
+            result['execution_trace_ms']=self.snapshot()
+            result['execution_stages_ms']=exclusive_stages(self.snapshot())
     def model_text(self,delta):
         if delta:self.mark('model_first_text')
     def screen(self,check,*args):

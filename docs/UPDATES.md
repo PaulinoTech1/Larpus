@@ -1,5 +1,245 @@
 # Updates while Larpus remains usable
 
+## 2026-10-24 NVIDIA 621.01 driver maintenance and measured HTTP run
+
+Startup held before gateway launch: the retained `larpus-model` mounted the
+595.79 WSL driver package, could not query NVML, and loaded the selected
+`larpus3.8:27b-q4` model on 100% CPU. The host and WSL reported 621.01. A
+temporary model container with only the new package mounted read-only passed
+`nvidia-smi` and loaded the same model at 131072 context with q8_0 cache on
+100% GPU. The old model container remains stopped under the name
+`larpus-model-driver-595-previous` as a preservation artifact. The startup
+readiness check held before opening the gateway; the CPU-loaded model was not
+accepted as a user-facing fallback. The strict check exposed an incompatible
+driver mount instead of silently weakening the GPU placement policy.
+
+The staged release `6200bb30d68348f080f2c1c723ff2fb6` reused the prior
+frozen payload except for a catalog count correction: the approved index has
+one passage for `cyber-20261015-unit42`, while the prior catalog declared two.
+No passage or model weight changed. Its deployment profile pins only
+`/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b`. Preparation
+passed public contracts, UI and isolation checks. The scan completed 70 targets
+and retained the source-pinned MCP warning. Activation selected this release,
+retained `346773e17fd54b7784fd3148b07a4b0e` as previous, and reached an
+HTTP 200 gateway with full GPU residency. The previous release still pins the
+595.79 package. It and the stopped old model container are **not a verified
+working rollback** under host driver 621.01; that package already failed the
+live GPU probe. A rollback would need a compatible host driver, model mount and
+release profile, then the same placement and isolation checks. This combined
+driver/model/release recovery was not tested, and the ordinary release manager's
+automatic rollback must not be assumed sufficient for a GPU driver change.
+
+The security boundary remained narrow: only the model container received
+`/dev/dxg`, `/usr/lib/wsl/lib` and one read-only NVIDIA package directory. The
+agent, broker and notes worker gained no GPU device or driver mount. The new
+release profile records that exact package path; `--gpu-driver` on owner-side
+`releases.py prepare` checks its shape and `libcuda.so.1.1` existence, while
+isolation preflight checks the actual container mount. Those checks are not a
+signature or integrity attestation of the Windows driver. The host driver and
+WSL kernel remain trusted, and driver replacement had an interruption; no
+zero-downtime, hostile-driver resistance or reboot-persistence claim follows.
+See [Windows Home isolation](WINDOWS-HOME-ISOLATION.md#gpu-driver-updates-and-failure-behavior).
+
+Fixed local HTTP run `abaec1c30b8b48efbdf068effd7fb5b0` completed 27/27
+measured requests after nine excluded warm-ups. First checked text was 5.624 s
+median and 7.528 s nearest-rank p95; completion was 7.679 s median and
+9.272 s p95. The earlier same-protocol run `91940e8da4d1456e8891a299d147c84d`
+on the prior release measured 5.709/6.845 s first-text median/p95 and
+7.221/9.387 s completion median/p95. Both runs reported zero unknown citation
+identifiers. The new median is 85 ms lower, but p95 is 683 ms higher and
+completion median is 458 ms higher. This is a descriptive comparison, not a
+driver-only causal result or answer-quality certification; source fingerprint,
+gateway process, timing conditions and the catalog count changed. About
+450 MiB GPU memory remained free after the run, so another desktop allocation
+could break full GPU residency. NVIDIA Overlay was closed with owner consent;
+the user container had respawned it after the first process stop.
+
+Release, benchmark and scratch receipts are under `E:`. The Larpus WSL distro
+base path is `E:\WSL\Larpus`. The test suite used Windows temporary folders on
+`C:` and removed the observed folders when it finished.
+
+## 2026-10-22 Broker live check: contract-sized helpers and budget-safe readiness
+
+CI "Public contracts" failed on Ubuntu and Windows because `exercise_preemption` in
+`scripts/verify-broker-live.py` had 15 decision points; the complexity contract allows 12.
+The function is now split into small helpers (`broker_state`, `idle_state`,
+`wait_for_generation`, `preempt_running_note`, `assert_preempted`). The check proves the
+same things as before: it fails if the note ends early, if the note is not preempted, if
+chat does not complete, or if the broker records no confirmed preemption and recovery.
+
+Codex review: the old readiness wait retried `/api/chat` every 2 s for up to 90 s, so it
+could exhaust the broker's 12/min chat budget (429 `inference_budget`) before the real
+test. The broker exposes no endpoint for the first-use fence state without spending chat
+quota; `probe()` runs only inside a chat slot. Readiness now works in two steps:
+1. Wait up to 30 s on the status lane (`GET /api/ps`, filtered by the broker to the
+   approved model, and counted against the 120/min status budget) for the model to be
+   loaded.
+2. Send at most 4 chat probes, at least 10 s apart. An unconfirmed fence or a 429
+   `inference_budget` on an unfaulted broker means wait; a fault or any other refusal
+   fails at once.
+
+Worst case, a whole run makes 5 chat-lane requests. `/broker/state` polling during the
+note slowed from 0.25 s (240/min) to 0.75 s (80/min), keeping it under the status budget.
+The broker and notes worker are unchanged (they are source-pinned). Tests:
+`tests/test_verify_broker_live.py` gains a missing-recovery failure, a chat-budget wait,
+bounded and spaced probes, a status-lane-only resident wait, and a budget-arithmetic
+check against `runtime.broker_scheduler.LIMITS`. The fix was not run against the live
+station. Active release remains `346773e1`.
+
+## 2026-10-21 Habit-source release activated after broker-check fix
+
+Activated `346773e17fd54b7784fd3148b07a4b0e` at 3:47:06 PM ET; previous
+`03959f0891764772a962726bea4309d7` is retained as the rollback target. The
+gateway (pid 23796) runs from the new release folder and
+`http://127.0.0.1:8080` returns 200. Retrieval inside the live agent container
+returns the Singh et al. (2024) habit article first for the psychologist and
+home-assistant roles. Receipt: `data/broker-live-346773e1-activated-20261021.json`
+(pass; running note preempted, chat 2.078 s after preemption, resumed note
+completed). Cutover rebinds the port; LAN tabs need a fresh login.
+
+The 2:34 PM failure ("Synthetic note finished before cancellation could be
+exercised") was not a fast note: a full synthetic note takes 21-32 s. The broker
+counter afterwards showed one confirmed recovery without a preemption, which
+fits the note being refused straight after cutover by the broker's first-use
+idle fence, before it generated anything. The old check discarded that result.
+`scripts/verify-broker-live.py` now does a readiness handshake first: one chat
+must complete on an idle, unfaulted broker; only an unconfirmed fence is waited
+out (90 s bound), any other refusal or a fault fails. It still requires the note
+to be observed generating before chat is sent, and still fails if the note ends
+first, is not preempted, or the broker records no confirmed recovery. The
+receipt now includes readiness attempts, the note outcome code (never its text)
+and the failure message. The fix is checkout-only: the check runs from the
+checkout and the release's notes worker and broker are unchanged, so
+`346773e1` was activated as prepared. Before cutover the fixed check passed 5/5
+on `03959f08` (`data/broker-check-20261021/03959f08-run1..5.json`).
+
+## 2026-10-21 Textbook catalog status fixed; activation rolled back
+
+Cause: `scripts/prepare-knowledge.py` treated every catalog document as a cached
+web snapshot. The two owner-supplied textbooks,
+`chicone-ordinary-differential-equations` and
+`salsa-partial-differential-equations`, are admitted through
+`config/reference-reviews.json`, not this builder, and have no cached original,
+so the habit-source rebuild relabelled them `unavailable`. They were added to the
+committed catalog on 2026-10-18 (`1efdf79`) as `owner-reviewed-local-reference`;
+the active `03959f08` corpus predates that and lists neither.
+
+Fix: the builder now leaves `owner-reviewed-local-reference` entries untouched
+and never fetches them (`load_documents`, with a regression test). Both catalog
+entries were restored byte-for-byte to their committed values. No text, source
+or passage was added. The rebuilt index and vectors were reused unchanged.
+
+Prepared `346773e17fd54b7784fd3148b07a4b0e` at 2:33 PM ET. Its payload differs
+from `8203e538` only in `knowledge/sources.json`, `scripts/prepare-knowledge.py`
+and `tests/test_knowledge_preparation.py`. Against `03959f08` the index adds 124
+role rows (62 passages), all from the habit article, and removes none. Checks
+passed; 69 scan targets pass and `mcp` keeps the known reviewed warning.
+
+Activated at 2:33:58 PM ET. The gateway ran from the new release directory and
+`http://127.0.0.1:8080` returned 200. `scripts/verify-broker-live.py` then failed
+(`data/broker-live-346773e1-20261021.json`: "Synthetic note finished before
+cancellation could be exercised"), so the release was rolled back to `03959f08`
+at 2:35:07 PM ET as instructed. Afterwards the same check passed on `03959f08`
+(`data/broker-live-03959f08-baseline-20261021.json`) and on the still-prepared
+`346773e1` (`data/broker-live-346773e1-prepared-retry-20261021.json`, 2.25 s
+chat after preemption). Host-side retrieval on the `346773e1` corpus returns the
+habit article first for both roles. `346773e1` remains prepared and is the
+recorded rollback target; re-activation needs the boss's go-ahead.
+
+## 2026-10-21 Habit-formation source — prepared, not activated
+
+Prepared `8203e5380a1b4dbea18c9c9084edecf9` at 1:55 PM ET. It is the active
+`03959f0891764772a962726bea4309d7` payload plus only the Singh et al. (2024)
+habit-formation systematic review: Europe PMC JATS XML, CC BY 4.0, SHA-256
+`d60c91f1a33822dbd5733f0beb64f0f402761ff5f6bdd9b5cccaabd0a27aaa46`, 62 passages
+for the psychologist and home-assistant roles (124 role rows). Index rows go
+from 76,726 to 76,850. Vectors go from 74,709 to 74,771: the 74,709 existing
+vectors were reused after hash verification against the active release and
+only the 62 new passages were embedded. The payload also carries the XML
+source rule, the incremental `--reuse-index-from` indexing option and their
+tests. Complexity, the isolated suite, UI checks, isolation and the scan passed;
+69 scan targets pass and `mcp` keeps the existing source-pinned warning. The
+earlier `9ce4ddd7929940f39bfdb85f9515cc89` attempt stopped at the complexity
+gate and is not a candidate.
+
+Active is still `03959f08`; activation needs the boss's approval. Before that,
+review one catalog difference: the candidate's `sources.json` marks
+`chicone-ordinary-differential-equations` and
+`salsa-partial-differential-equations` as `unavailable` (cached snapshot
+missing during the rebuild), where the committed checkout catalog lists them as
+`owner-reviewed-local-reference` (correction: the active release has no entries
+for them at all). Neither release's index has rows for them, so
+retrieval is unchanged, but the catalog status changes. The checkout's own
+`knowledge/` database and vectors are a broader local rebuild, are not the
+candidate's and were not shipped. Do not pool timing runs taken during this
+source work into the latency receipts.
+
+## 2026-10-21 Verified timing spans — activated
+
+Activated `03959f0891764772a962726bea4309d7`; previous
+`b6dffca22d244953acb3a8574c232e69` is retained. The candidate uses the current
+checkout code and that previous release's knowledge corpus. The checkout corpus
+was not shipped: its embedding index did not match the approved database.
+Ultra Fast does not collect the new preflight, retrieval, or child-import
+spans. Verified and Diagnostic do. This is not a measured latency improvement
+and does not meet the 5.9 s / 6.8 s first-text target.
+
+Preparation passed pipeline switching, the frozen suite, UI checks, isolation,
+and complexity at 941 functions / 117 modules. The scan kept the prior warnings
+except the static `isolation.py` subprocess count, which is 5 rather than 6
+because the distro probe is submitted to the existing read pool. That count
+change is source-pinned in `config/mcp-scan-reviewed.json`. It is not a clean
+scan. `security_scan` remains a warning. Fresh local health checks otherwise
+pass. The gateway process is pid 27656. Cutover rebinds the port and LAN tabs
+need a fresh login. Two earlier snapshots, `eb3bee8407624c349680ae5a6050df92`
+and `ee739ab5a5cf44e697bae7cdef1ae8ec`, were not activated.
+
+## 2026-10-21 Recovery and owner tools — activated
+
+Activated `b6dffca22d244953acb3a8574c232e69`; previous
+`042f91c0a1454887a694c945f49237ad` is retained. Fresh readiness, broker and
+prepared-pin checks pass. Model/CPU voice images and start times are unchanged.
+The same 11 reviewed MCP warnings remain visible. Recovery stays disabled,
+backups synthetic-only; execution profiles/MCP Skills remain excluded.
+Whole-command time was 29.016 seconds; an unsupported sampler URL prevents a
+reliable interruption measurement. LAN tabs need a fresh login. See the
+[activation record](RECOVERY_ACTIVATION_2026_10_21.md) for retained evidence and
+the gates that still prevent expanding scope. Earlier entries are historical.
+
+## 2026-10-21 Recovery and owner tools — prepared, not activated
+
+Prepared `b6dffca22d244953acb3a8574c232e69` from a scoped variant of the active
+payload. Frozen tests, ten UI suites, complexity, isolation and prepared pins
+passed. Fresh scans completed all 70 targets with the same 11 reviewed MCP
+warnings. One rejected frozen candidate and its fixture correction are retained.
+Selected release remains `042f91c0a1454887a694c945f49237ad`; gateway identity,
+active payload hashes and model/voice images and start times stayed unchanged.
+Execution profiles/MCP Skills were excluded. Recovery remains disabled and
+backups synthetic-only. No activation or push occurred. See the
+[preparation record](RECOVERY_PREPARATION_2026_10_21.md) for exact scope and limits.
+
+## 2026-10-20 Six improvements — worktree candidate only
+
+The recovery worktree closes independent review of final death-count handling,
+adds encrypted synthetic SQLite restores, hash-bound quality review accounting,
+a read-only owner snapshot, one shared verification command and separate timing
+clock groups with offline quality-gated admission. No latency optimization, live
+quality comparison, owner-data backup, production observation, arming or activation
+is claimed. Backup destination is D: with three-calendar-month retention, remaining
+synthetic-only until key custody is decided. See
+[implementation evidence](SIX_IMPROVEMENTS_2026_10_20.md) and
+[owner commands and limits](OWNER_OPERATIONS.md).
+
+## 2026-10-20 Independent recovery - implementation candidate
+
+The isolated `feat/recovery-supervisor` worktree adds an owner-side supervisor,
+durable attempt journal, generation-bound health receipts and disposable failure
+drills. It is disabled by default. No supervisor installation, production
+observation window, arming or release activation accompanies this implementation.
+See [RECOVERY_SUPERVISOR.md](RECOVERY_SUPERVISOR.md) for commands, evidence scope
+and the separate observation/rollout proposal. Existing production release files,
+pins, scan receipts, model and CPU voice are not modified by this work.
+
 ## 2026-10-20 Failure isolation - activated
 
 Activated `042f91c0a1454887a694c945f49237ad`; previous

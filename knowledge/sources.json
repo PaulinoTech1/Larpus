@@ -2404,7 +2404,44 @@
       "bytes": 948,
       "content_type": "text/plain",
       "fetched_at": "2026-10-17T03:12:25.165667+00:00",
-      "status": "prepared-brief"
+      "status": "prepared-brief",
+      "indexed_passages": 2
+    },
+    {
+      "id": "singh-2024-habit-formation-review",
+      "title": "Time to Form a Habit: A Systematic Review and Meta-Analysis of Health Behaviour Habit Formation and Its Determinants",
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11641623/fullTextXML",
+      "roles": [
+        "psychologist",
+        "home-assistant"
+      ],
+      "topics": [
+        "habit formation",
+        "automaticity",
+        "health behaviour",
+        "context cues",
+        "repetition",
+        "systematic review"
+      ],
+      "review": "peer-reviewed-open-access-article",
+      "reviewed_on": "2026-10-21",
+      "published_on": "2024-12-09",
+      "publication": "2024-12-09",
+      "authors": [
+        "Ben Singh",
+        "Andrew Murphy",
+        "Carol Maher",
+        "Ashleigh E. Smith"
+      ],
+      "source_kind": "peer-reviewed systematic review and meta-analysis; full text hosted by Europe PMC",
+      "metadata_evidence_url": "https://www.mdpi.com/2227-9032/12/23/2488/notes",
+      "rights": "Copyright 2024 authors; CC BY 4.0. Preserve article attribution and license.",
+      "status": "downloaded",
+      "sha256": "d60c91f1a33822dbd5733f0beb64f0f402761ff5f6bdd9b5cccaabd0a27aaa46",
+      "bytes": 162643,
+      "content_type": "application/xml",
+      "fetched_at": "2026-10-21T17:28:24.053779+00:00",
+      "indexed_passages": 62
     }
   ]
 }

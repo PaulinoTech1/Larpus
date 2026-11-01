@@ -74,7 +74,7 @@ def checked_content(result):
     if not isinstance(content,str) or not content.strip():raise ValueError('Empty model response')
     return content
 
-def chat(persona, messages, skill=None, on_chunk=None, execution=None):
+def chat(persona, messages, skill=None, on_chunk=None, execution=None, *, fixed_selectors=None):
     started=time.perf_counter();timing={}
     try:context=resolve(execution)
     except ValueError:return {'status':400,'error':'Invalid execution context'}
@@ -86,6 +86,8 @@ def chat(persona, messages, skill=None, on_chunk=None, execution=None):
         prepared=messages_for(selected,messages,skill)
         validate_record(messages)
         compression=compression_envelope(messages)
+        if fixed_selectors is not None and compression is not None:
+            raise ValueError('Fixed evidence cannot be used for compression')
     except TextHeld as exc:
         return {'status':503 if exc.unavailable else 422,'error':'Text held by the local input filter. Remove hidden controls or instruction overrides and try again.','reason':exc.reason,'message_index':exc.index}
     except CatalogRejected as exc:return catalog_failure(exc)
@@ -99,7 +101,9 @@ def chat(persona, messages, skill=None, on_chunk=None, execution=None):
             prepared[0]['content']=SUMMARY_SYSTEM
             evidence=[]
             if upper_bound(prepared)>INPUT_BOUND:raise ContextPressure('Compression batch exceeds context')
-        elif trace.enabled:prepared,evidence=augment(prepared,persona,timings=timing)
+        elif fixed_selectors is not None:
+            prepared,evidence=augment(prepared,persona,fixed_selectors=fixed_selectors)
+        elif context.profile!='ultra-fast':prepared,evidence=augment(prepared,persona,timings=timing)
         else:prepared,evidence=augment(prepared,persona)
     except ContextPressure:
         return {'status':413,'code':'context_pressure','error':'Conversation needs compression before continuing. Use COMPRESS or shorten the latest message.'}

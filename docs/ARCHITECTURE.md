@@ -7,6 +7,57 @@ available. Owner activation drains requests, briefly switches the same listeners
 checks functional readiness and restores the previous release on startup failure.
 See [owner update workflow](UPDATES.md) for commands and shared-state limits.
 
+## Project map and latency work
+
+The solid arrows show the selected frozen release's request path. The owner-side
+preparation and release workflow feed that path without running inside a chat
+request. Speed details are shown where they apply; they do not bypass the
+isolation, evidence or output checks.
+
+```mermaid
+flowchart LR
+    owner["Owner / home-LAN device"] --> hud["HUD"]
+    hud --> gateway["Windows gateway<br/>authentication, limits and streaming"]
+    gateway <--> voice["Separate CPU-only voice container"]
+    gateway --> preflight["Fresh isolation preflight<br/>batched OCI reads"]
+    preflight --> agent["Sealed MCP agent<br/>persona, skill and input checks"]
+    agent --> retrieval["Approved-evidence retrieval"]
+
+    retrieval --> sqlite["Read-only SQLite FTS5<br/>one verified connection per request<br/>up-to-256 MiB mmap request"]
+    retrieval --> worker["Persistent CPU retrieval worker<br/>embedding and reranking models stay loaded"]
+    worker --> scoring["Optimized Assembly vector scoring<br/>NumPy fallback"]
+    scoring --> rerank["ONNX reranking<br/>8 CPU threads, batches of 4<br/>0.9 s deadline"]
+    sqlite --> evidence["Bounded, quoted evidence"]
+    rerank --> evidence
+    evidence --> broker["Private inference broker<br/>chat priority over notes"]
+    notes["Background study-note worker"] --> broker
+    broker --> model["Local Ollama GPU model"]
+    model --> dlp["Output DLP and private quarantine"]
+    dlp --> gateway
+
+    curation["Owner-reviewed source preparation"] --> sqlite
+    release["Stage, prepare and activate<br/>frozen release"] -. "pins code and index" .-> agent
+```
+
+The active retrieval configuration inspected on 2026-10-22 uses 10 BM25 and 6
+semantic candidates with the eight-thread, batch-four reranker shown above.
+The separate [8 piece special](8_PIECE_SPECIAL.md) kept eight threads after
+12 and 16 threads finished fewer candidates or changed top results under the
+deadline; 20 threads hit the disposable container's process limit. The
+[response-latency comparison](RESPONSE_LATENCY_2026_10_19.md)
+measured a reduction in median first approved text from 5.869 to 5.457 seconds
+in 16 paired MCP requests after request-local SQLite reuse and batched fresh
+isolation reads; it was a bounded comparison, not a general tail guarantee.
+SQLite may clamp or decline the requested memory mapping.
+The fresh concurrent-observation candidate in the 8 piece special remains
+separate from the active release. The [Grok teacher loop](GROK_TEACHER_TUNING_LOOP.md)
+and [local RAG evaluation probes](MTRAGEVAL_LOCAL.md) are preparation and
+evaluation work, not part of this production request path.
+
+## Proposed additional classifier (not deployed, 2026-10-25)
+
+A separate architecture proposal is recorded in [the prompt-injection guard plan](PROPOSED_PROMPT_INJECTION_GUARD.md): a **CPU-only**, offline Horizon-Labs/prompt-injection-guard-small (publisher-reported **141M** parameters, Apache-2.0, ungated model) for evaluation alongside existing Stegdetect. This is **not** an active scanner or a proved latency/security improvement. A future guard LLM such as **Llama Guard 4 12B** would require a separate or larger GPU and is outside the current experiment. Neither learned classifier would change the capabilities, tool allowlist, model access, isolation, or DLP enforced by trusted runtime code. Model suitability and performance require independent testing; increased parameter count is not a reason to infer better detection. Current active architecture is the diagram above.
+
 ## Deployed Windows 11 Home station
 
 ```text

@@ -26,6 +26,30 @@ class KnowledgeTests(unittest.TestCase):
     def pin(self):
         (self.directory/'manifest.json').write_text(json.dumps({'version':1,'database_sha256':hashlib.sha256(self.database.read_bytes()).hexdigest(),'database_bytes':self.database.stat().st_size}))
 
+    def test_followup_keeps_a_platform_named_by_the_user(self):
+        with sqlite3.connect(self.database) as db:
+            db.execute("INSERT INTO chunks VALUES (?,?,?,?,?,?,?)", (
+                'qubes-requirements','Qubes OS requirements','https://www.qubes-os.org/doc/system-requirements/','2026-10-01','document offset 0',
+                'Qubes OS storage requirement for the documented installation is separate from memory.','home-assistant'))
+            db.execute("INSERT INTO chunks VALUES (?,?,?,?,?,?,?)", (
+                'mit-storage','Storage thesis','https://dspace.mit.edu/handle/1721.1/example','2026-10-02','document offset 0',
+                'A storage study measures archive capacity and does not name an operating system.','home-assistant'))
+        self.pin()
+        followup='And how much storage does it call for?'
+        prepared=[
+            {'role':'system','content':'Trusted persona.'},
+            {'role':'user','content':'Tell me about the published Qubes OS hardware requirements.'},
+            {'role':'assistant','content':'The requirements include processor, memory and storage.'},
+            {'role':'user','content':followup},
+        ]
+        self.assertEqual(knowledge.retrieval_question(prepared)[0], followup+' qubes')
+        self.assertEqual(knowledge.retrieval_question([{'role':'user','content':'What does Ubuntu 26.04 require for storage?'}])[0], 'What does Ubuntu 26.04 require for storage?')
+        found=knowledge.retrieve('home-assistant', knowledge.retrieval_question(prepared)[0])
+        self.assertEqual(found[0]['id'], 'qubes-requirements')
+        self.assertNotIn('mit-storage', [item['id'] for item in found])
+        output,_=knowledge.augment(prepared,'home-assistant')
+        self.assertEqual(output[-1]['content'].split('\n\nLOCAL_REFERENCE_DATA')[0], followup)
+
     def test_shared_access_and_grounded_context(self):
         found=knowledge.retrieve('linux-kernel-expert','What kernel does Ubuntu 26.04 use?')
         self.assertEqual(found[0]['id'],'ubuntu-26-04')
@@ -38,6 +62,21 @@ class KnowledgeTests(unittest.TestCase):
         self.assertNotIn('Ubuntu 26.04',output[0]['content'],'source text must never become system instructions')
         self.assertEqual(prepared[-1]['content'],'What kernel does Ubuntu 26.04 use?')
         self.assertTrue(evidence)
+
+    def test_fixed_evidence_uses_exact_approved_passage_without_retrieval(self):
+        selector=[{'id':'ubuntu-26-04','locator':'document'}]
+        with patch.object(knowledge,'retrieve',side_effect=AssertionError('retrieval ran')):
+            prepared=[{'role':'system','content':'Trusted persona.'},{'role':'user','content':'Which kernel?'}]
+            output,evidence=knowledge.augment(prepared,'linux-kernel-expert',fixed_selectors=selector)
+        self.assertEqual([(x['id'],x['locator']) for x in evidence],[('ubuntu-26-04','document')])
+        self.assertIn('LOCAL_REFERENCE_DATA',output[-1]['content'])
+        self.assertNotIn('Ubuntu 26.04 uses',output[0]['content'])
+        with self.assertRaises(ValueError):knowledge.fixed_evidence([{'id':'ubuntu-26-04','locator':'missing'}])
+        with self.assertRaises(ValueError):knowledge.fixed_evidence(selector+selector)
+        with patch.object(inference,'ollama') as model:
+            result=inference.chat('linux-kernel-expert',[{'role':'user','content':'Which kernel?'}],fixed_selectors=[{'id':'ubuntu-26-04','locator':'missing'}])
+            self.assertEqual(result['status'],503)
+            model.assert_not_called()
 
     def test_tampering_missing_index_and_write_denial(self):
         self.assertEqual(knowledge.status()['documents'],2)

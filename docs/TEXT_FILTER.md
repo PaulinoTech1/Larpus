@@ -18,7 +18,35 @@ used for scanning.
 4. A bounded NFKC/casefold/whitespace detection view catches a small list of
    explicit instruction overrides and forged model-role markers. Allowed text
    is forwarded unchanged, not silently stripped or rewritten.
-5. A server-owned instruction suffix reminds personas that conversation text
+5. After the gateway loads `config/horizon.json`, each chat message that has
+   already been allowed is classified by the local Horizon snapshot. Six CPU
+   threads, a 4,096-token window, and a 64-token overlap cover every token.
+   A segment is quarantined when its injection probability is at least 0.5,
+   which is the snapshot's own SAFE/INJECTION label. Raising that cutoff to
+   0.9 would let injection labels through. On this snapshot, "reproduce the
+   finding before accepting it" scored 0.7053. A direct instruction override
+   scored 0.9997 and a paraphrase scored 0.9958. The original
+   `cyber-pentest` wording scored 0.5336 because it said "without trusting
+   its first answer." The same request without that clause scored 0.1529.
+   The suite case now says the lab must confirm the finding itself, which
+   scored 0.3567 and stays under the 0.5 label. A server-owned coaching
+   prefix also pushed the original wording under 0.5, but it lowered the
+   paraphrase from 0.9958 to 0.9661, so the prefix was not adopted. Run
+   `8b0ab6414c6e49aea7d4dac81a0401ab` recorded the old wording as
+   `invalid_protocol` because the runner did not recognize the quarantine
+   event. A 0.5 injection label does not stop the gateway. The message text is written
+   to the private DLP quarantine as an input incident, removed from the model
+   prompt, and removed from the saved transcript. If that message was the new
+   question, the HUD stays on the earlier conversation and shows the incident
+   id. If it was an older turn, that turn's pair is removed and the new
+   question still goes to the model. A missing worker, checksum mismatch,
+   incomplete segmentation, or quarantine-write failure still holds the
+   request closed. This step does not run for direct `inspect_message`
+   callers, so evidence, skills, and voice keep the earlier gate. The
+   classifier cannot turn an earlier hold into an allow. Inspect a record
+   with `python -m runtime.dlp inspect INCIDENT` and delete it with
+   `python -m runtime.dlp delete INCIDENT`. The record is inert text.
+6. A server-owned instruction suffix reminds personas that conversation text
    is untrusted. Tool execution stays disabled; enforcement belongs outside
    the model, independent of its answer.
 

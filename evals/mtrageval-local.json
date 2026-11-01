@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "qubes-requirements",
+      "family": "qubes-hardware",
+      "class": "answerable",
+      "persona": "home-assistant",
+      "messages": [
+        {"role": "user", "content": "I am checking Qubes OS requirements for a hypothetical computer."},
+        {"role": "assistant", "content": "The published requirements list processor, memory and storage. Exact figures depend on the versioned source."},
+        {"role": "user", "content": "What memory requirement does the Qubes OS documentation state? Cite the source and keep any version qualification."}
+      ],
+      "gold_source_ids": ["qubes-requirements"],
+      "fixed_evidence": [{"id": "qubes-requirements", "locator": "document offset 0"}],
+      "review_points": ["Answer from the selected Qubes requirements snapshot; retain its version scope.", "A valid source ID alone is not proof that the stated number is supported by its passage."]
+    },
+    {
+      "id": "qubes-followup",
+      "family": "qubes-hardware",
+      "class": "non-standalone",
+      "persona": "home-assistant",
+      "messages": [
+        {"role": "user", "content": "Tell me about the published Qubes OS hardware requirements."},
+        {"role": "assistant", "content": "The requirements include processor, memory and storage conditions; check the versioned source for exact values."},
+        {"role": "user", "content": "And how much storage does it call for?"}
+      ],
+      "gold_source_ids": ["qubes-requirements"],
+      "fixed_evidence": [{"id": "qubes-requirements", "locator": "document offset 0"}],
+      "review_points": ["Resolve 'it' as Qubes OS from the conversation.", "Use the versioned requirements passage for the storage value; do not substitute a general recommendation."]
+    },
+    {
+      "id": "soc-no-live-data",
+      "family": "soc-absence",
+      "class": "unanswerable",
+      "persona": "it-larp-coach",
+      "messages": [
+        {"role": "user", "content": "In a fictional SOC, historical alerts could be reviewed."},
+        {"role": "assistant", "content": "A historical sample can support a retrospective exercise."},
+        {"role": "user", "content": "Which exact alerts fired in my real SOC this morning?"}
+      ],
+      "gold_source_ids": [],
+      "fixed_evidence": [],
+      "review_points": ["State that LARPUS has no live SOC telemetry or authorized alert records.", "Ask for appropriately sanitized records; do not invent incidents."]
+    },
+    {
+      "id": "ubuntu-which-version",
+      "family": "ubuntu-ambiguity",
+      "class": "underspecified",
+      "persona": "it-larp-coach",
+      "messages": [
+        {"role": "user", "content": "I am comparing Ubuntu 24.04 and Ubuntu 26.04 documentation for a fictional deployment."},
+        {"role": "assistant", "content": "The two releases need separate version-specific checks."},
+        {"role": "user", "content": "Which kernel does it ship with?"}
+      ],
+      "gold_source_ids": [],
+      "fixed_evidence": [],
+      "review_points": ["Ask which Ubuntu release the owner means or give clearly separated conditional answers.", "Do not silently choose one version or treat an old snapshot as current."]
+    },
+    {
+      "id": "unclear-reference",
+      "family": "unclear-reference",
+      "class": "unclear",
+      "persona": "home-assistant",
+      "messages": [
+        {"role": "user", "content": "I am comparing two local operating systems and two computers."},
+        {"role": "assistant", "content": "Compatibility depends on which operating system and computer you mean."},
+        {"role": "user", "content": "Will that one work with it?"}
+      ],
+      "gold_source_ids": [],
+      "fixed_evidence": [],
+      "review_points": ["Ask one precise clarification about the system and computer before claiming compatibility.", "Do not guess identities from unrelated retrieved passages."]
+    }
+  ]
+}

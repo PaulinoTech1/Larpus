@@ -48,13 +48,58 @@ def inspect_message(text):
     return text
 
 def filter_messages(messages):
+    # Horizon runs only after an existing allow, and only once the gateway has
+    # loaded it. Evidence and other inspect_message callers stay unchanged.
+    from runtime.horizon_guard import check
     for index,message in enumerate(messages):
         try:
             inspect_message(message['content'])
+            check(message['content'])
         except TextHeld as exc:
             exc.index=index
             raise
     return messages
+
+def screen_conversation(messages):
+    """Quarantine Horizon injection messages and return the conversation that may continue.
+
+    Lexical holds still stop the request. A quarantine-storage failure stops it
+    too, so a blocked prompt is never forwarded merely because the record
+    could not be written.
+    """
+    from runtime.dlp import store_held_input
+    from runtime.horizon_guard import check
+    classified=[]
+    blocked=set()
+    for index,message in enumerate(messages):
+        try:
+            inspect_message(message['content'])
+            check(message['content'])
+        except TextHeld as exc:
+            if exc.reason!='prompt_injection':
+                exc.index=index
+                raise
+            try:
+                incident=store_held_input(message['content'])
+            except Exception as failure:
+                raise TextHeld('horizon_unavailable',unavailable=True) from failure
+            classified.append({'index':index,'incident':incident})
+            blocked.add(index)
+    if not blocked:
+        return list(messages),{'classified':[],'removed':[],'local':False}
+    last=len(messages)-1
+    drop=set(blocked)
+    for index in blocked:
+        if index==last:
+            continue
+        partner=index-1 if index%2 else index+1
+        if 0<=partner<last:
+            drop.add(partner)
+    kept=[message for index,message in enumerate(messages) if index not in drop]
+    local=last in drop
+    if not local and (not kept or kept[-1]['role']!='user' or any(message['role']!=('user' if index%2==0 else 'assistant') for index,message in enumerate(kept))):
+        raise TextHeld('horizon_unavailable',unavailable=True)
+    return kept,{'classified':classified,'removed':sorted(drop),'local':local}
 
 def screen_optional_evidence(checks):
     """Exclude rejected optional evidence; scanner failures still stop retrieval."""

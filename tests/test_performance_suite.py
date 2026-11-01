@@ -24,6 +24,10 @@ class PerformanceSuiteTests(unittest.TestCase):
         self.assertEqual(result['first_text_seconds']['median'],3)
         self.assertEqual(result['first_text_seconds']['p90'],4)
         self.assertEqual(result['stages_ms']['retrieval']['n'],1)
+        self.assertEqual(result['stages_ms']['preflight_validation']['n'],0)
+        self.assertIsNone(result['stages_ms']['preflight_validation']['median'])
+        self.assertEqual(result['first_after_idle_seconds']['n'],0)
+        self.assertIsNone(result['first_after_idle_seconds']['median'])
         self.assertEqual(result['failures'],{'stream_rejected':1})
 
     def test_transport_rejects_truncation_but_keeps_partial_observation(self):
@@ -102,6 +106,12 @@ class PerformanceSuiteTests(unittest.TestCase):
         result=metrics.compare(base,changed)
         self.assertIn('identity_changes',result)
         self.assertEqual(result['identity_changes']['model_id'],{'before':'3.5','after':'3.8'})
+
+    def test_quarantine_stream_is_a_named_failure(self):
+        transport=self.module('performance_transport')
+        opener=Mock();opener.open.return_value=BytesIO(b'{"type":"quarantine","removed":[0],"incidents":["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]}\n{"type":"done","local":true,"sources":[]}\n')
+        row,answer=transport.probe(opener,{'persona':'it-larp-coach','messages':[]},retain=False)
+        self.assertFalse(row['ok']);self.assertEqual(row['error'],'quarantined');self.assertIsNone(answer)
 
     def test_transport_close_failure_never_reports_success(self):
         transport=self.module('performance_transport')

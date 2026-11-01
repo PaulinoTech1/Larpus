@@ -25,6 +25,12 @@ class BrokerRejected(OSError):
     def __init__(self,status,code):
         super().__init__('Inference broker held request');self.status=status;self.code=code
 
+def _require_socket(path):
+    try:info=os.lstat(path)
+    except OSError:raise ValueError('Invalid private inference socket') from None
+    if not stat.S_ISSOCK(info.st_mode) or info.st_mode & 0o077 or info.st_uid!=1000:
+        raise ValueError('Invalid private inference socket')
+
 @contextmanager
 def local_response(request,timeout):
     if os.environ.get('LARPUS_ISOLATION')=='host':
@@ -37,9 +43,7 @@ def local_response(request,timeout):
     lane=os.environ.get('LARPUS_BROKER_ROLE','chat')
     if lane not in ('chat','notes'):raise ValueError('Unknown inference capability')
     path=NOTES_SOCKET if lane=='notes' else BROKER_SOCKET
-    info=os.lstat(path)
-    if not stat.S_ISSOCK(info.st_mode) or info.st_mode & 0o077 or info.st_uid!=1000:
-        raise ValueError('Invalid private inference socket')
+    _require_socket(path)
     connection=http.client.HTTPConnection('localhost',timeout=timeout)
     sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM);sock.settimeout(timeout)
     try:

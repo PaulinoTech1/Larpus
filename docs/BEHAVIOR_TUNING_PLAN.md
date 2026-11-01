@@ -8,6 +8,8 @@ training examples, answer keys or verified proofs. Preserve the single-model des
 The [teacher–student pilot](TEACHER_STUDENT_PILOT.md) maps the owner-selected Codex
 teacher to separate mathematics/quantum topic lanes and reviewed feedback. Its
 balanced 156/36/48 family split supersedes the initial 160/40/40 proposal below.
+The later [Grok Bot teacher loop](GROK_TEACHER_TUNING_LOOP.md) changes the proposed
+teacher for the next experiment and defines its execution receipts and gates.
 
 ## Desired behavior
 

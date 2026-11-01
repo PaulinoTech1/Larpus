@@ -8,6 +8,7 @@ from pathlib import Path
 import random
 import re
 import sys
+import time
 import urllib.request
 import uuid
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -50,12 +51,15 @@ def write_json(path,value):
 
 
 def run_samples(opener,plan,directory,retain):
-    rows=[];review=[]
+    rows=[];review=[];previous=None
     with (directory/'observations.jsonl').open('w',encoding='utf-8') as observations:
         for phase,repeat,case in plan:
+            started=time.perf_counter()
+            gap=None if previous is None else round(started-previous,3)
             try:row,answer=probe(opener,case,retain)
             except KeyboardInterrupt:row,answer={'ok':False,'error':'interrupted','stage_ms':{},'first_text_seconds':None,'total_seconds':None},None
-            row.update(case=case['id'],phase=phase,repeat=repeat,sample_id=f"{phase}-{repeat}-{case['id']}")
+            previous=time.perf_counter()
+            row.update(case=case['id'],phase=phase,repeat=repeat,since_previous_seconds=gap,sample_id=f"{phase}-{repeat}-{case['id']}")
             rows.append(row);observations.write(json.dumps(row,allow_nan=False)+'\n');observations.flush()
             if answer is not None:retain_answer(directory,case,row,answer)
             if phase=='measured':review.append({'sample_id':row['sample_id'],'case':case['id'],'released':row['ok'],'reviewer':None,'scores':None,'evidence_notes':None})

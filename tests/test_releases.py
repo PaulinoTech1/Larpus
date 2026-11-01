@@ -10,6 +10,23 @@ spec=importlib.util.spec_from_file_location('releases',Path(__file__).resolve().
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
+    def test_driver_repin_requires_one_narrow_existing_package(self):
+        old={'gpu_driver':'/usr/lib/wsl/drivers/nv_dispi.inf_amd64_aaaaaaaaaaaaaaaa'}
+        new='/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b'
+        with patch.object(release,'wsl',return_value='') as check:
+            selected=release.select_gpu_driver(old,new)
+        check.assert_called_once_with('/usr/bin/test','-f',new+'/libcuda.so.1.1')
+        self.assertEqual(selected['gpu_driver'],new)
+        self.assertEqual(old['gpu_driver'],'/usr/lib/wsl/drivers/nv_dispi.inf_amd64_aaaaaaaaaaaaaaaa')
+        with patch.object(release,'wsl') as check:
+            for invalid in ('/usr/lib/wsl/drivers','/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b/../other'):
+                with self.assertRaisesRegex(ValueError,'narrow NVIDIA'):
+                    release.select_gpu_driver(old,invalid)
+            check.assert_not_called()
+        with patch.object(release,'wsl',side_effect=RuntimeError('missing')):
+            with self.assertRaisesRegex(RuntimeError,'missing'):
+                release.select_gpu_driver(old,new)
+
     def test_ui_checks_use_the_candidates_manifest(self):
         import contextlib,io
         with tempfile.TemporaryDirectory() as temporary:
@@ -235,11 +252,20 @@ class ReleaseTests(unittest.TestCase):
             (root/'runtime/one.py').write_text('unrelated owner edit')
             (source/'runtime/one.py').write_text('scoped candidate')
             junction=Mock()
-            with patch.object(release,'ROOT',root),patch.object(release,'STORE',store),patch.object(release,'DIRECTORIES',('runtime',)),patch.object(release,'FILES',()),patch.object(release,'run',return_value='a'*64),patch.dict('sys.modules',{'_winapi':SimpleNamespace(CreateJunction=junction)}):
+            with patch.object(release,'ROOT',root),patch.object(release,'STORE',store),patch.object(release,'DIRECTORIES',('runtime',)),patch.object(release,'FILES',()),patch.object(release,'run',return_value='a'*64),patch('scripts.knowledge_counts.reconcile'),patch.dict('sys.modules',{'_winapi':SimpleNamespace(CreateJunction=junction)}):
                 identifier=release.stage(source)
             self.assertEqual((store/identifier/'runtime/one.py').read_text(),'scoped candidate')
             self.assertEqual((root/'runtime/one.py').read_text(),'unrelated owner edit')
             self.assertEqual(junction.call_args_list[0].args,(str((root/'data').resolve()),str(store/identifier/'data')))
+
+    def test_staging_rejects_catalog_index_mismatch_before_copy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source=Path(directory)/'source';source.mkdir()
+            store=Path(directory)/'releases'
+            with patch.object(release,'STORE',store),patch('scripts.knowledge_counts.reconcile',side_effect=ValueError('catalog mismatch')):
+                with self.assertRaisesRegex(ValueError,'catalog mismatch'):
+                    release.stage(source)
+            self.assertFalse(store.exists())
 
     def test_readiness_uses_functional_station_health(self):
         import io

@@ -67,3 +67,4 @@ Prepared 2026-10-09. All configured personas can read these references; source r
 | [Official Grok Bot overview](https://x.ai/bot) | downloaded | 8 |
 | [Official Claude Pro plan](https://support.claude.com/en/articles/8325606-what-is-the-pro-plan) | downloaded | 6 |
 | [Official DeepSeek V4 Pro and Flash API pricing](https://api-docs.deepseek.com/quick_start/pricing/) | downloaded | 1 |
+| [Singh et al. (2024), systematic review of health habit formation](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC11641623/fullTextXML) | downloaded; CC BY 4.0 | 62 |

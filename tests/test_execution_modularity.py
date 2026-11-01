@@ -31,7 +31,7 @@ class ExecutionModularityTests(unittest.TestCase):
 
     def test_all_new_reachable_security_modules_are_scanned(self):
         source=Path('runtime/security_scan.py').read_text(encoding='utf-8')
-        for name in ('source_integrity.py','execution_profiles.py','execution_trace.py','execution_preflight.py','isolation_probe.py'):
+        for name in ('source_integrity.py','execution_profiles.py','execution_trace.py','execution_preflight.py','isolation_probe.py','rag_eval.py'):
             self.assertIn(repr(name),source)
 
     def test_consistent_optional_skill_removal_and_tamper(self):

@@ -9,10 +9,13 @@ class VerifiedTimingTests(unittest.TestCase):
     def test_child_import_timing_is_numeric_and_diagnostic_only(self):
         plain={'status':200,'content':'ok'}
         detailed={'status':200,'content':'ok'}
+        fast={'status':200,'content':'ok'}
         self.assertIs(mcp_server.startup_timing(plain,{'profile':'verified'}),plain)
-        self.assertNotIn('timing_ms',plain)
+        self.assertTrue(0<=plain['timing_ms']['mcp_child_import']<=90000)
         self.assertIs(mcp_server.startup_timing(detailed,{'profile':'diagnostic'}),detailed)
         self.assertTrue(0<=detailed['timing_ms']['mcp_child_import']<=90000)
+        self.assertIs(mcp_server.startup_timing(fast,{'profile':'ultra-fast'}),fast)
+        self.assertNotIn('timing_ms',fast)
 
     def test_retrieval_detail_wiring_keeps_evidence_unchanged(self):
         evidence=[{'id':'example','text':'approved passage'}]
@@ -54,8 +57,12 @@ class VerifiedTimingTests(unittest.TestCase):
         with patch.object(mcp_client,'child_parameters',side_effect=parameters),patch.object(mcp_client,'Client',FakeClient):
             diagnostic=asyncio.run(mcp_client.call_async('chat_local',execution={'profile':'diagnostic'}))
             default=asyncio.run(mcp_client.call_async('chat_local'))
+            fast=asyncio.run(mcp_client.call_async('chat_local',execution={'profile':'ultra-fast'}))
         self.assertEqual(diagnostic['timing_ms']['preflight_initial_reads'],12.)
-        self.assertNotIn('preflight_initial_reads',default['timing_ms'])
+        self.assertEqual(default['timing_ms']['preflight_initial_reads'],12.)
+        self.assertIn('mcp_parent_stages_ms',default)
+        self.assertNotIn('preflight_initial_reads',fast['timing_ms'])
+        self.assertNotIn('mcp_parent_stages_ms',fast)
 
 
 if __name__=='__main__':unittest.main()

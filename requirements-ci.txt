@@ -1,4 +1,5 @@
 # Public checkout tests only; no model, speech or scanner installation.
 -r requirements.txt
 -r requirements-knowledge.txt
+-r requirements-backup.txt
 numpy==2.2.6

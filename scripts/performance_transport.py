@@ -4,16 +4,21 @@ import re
 import time
 import urllib.error
 import urllib.request
-from scripts.performance_metrics import STAGES,numeric
+from scripts import performance_metrics as metrics
+from scripts.performance_metrics import numeric
 
 MAX_LINE=400000
 
 
 def completed(event,state):
     timing=event.get('timing_ms',{})
-    state['stage_ms']={k:v for k,v in timing.items() if k in STAGES and numeric(v)}
+    state['stage_ms']={k:v for k,v in timing.items() if k in metrics.STAGES+metrics.DETAIL_STAGES and numeric(v)}
     state['sources_count']=len(event.get('sources',[]))
     state['unknown_citations']=len(event.get('citation_check',{}).get('unknown',[]))
+    if state.get('quarantined') and state['characters']==0:
+        state['ok']=False
+        state['error']='quarantined'
+        return
     state['ok']=state['characters']>0
     if not state['ok']:state['error']='empty_answer'
 
@@ -26,6 +31,12 @@ def stream(response,state,started,retain):
         if len(line)>MAX_LINE:raise ValueError('Oversized event')
         if time.perf_counter()-started>180:raise TimeoutError('Probe deadline')
         event=json.loads(line);kind=event['type']
+        if kind=='quarantine':
+            incidents=event.get('incidents')
+            if state.get('quarantined') or not isinstance(incidents,list):
+                raise ValueError('Invalid quarantine event')
+            state['quarantined']=True
+            continue
         if kind=='error':
             state['error']='stream_rejected'
             if re.fullmatch('[a-f0-9]{16}',str(event.get('error_id',''))):state['error_id']=event['error_id']
