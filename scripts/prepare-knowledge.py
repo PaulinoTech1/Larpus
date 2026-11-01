@@ -8,11 +8,13 @@ from pathlib import Path
 import re
 import sqlite3
 import sys
+import unicodedata
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from runtime.text_filter import inspect_message,TextHeld
+from runtime.reference_review import inspect_reference
 
 ROOT=Path(__file__).resolve().parents[1]
 KNOWLEDGE=ROOT/'knowledge'
@@ -131,7 +133,7 @@ def extracted_pdf(raw):
         # Respect extraction restrictions; never guess a key.
         if not reader.decrypt('') or not reader.user_access_permissions & UserAccessPermissions.EXTRACT:
             raise ValueError('PDF password/extraction permission prevents indexing')
-    if len(reader.pages)>700:raise ValueError('PDF exceeds page limit')
+    if len(reader.pages)>1000:raise ValueError('PDF exceeds page limit')
     total=0
     for number,page in enumerate(reader.pages,1):
         text=page.extract_text() or '';total+=len(text)
@@ -160,6 +162,10 @@ def extracted(raw,mime):
         yield from extracted_pdf(raw)
     elif mime=='application/xml':
         yield from extracted_jats(raw)
+    elif mime=='text/x-larpus-ocr-pages':
+        # Owner-reviewed offline OCR sidecar of an image-only PDF: '[page N]' headers, raw engine text.
+        pages=re.split(r'(?m)^\[page \d+\]\r?\n',raw.decode('utf-8',errors='strict'))
+        for number,text in enumerate(pages[1:],1):yield 'ocr page '+str(number),text
     else:
         text=raw.decode('utf-8',errors='strict')
         if mime=='text/html':
@@ -180,6 +186,20 @@ def passages(text):
         overlap=max(offset+1,end-120)
         boundary=text.find(' ',overlap,end)
         offset=boundary+1 if boundary>=0 else overlap
+
+PDF_CONTROL_NORMALIZATION='pdf-control-format-to-fffd-v1'
+
+def normalized_pdf_text(text):
+    # Owner-approved per source (catalog text_normalization): PDF font-encoding debris, i.e. C0/C1
+    # controls and invisible format characters, becomes U+FFFD one for one. Offsets and every passage
+    # without such characters stay byte-identical; tab, newline, carriage return and form feed are kept.
+    # The ordinary screen still runs on the result.
+    return ''.join('\ufffd' if (unicodedata.category(c)=='Cc' and c not in '\t\n\r\f') or unicodedata.category(c)=='Cf' else c for c in text)
+
+def carried_rejections(previous,reused):
+    # Reuse mode re-parses every non-reused source and records its rejections again, so earlier rows
+    # are kept only for reused sources; a reused source has indexed text, so its old parse failures are stale.
+    return [r for r in previous if r.get('source_id') in reused and r.get('reason')!='parse_failed']
 
 OWNER_REFERENCE='owner-reviewed-local-reference'
 
@@ -216,13 +236,16 @@ def build(fetch_docs,reuse_research=False):
         from contextlib import closing
         previous=json.loads((KNOWLEDGE/'manifest.json').read_text())
         rejected=json.loads((CACHE/'rejected-passages.json').read_text())
-        research_ids={e['id']:e['sha256'] for e in json.loads((ROOT/'research/catalog.json').read_text())['entries']}
-        reused={e['id'] for e in previous['sources'] if research_ids.get(e['id'])==e['sha256']}
+        research_entries=json.loads((ROOT/'research/catalog.json').read_text())['entries']
+        research_ids={e['id']:e['sha256'] for e in research_entries}
+        renormalized={e['id'] for e in research_entries if e.get('text_normalization')}  # always parsed again
+        reused={e['id'] for e in previous['sources'] if research_ids.get(e['id'])==e['sha256'] and e['id'] not in renormalized}
         with closing(database()) as old:
             records=[row for row in old.execute('SELECT source_id,title,url,snapshot,locator,text,role FROM chunks') if row[0] in reused]
         reusable={r[0] for r in records if r[4]!='metadata only'}
         reused &= reusable
         records=[r for r in records if r[0] in reused]
+        rejected=carried_rejections(rejected,reused)
     documents=load_documents(catalog,fetch_docs)
     # Existing PDF bytes must match the reviewed archive catalog before parsing.
     research=json.loads((ROOT/'research/catalog.json').read_text(encoding='utf-8'))
@@ -234,8 +257,16 @@ def build(fetch_docs,reuse_research=False):
         path=ROOT/'data/research'/source['role']/source['level']/(source['id']+'.'+fmt)
         raw=path.read_bytes()
         if hashlib.sha256(raw).hexdigest()!=source['sha256']:raise ValueError('Research PDF checksum mismatch: '+source['id'])
+        if source.get('ocr_sha256'):
+            # Image-only PDF with an owner-approved offline OCR sidecar pinned in the catalog (no OCR runs here).
+            ocr=path.with_name(source['id']+'.ocr.txt').read_bytes()
+            if hashlib.sha256(ocr).hexdigest()!=source['ocr_sha256']:raise ValueError('OCR sidecar checksum mismatch: '+source['id'])
+            raw,fmt=ocr,'ocr'
         entry={'id':source['id'],'title':source['title'],'url':source['source_url'],'roles':[source['role']],'snapshot':source.get('fetched_at','')[:10],'publication':source['year'],'sha256':source['sha256'],'topics':source.get('topics',[])}
-        documents.append((entry,raw,{'html':'text/html','txt':'text/plain'}.get(fmt,'application/pdf')))
+        if source.get('text_normalization'):
+            if source['text_normalization']!=PDF_CONTROL_NORMALIZATION or fmt!='pdf':raise ValueError('Unknown text normalization: '+source['id'])
+            entry['text_normalization']=source['text_normalization']
+        documents.append((entry,raw,{'html':'text/html','txt':'text/plain','ocr':'text/x-larpus-ocr-pages'}.get(fmt,'application/pdf')))
     for entry,raw,mime in documents:
         count=0
         try:
@@ -246,9 +277,11 @@ def build(fetch_docs,reuse_research=False):
                 for role in entry['roles']:records.append((entry['id'],entry['title'],entry['url'],entry['snapshot'],'metadata only',metadata,role))
                 continue
             for locator,text in extracted(raw,mime):
+                if entry.get('text_normalization'):text=normalized_pdf_text(text)
                 for offset,part in passages(text):
                     if len(part)<60:continue
-                    try:inspect_message(part)
+                    # Ordinary screen; exact owner-reviewed passages in config/reference-reviews.json only.
+                    try:inspect_reference(part,entry['id'])
                     except TextHeld as exc:
                         rejected.append({'source_id':entry['id'],'locator':locator,'offset':offset,'reason':exc.reason})
                         continue
