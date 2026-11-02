@@ -9,6 +9,15 @@ def controller():
  with _LOCK:
   if _CONTROLLER is None:_CONTROLLER=ModelSwitch()
   return _CONTROLLER
+def served_tag(control=None):
+ """Tag the broker serves for every persona, or None when unknown or switching."""
+ try:
+  c=control or controller()
+  with c.lock:
+   c.refresh();state=dict(c.state)
+  if model_selection.is_switching(state):return None
+  return model_selection.model(state['active_id'])['tag']
+ except (OSError,ValueError,KeyError,TypeError,RuntimeError):return None
 def status(handler,control=None):
  try:return handler.reply(200,(control or controller()).status())
  except (OSError,ValueError,RuntimeError):return handler.reply(503,{'error':'Local model controls are unavailable; chat selection is unchanged.'})
