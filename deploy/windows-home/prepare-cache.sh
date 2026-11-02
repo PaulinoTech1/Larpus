@@ -21,7 +21,9 @@ podman run --detach --name larpus-prepare --cap-drop=ALL --security-opt=no-new-p
 # No ports published; this temporary server receives only public model downloads.
 trap 'podman stop larpus-prepare >/dev/null 2>&1 || true' EXIT
 sleep 3
-mapfile -t tags < <(python3 -c "import json,pathlib;print('\n'.join(sorted({json.loads(p.read_text())['model'] for p in pathlib.Path('agents/personas').glob('*.json')})))")
+# Public registry tags only. larpus3.8:27b-q4 is imported from its pinned GGUF by
+# `python scripts/model-switch.py prepare-cache`, not pulled.
+mapfile -t tags < <(python3 -c "import json,pathlib;tags={json.loads(p.read_text())['model'] for p in pathlib.Path('agents/personas').glob('*.json')}|{m['tag'] for m in json.loads(pathlib.Path('config/model-selection.json').read_text())['models'].values()};print('\n'.join(sorted(t for t in tags if not t.startswith('larpus'))))")
 for tag in "${tags[@]}"; do podman exec larpus-prepare /bin/ollama pull "$tag"; done
 podman exec larpus-prepare /bin/ollama list
 podman stop larpus-prepare

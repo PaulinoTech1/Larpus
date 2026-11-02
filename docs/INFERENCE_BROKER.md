@@ -27,7 +27,8 @@ or credentials are supplied by clients. Bodies are at most 524288 bytes and
 responses at most 2 MB. Streaming caps frames and line sizes, and requires a done
 frame. Duplicate keys, nonfinite numbers and ambiguous request framing are held.
 
-The policy fixes qwen3.5:27b-q4_K_M, 131072 context, GPU99, think=false and
+The policy fixes larpus3.8:27b-q4 as the base model (model selection may route to
+the other catalog entry, qwen3.5:27b-q4_K_M), 131072 context, GPU99, think=false and
 keep_alive=-1. Temperature is finite 0..1. Output is 1..6000 tokens so existing
 nightly facts generation remains supported; ordinary chat still requests1024.
 Messages are text-only system/user/assistant, at most405 messages and64000 UTF8

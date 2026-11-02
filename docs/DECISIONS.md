@@ -1563,3 +1563,25 @@ Owner request (2026-11-01 4:53 PM ET), verbatim: "make documentation and update 
   - no vendored KaTeX.
 - **PC checkout.** Its git state was not changed: nothing was committed, stashed, reset or checked out on the PC. A stale empty `.git/index.lock` was removed shortly after 4:54 PM ET. It had been left by my own interrupted `git status --ignored`.
 - The live release b788d9fd is unchanged.
+
+## 2026-11-02 6:30 PM ET - Persona list shows the served model; Qwen3.8 becomes the default (PR, not merged or deployed)
+
+- **Problem.** The web persona list and MCP `list_personas` showed `qwen3.5:27b-q4_K_M` for every persona, which suggested 3.5 was serving chats. That value was the persona files' fallback model. Chats are actually served by the selected `larpus3.8:27b-q4` (catalog id `larpus-3.8`), as decided on 2026-10-22 and 2026-10-25. A live smoke after the latest restart (5:40 PM ET) confirmed this: `ollama ps` showed only `larpus3.8:27b-q4`, 100% GPU, context 131072.
+- **Label fix.** `/api/personas` and `list_personas` now report the model that serves chats (`model`). The response also includes the file value (`declared_model`) and the source (`model_source`: `active-selection` or `persona-default`). During a switch, or when the selection can't be read, the list falls back to the file value.
+- **Defaults aligned to 3.8.** A lost or reset selection could otherwise silently serve 3.5, so the defaults now match the decided model:
+  - the broker policy (`config/inference-broker.json` and the reviewed value in `runtime/inference_broker.py`);
+  - all twelve `agents/personas/*.json`. They must match the policy because, with selection disabled, the broker accepts only the policy model;
+  - the initial/fallback selection in `runtime/model_selection.initial()`, which `releases.py prepare` uses when there is no previous selection;
+  - `config/models.json`: `recommended`, a new `larpus3.8:27b-q4` candidate, and display names. `qwen3.5:27b-q4_K_M` stays a listed, selectable, non-recommended option (`larpus-3.5`).
+- **Also updated:** `scripts/verify-broker-live.py` and `deploy/windows-home/prepare-cache.sh`, which still pulls only public tags because 3.8 is imported locally through `scripts/model-switch.py prepare-cache`, plus the current-state docs.
+- **Served settings unchanged:** think=false, temperature 0.4, num_ctx 131072, num_predict 1024.
+- **Evals checked.** The Oct 30 latency run (`latency-20261030-0743`) and the Nov 1 quality run (`quality-20261101-0709`) were verified as served by `larpus3.8:27b-q4`. Their reports stay valid and were not changed.
+- **Not changed:**
+  - historical decisions, eval and verification records;
+  - the 3.5 install and pull instructions, which are still valid for the 3.5 option;
+  - `scripts/model-switch.py qualify`, which deliberately restores 3.5 after qualifying;
+  - the approved-tag allowlists, which already contain both tags.
+- **Deployment.** Nothing on the PC changes until a new release is built:
+  1. merge PR #6, then PR #7, then this PR;
+  2. run `python scripts\releases.py stage`, then `prepare`, then `activate`.
+  LAN users must log in again after activation. The active selection (`larpus-3.8`) is carried over by `prepare`.

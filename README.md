@@ -58,7 +58,7 @@ runtime.
 | --- | --- |
 | Host | Windows 11 Home; Ryzen 9 5900X, 64 GB RAM, RTX 3090 Ti with 24 GB VRAM |
 | Isolation | Dedicated WSL2 distro, rootless Podman; separate offline agent and model namespaces connected through a private inference broker; separate offline CPU voice container |
-| Model | `qwen3.5:27b-q4_K_M`, GPU inference, non-thinking replies |
+| Model | `larpus3.8:27b-q4` (Qwen3.8 27B UD-Q4_K_M), GPU inference, non-thinking replies; `qwen3.5:27b-q4_K_M` stays selectable |
 | Context | **131,072 tokens configured**; 1,024-token normal reply ceiling. The requested 262,144-token target is not the active setting. |
 | Personas and skills | 12 personas; 69 locally authored, hash-checked prompt skills |
 | Approved library | 404 documents / 76,660 indexed passages (Oct 11; 509 / 90,270 since release `b788d9fd`); all personas can retrieve across roles |

@@ -1,6 +1,10 @@
 # GPU model deployment
 
-Selected: **qwen3.5:27b-q4_K_M**, the explicit 27B Q4_K_M Ollama tag, for all
+Current default (2026-11-02): **larpus3.8:27b-q4** (Qwen3.8 27B UD-Q4_K_M) for all
+twelve personas, chosen through model selection; qwen3.5:27b-q4_K_M stays
+selectable as larpus-3.5. See docs/DECISIONS.md and docs/MODEL_SWITCHING.md.
+
+Original deployment: **qwen3.5:27b-q4_K_M**, the explicit 27B Q4_K_M Ollama tag, for all
 twelve personas. The previous qwen2.5:14b remains cached for deliberate rollback.
 Ollama 0.40.0 is pinned in the existing model container. The owner's RTX 3090 Ti
 has 24,564 MiB VRAM. Voice remains on CPU: Faster Whisper uses device=cpu and

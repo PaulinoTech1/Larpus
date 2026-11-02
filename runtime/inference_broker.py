@@ -30,7 +30,7 @@ def policy():
     value=json.loads((ROOT/'config/inference-broker.json').read_text(encoding='utf-8'))
     if set(value)-{'selection_enabled'}!={'version','enabled','model','context','max_output'} or value['version']!=2 or value['enabled'] is not True:
         raise ValueError('Invalid broker policy')
-    if value['model']!='qwen3.5:27b-q4_K_M' or value['context']!=131072 or value['max_output']!=6000:
+    if value['model']!='larpus3.8:27b-q4' or value['context']!=131072 or value['max_output']!=6000:
         raise ValueError('Unreviewed broker policy')
     return value
 

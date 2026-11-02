@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
-from runtime.agents import ROOT, CatalogRejected, load_personas, prepare_conversation, persona_rejections, require_persona, skill_rejections, summaries
+from runtime.agents import ROOT, CatalogRejected, load_personas, prepare_conversation, persona_rejections, public_personas, require_persona, skill_rejections, summaries
 from runtime.auth import Auth, PASSWORD_FILE, FAILURE
 from runtime.text_filter import TextHeld
 from runtime.execution_profiles import resolve, to_wire
@@ -114,7 +114,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/api/personas':
             try:current=load_personas();listed=summaries()
             except CatalogRejected as exc:body=catalog_failure(exc);return self.reply(body.pop('status'),body)
-            return self.reply(200, {'personas': [{k:p.get(k,[]) for k in ('id','name','description','model','skills')} for p in current.values()],'skills':listed,'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}})
+            from runtime.model_routes import served_tag
+            return self.reply(200, {'personas': public_personas(current,served_tag()),'skills':listed,'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}})
         if path == '/api/health':
             try:
                 self.reply(200, mcp_health())

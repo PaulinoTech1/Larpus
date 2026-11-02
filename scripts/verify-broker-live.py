@@ -134,7 +134,7 @@ def verify(args):
     tree=ast.parse((root/'scripts/study-notes.py').read_text())
     for node in tree.body:
         if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='FACT_PROMPT' for t in node.targets):prompts['facts']=ast.literal_eval(node.value)
-    job={'model':'qwen3.5:27b-q4_K_M','messages':[{'role':'system','content':prompts['facts']},{'role':'user','content':'DOCUMENT (synthetic fixture):\n'+DOCUMENT}],'num_predict':6000}
+    job={'model':'larpus3.8:27b-q4','messages':[{'role':'system','content':prompts['facts']},{'role':'user','content':'DOCUMENT (synthetic fixture):\n'+DOCUMENT}],'num_predict':6000}
     jobfile=ROOT/'data/broker-live-job.json';jobfile.write_text(json.dumps(job)+'\n',encoding='utf8')
     agent=profile['agent_name'];notes=profile['notes']['container']
     def agent_call(path):return json.loads(release.podman('exec',agent,'python','-c',CLIENT,path,timeout=45))

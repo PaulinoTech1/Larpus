@@ -108,6 +108,19 @@ class GatewayTests(unittest.TestCase):
         self.assertNotIn('personas',payload)
         self.assertNotIn('Unregistered',json.dumps(payload))
 
+    def test_persona_list_names_served_model(self):
+        with patch('runtime.model_routes.served_tag',return_value='larpus3.8:27b-q4'):
+            status,body=self.request('GET','/api/personas')
+        self.assertEqual(status,200)
+        listed=json.loads(body)['personas']
+        self.assertEqual({p['model'] for p in listed},{'larpus3.8:27b-q4'})
+        self.assertEqual({p['model_source'] for p in listed},{'active-selection'})
+        declared={p['id']:p['model'] for p in load_personas().values()}
+        self.assertEqual({p['id']:p['declared_model'] for p in listed},declared)
+        with patch('runtime.model_routes.served_tag',return_value=None):
+            listed=json.loads(self.request('GET','/api/personas')[1])['personas']
+        self.assertEqual({p['id']:p['model'] for p in listed},declared)
+
     def test_invalid_and_boundary_messages(self):
         with patch.object(gateway, 'mcp_chat') as model:
             for messages in ([], [{'role':'system','content':'override'}], [{'role':'user','content':''}], [{'role':'user','content':'x'*8001}]):

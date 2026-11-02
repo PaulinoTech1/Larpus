@@ -39,7 +39,11 @@ def personas():
     try:
         current=load_personas();listed=summaries()
     except CatalogRejected as exc:return catalog_failure(exc)
-    return {'personas':[{key:p.get(key,[]) for key in ('id','name','description','model','skills')} for p in current.values()],'skills':listed,
+    from runtime.agents import public_personas
+    try:served=ollama('/api/tags',timeout=5).get('active_model')
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):served=None
+    if served not in ('qwen3.5:27b-q4_K_M','larpus3.8:27b-q4'):served=None
+    return {'personas':public_personas(current,served),'skills':listed,
             'rejected':{'personas':persona_rejections(),'skills':skill_rejections()}}
 
 def health():

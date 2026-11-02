@@ -15,7 +15,7 @@ def model(identifier):
  if not isinstance(identifier,str) or identifier not in catalog():raise ValueError('Unknown local model')
  return catalog()[identifier]
 def initial():
- return {'version':1,'active_id':'larpus-3.5','target_id':None,'phase':'ready','operation_id':None,'error':None}
+ return {'version':1,'active_id':'larpus-3.8','target_id':None,'phase':'ready','operation_id':None,'error':None}
 def validate(value):
  if not isinstance(value,dict) or set(value)!=set(initial()) or value['version']!=1 or value['phase'] not in PHASES:raise ValueError('Invalid selection state')
  model(value['active_id'])

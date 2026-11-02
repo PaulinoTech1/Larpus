@@ -3,7 +3,9 @@ from pathlib import Path
 from runtime.model_switch import ModelSwitch
 from runtime import model_selection as ms
 class Backend:
- def __init__(self):self.state=ms.initial();self.events=[];self.busy=False;self.fail=set();self.inflight=0
+ def __init__(self):
+  # Scenarios switch from the previous option (3.5) to the default (3.8).
+  self.state=dict(ms.initial(),active_id='larpus-3.5');self.events=[];self.busy=False;self.fail=set();self.inflight=0
  def read(self):return dict(self.state)
  def publish(self,s):self.state=dict(s);self.events.append(s['phase'])
  def exclusive(self):return contextlib.nullcontext()

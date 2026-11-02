@@ -84,6 +84,17 @@ def load_personas():
     _REJECTED_PERSONAS.clear();_REJECTED_PERSONAS.update(rejected)
     return personas
 
+def public_personas(current,served=None):
+    """Persona summaries naming the model that actually answers.
+
+    With broker model selection on, every chat is sent to the selected tag and
+    the persona file's model is only the selection-off default. Report the
+    served tag when it is known, keep the file value as declared_model, and say
+    which one `model` holds."""
+    return [{**{k:p.get(k,[]) for k in ('id','name','description','model','skills')},
+             'model':served or p['model'],'declared_model':p['model'],
+             'model_source':'active-selection' if served else 'persona-default'} for p in current.values()]
+
 def persona_known(identifier):
     """True when a fresh load accepts the persona. A catalog-document failure still raises."""
     return identifier in load_personas()
