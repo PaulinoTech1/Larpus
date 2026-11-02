@@ -83,7 +83,7 @@ class ReleaseTests(unittest.TestCase):
         class Backend:
             def __init__(self):
                 self.state=model_selection.initial();self.calls=0
-                self.model={'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':10,'context_length':131072}
+                self.model={'name':'larpus3.8:27b-q4','size':10,'size_vram':10,'context_length':131072}
             def read(self):return self.state
             def call(self,path,timeout=300,process_timeout=None):
                 self.calls+=1
@@ -101,7 +101,7 @@ class ReleaseTests(unittest.TestCase):
         class Backend:
             def __init__(self):
                 self.state=model_selection.initial();self.verifications=0
-                self.model={'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':10,'context_length':131072}
+                self.model={'name':'larpus3.8:27b-q4','size':10,'size_vram':10,'context_length':131072}
             def read(self):return self.state
             def call(self,path,timeout=300,process_timeout=None):return {'models':[self.model]}
             def verify(self,identifier):
@@ -133,8 +133,8 @@ class ReleaseTests(unittest.TestCase):
             def load(self,identifier):self.loads.append(identifier)
             def notes_busy(self):return False
         for model in (
-            {'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':9,'context_length':131072},
-            {'name':'qwen3.5:27b-q4_K_M','size':10,'size_vram':10,'context_length':65536},
+            {'name':'larpus3.8:27b-q4','size':10,'size_vram':9,'context_length':131072},
+            {'name':'larpus3.8:27b-q4','size':10,'size_vram':10,'context_length':65536},
         ):
             backend=Backend(model)
             with self.assertRaisesRegex(ValueError,'GPU/context'):

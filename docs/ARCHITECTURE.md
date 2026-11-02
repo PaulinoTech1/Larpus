@@ -108,7 +108,7 @@ not carry the Podman isolation claims.
 See [exact mounts/rebuild](WINDOWS-HOME-ISOLATION.md), [HTTPS](HTTPS.md),
 [decisions](DECISIONS.md) and [verification](VERIFICATION.md).
 
-The selected inference model is qwen3.5:27b-q4_K_M at 131072 context, with
+The selected inference model is larpus3.8:27b-q4 at 131072 context, with
 non-thinking replies and verified full GPU residency before release. /api/ps is
 an additional fixed loopback-only status route, not a model-accessible tool. Voice
 remains CPU-only in its separate worker. See [model deployment](MODELS.md).

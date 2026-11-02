@@ -1,11 +1,17 @@
 {
   "version": 1,
-  "recommended": "qwen3.5:27b-q4_K_M",
+  "recommended": "larpus3.8:27b-q4",
   "candidates": [
+    {
+      "tag": "larpus3.8:27b-q4",
+      "weight_gb": 16.5,
+      "purpose": "Selected dense model for GPU persona inference (Qwen3.8 27B UD-Q4_K_M); voice remains CPU-only",
+      "quantization": "UD-Q4_K_M"
+    },
     {
       "tag": "qwen3.5:27b-q4_K_M",
       "weight_gb": 17.4,
-      "purpose": "Selected dense model for GPU persona inference; voice remains CPU-only",
+      "purpose": "Previous default; still selectable through model selection (larpus-3.5)",
       "quantization": "Q4_K_M"
     },
     {
@@ -32,7 +38,8 @@
   "benchmark_status": "SEE_LOCAL_RECEIPT",
   "display_names": {
     "qwen3.5:27b-q4_K_M": "Larpus 3.5 27B Q4",
-    "qwen3.8:27b-q4_K_M": "Larpus 3.8 27B Q4"
+    "qwen3.8:27b-q4_K_M": "Larpus 3.8 27B Q4",
+    "larpus3.8:27b-q4": "Larpus 3.8 27B Q4"
   },
   "downloaded_candidates": [
     {
@@ -40,7 +47,7 @@
       "upstream": "Qwen/Qwen3.8-27B",
       "quantizer": "unsloth/Qwen3.8-27B-GGUF",
       "quantization": "UD-Q4_K_M",
-      "activation": "not-selected; runtime compatibility and GPU evaluation required",
+      "activation": "selected; served as larpus3.8:27b-q4 through model selection (owner decisions 2026-10-22 and 2026-10-25)",
       "sha256": "322e194ff79741c7baa497c240f677f54b201b0efab44ca8e50f122b39123482"
     }
   ]

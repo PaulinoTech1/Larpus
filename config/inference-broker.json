@@ -1,7 +1,7 @@
 {
   "version": 2,
   "enabled": true,
-  "model": "qwen3.5:27b-q4_K_M",
+  "model": "larpus3.8:27b-q4",
   "context": 131072,
   "max_output": 6000,
   "selection_enabled": true

@@ -10,8 +10,8 @@ class SelectionTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    p=Path(d)/'state.json'
    with self.assertRaises((OSError,ValueError)):ms.read_selection(p)
-   s=ms.initial();p.write_text(json.dumps(s));self.assertEqual(ms.read_selection(p)['active_id'],'larpus-3.5')
-   s['phase']='loading';s['target_id']='larpus-3.8';p.write_text(json.dumps(s));self.assertTrue(ms.is_switching(ms.read_selection(p)))
+   s=ms.initial();p.write_text(json.dumps(s));self.assertEqual(ms.read_selection(p)['active_id'],'larpus-3.8')
+   s['phase']='loading';s['target_id']='larpus-3.5';p.write_text(json.dumps(s));self.assertTrue(ms.is_switching(ms.read_selection(p)))
    s['active_id']='unknown';p.write_text(json.dumps(s))
    with self.assertRaises(ValueError):ms.read_selection(p)
  def test_only_active_tag_can_generate(self):

@@ -21,7 +21,7 @@ class InferenceTests(unittest.TestCase):
             self.assertEqual(result['status'],200)
             path,payload=upstream.call_args.args
             self.assertEqual(path,'/api/chat')
-            self.assertEqual(payload['model'],'qwen3.5:27b-q4_K_M')
+            self.assertEqual(payload['model'],'larpus3.8:27b-q4')
             self.assertEqual(payload['messages'][0]['role'],'system')
             self.assertFalse(payload['stream'])
             self.assertFalse(payload['think'])
@@ -99,7 +99,7 @@ class StdioTests(unittest.TestCase):
             def log_message(self,*args):
                 pass
             def do_GET(self):
-                body=json.dumps({'models':[{'name':'qwen3.5:27b-q4_K_M','size':100,'size_vram':100}]}).encode()
+                body=json.dumps({'models':[{'name':'larpus3.8:27b-q4','size':100,'size_vram':100}]}).encode()
                 self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
             def do_POST(self):
                 captured.append((self.path,json.loads(self.rfile.read(int(self.headers['Content-Length'])))))
