@@ -236,7 +236,7 @@ def prepare_selection(dest,profile,identifier):
 
 def check_ui(root):
     tests=json.loads(run(root,sys.executable,'-c','import json;from scripts.ui_checks import TESTS;print(json.dumps(TESTS))'))
-    for test in tests:print(run(root,'node.exe','tests/'+test),flush=True)
+    for test in tests:print(run(root,'node.exe' if os.name=='nt' else 'node','tests/'+test),flush=True)
 
 
 def verify_pipeline(profile):
@@ -363,7 +363,7 @@ def launch(identifier,settings):
     (root/'release-state/drain').unlink(missing_ok=True)
     env=os.environ.copy();env.update(LARPUS_HOST=settings['host'],LARPUS_LAN_CIDR=settings['subnet'],LARPUS_PORT=str(settings['port']),LARPUS_ISOLATION='wsl-podman',LARPUS_STARTUP_GATE=str(gate),PYTHONUTF8='1',PYTHONDONTWRITEBYTECODE='1')
     code='import sys,runpy;sys.path.insert(0,'+repr(str(root))+');runpy.run_module("runtime.gateway",run_name="__main__")'
-    with (STORE/(identifier+'.gateway.log')).open('ab') as log:child=subprocess.Popen([sys.executable,'-c',code],cwd=root,env=env,stdout=log,stderr=log,creationflags=subprocess.CREATE_NO_WINDOW)
+    with (STORE/(identifier+'.gateway.log')).open('ab') as log:child=subprocess.Popen([sys.executable,'-c',code],cwd=root,env=env,stdout=log,stderr=log,creationflags=(subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0))
     try:found=process(child.pid)
     except (OSError,ValueError,subprocess.SubprocessError):
         try:_drop_unrecorded(child)

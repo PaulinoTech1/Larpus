@@ -1585,3 +1585,13 @@ Owner request (2026-11-01 4:53 PM ET), verbatim: "make documentation and update 
   1. merge PR #6, then PR #7, then this PR;
   2. run `python scripts\releases.py stage`, then `prepare`, then `activate`.
   LAN users must log in again after activation. The active selection (`larpus-3.8`) is carried over by `prepare`.
+
+## 2026-11-05 10:45 PM ET - Linux release helpers and knowledge-ingest complexity for CI (PR, not merged)
+
+- **Ubuntu CI was red on `main` and #6.** `scripts/releases.py` hardcoded Windows-only APIs: `check_ui` always ran `node.exe`, and `launch` always passed `subprocess.CREATE_NO_WINDOW`. Those paths fail on Linux runners (`FileNotFoundError: node.exe`, `AttributeError: CREATE_NO_WINDOW`) while Windows CI stayed green. The failing tests were `test_ui_checks_use_the_candidates_manifest` and `test_unrecorded_child_is_closed_on_its_process_handle`. Open PR #5 already patches the Node name; it does not cover `CREATE_NO_WINDOW`.
+- **#7 and #8 also failed the complexity gate on both OSes.** After the Oct 29–31 ingest growth (`prepare-knowledge.py` OCR sidecars, 1000-page limit, PDF control normalization, review screen), `scripts/verify.py` → `complexity.py check` reported `build` over limit (decisions 53>51, lines 95>94) and module fan_out 5>4. Limits were not raised.
+- **Fixes (this PR, stacked on #8):**
+  - `check_ui` and `launch` are platform-aware (`node` / no creation flags on non-Windows). Windows behavior is unchanged.
+  - Knowledge ingest `build()` was split: research reuse and archive loading moved to `scripts/prepare_knowledge_research.py` (drops owned fan_out to 4); indexing and sqlite/manifest writers are smaller helpers in `prepare-knowledge.py`. Ingest behavior is preserved; complexity baseline limits were not raised.
+- **Not changed:** release sealing, activation, Ollama, PC tree, historical DECISIONS, or baseline allowances.
+- **Deployment:** nothing on the station changes until the stack (#6 → #7 → #8 → this) is merged and a new release is built later.

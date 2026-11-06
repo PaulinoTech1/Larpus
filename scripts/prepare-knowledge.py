@@ -15,6 +15,12 @@ import xml.etree.ElementTree as ET
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from runtime.text_filter import inspect_message,TextHeld
 from runtime.reference_review import inspect_reference
+from scripts.prepare_knowledge_research import (
+    PDF_CONTROL_NORMALIZATION,
+    carried_rejections,
+    research_documents,
+    reused_index,
+)
 
 ROOT=Path(__file__).resolve().parents[1]
 KNOWLEDGE=ROOT/'knowledge'
@@ -187,19 +193,12 @@ def passages(text):
         boundary=text.find(' ',overlap,end)
         offset=boundary+1 if boundary>=0 else overlap
 
-PDF_CONTROL_NORMALIZATION='pdf-control-format-to-fffd-v1'
-
 def normalized_pdf_text(text):
     # Owner-approved per source (catalog text_normalization): PDF font-encoding debris, i.e. C0/C1
     # controls and invisible format characters, becomes U+FFFD one for one. Offsets and every passage
     # without such characters stay byte-identical; tab, newline, carriage return and form feed are kept.
     # The ordinary screen still runs on the result.
     return ''.join('\ufffd' if (unicodedata.category(c)=='Cc' and c not in '\t\n\r\f') or unicodedata.category(c)=='Cf' else c for c in text)
-
-def carried_rejections(previous,reused):
-    # Reuse mode re-parses every non-reused source and records its rejections again, so earlier rows
-    # are kept only for reused sources; a reused source has indexed text, so its old parse failures are stale.
-    return [r for r in previous if r.get('source_id') in reused and r.get('reason')!='parse_failed']
 
 OWNER_REFERENCE='owner-reviewed-local-reference'
 
@@ -227,85 +226,69 @@ def load_documents(catalog,fetch_docs):
         print(entry['id']+': '+entry['status'],flush=True)
     return documents
 
-def build(fetch_docs,reuse_research=False):
-    catalog=json.loads((KNOWLEDGE/'sources.json').read_text(encoding='utf-8'))
-    records=[];rejected=[]
-    reused=set()
-    if reuse_research:
-        from runtime.knowledge import database
-        from contextlib import closing
-        previous=json.loads((KNOWLEDGE/'manifest.json').read_text())
-        rejected=json.loads((CACHE/'rejected-passages.json').read_text())
-        research_entries=json.loads((ROOT/'research/catalog.json').read_text())['entries']
-        research_ids={e['id']:e['sha256'] for e in research_entries}
-        renormalized={e['id'] for e in research_entries if e.get('text_normalization')}  # always parsed again
-        reused={e['id'] for e in previous['sources'] if research_ids.get(e['id'])==e['sha256'] and e['id'] not in renormalized}
-        with closing(database()) as old:
-            records=[row for row in old.execute('SELECT source_id,title,url,snapshot,locator,text,role FROM chunks') if row[0] in reused]
-        reusable={r[0] for r in records if r[4]!='metadata only'}
-        reused &= reusable
-        records=[r for r in records if r[0] in reused]
-        rejected=carried_rejections(rejected,reused)
-    documents=load_documents(catalog,fetch_docs)
-    # Existing PDF bytes must match the reviewed archive catalog before parsing.
-    research=json.loads((ROOT/'research/catalog.json').read_text(encoding='utf-8'))
-    for source in research['entries']:
-        if source.get('full_text_status')!='downloaded':continue
-        from scripts.research_policy import vet
-        vet(source)  # Unreviewed publishers or unpinned files never reach the index.
-        fmt=source.get('format','pdf')
-        path=ROOT/'data/research'/source['role']/source['level']/(source['id']+'.'+fmt)
-        raw=path.read_bytes()
-        if hashlib.sha256(raw).hexdigest()!=source['sha256']:raise ValueError('Research PDF checksum mismatch: '+source['id'])
-        if source.get('ocr_sha256'):
-            # Image-only PDF with an owner-approved offline OCR sidecar pinned in the catalog (no OCR runs here).
-            ocr=path.with_name(source['id']+'.ocr.txt').read_bytes()
-            if hashlib.sha256(ocr).hexdigest()!=source['ocr_sha256']:raise ValueError('OCR sidecar checksum mismatch: '+source['id'])
-            raw,fmt=ocr,'ocr'
-        entry={'id':source['id'],'title':source['title'],'url':source['source_url'],'roles':[source['role']],'snapshot':source.get('fetched_at','')[:10],'publication':source['year'],'sha256':source['sha256'],'topics':source.get('topics',[])}
-        if source.get('text_normalization'):
-            if source['text_normalization']!=PDF_CONTROL_NORMALIZATION or fmt!='pdf':raise ValueError('Unknown text normalization: '+source['id'])
-            entry['text_normalization']=source['text_normalization']
-        documents.append((entry,raw,{'html':'text/html','txt':'text/plain','ocr':'text/x-larpus-ocr-pages'}.get(fmt,'application/pdf')))
-    for entry,raw,mime in documents:
-        count=0
-        try:
-            if entry['id'] in reused:
-                if any(r[0]==entry['id'] for r in records):continue
-                metadata='Metadata only: '+entry['title']+'. Publication: '+str(entry.get('publication','unknown'))+'. Topics: '+', '.join(entry.get('topics',[]))+'. No approved extractable full text is indexed for this document. Do not infer its results from its title; image-only PDFs require separate offline OCR and review.'
-                inspect_message(metadata)
-                for role in entry['roles']:records.append((entry['id'],entry['title'],entry['url'],entry['snapshot'],'metadata only',metadata,role))
+def metadata_only_rows(entry,locator,text):
+    rows=[]
+    for role in entry['roles']:
+        rows.append((entry['id'],entry['title'],entry['url'],entry.get('snapshot',entry.get('fetched_at','')[:10]),locator,text,role))
+    return rows
+
+def reused_metadata_records(entry,records):
+    if any(r[0]==entry['id'] for r in records):return records
+    metadata='Metadata only: '+entry['title']+'. Publication: '+str(entry.get('publication','unknown'))+'. Topics: '+', '.join(entry.get('topics',[]))+'. No approved extractable full text is indexed for this document. Do not infer its results from its title; image-only PDFs require separate offline OCR and review.'
+    inspect_message(metadata)
+    return records+metadata_only_rows(entry,'metadata only',metadata)
+
+def append_screened_passages(entry,raw,mime,records,rejected):
+    count=0
+    for locator,text in extracted(raw,mime):
+        if entry.get('text_normalization'):text=normalized_pdf_text(text)
+        for offset,part in passages(text):
+            if len(part)<60:continue
+            # Ordinary screen; exact owner-reviewed passages in config/reference-reviews.json only.
+            try:inspect_reference(part,entry['id'])
+            except TextHeld as exc:
+                rejected.append({'source_id':entry['id'],'locator':locator,'offset':offset,'reason':exc.reason})
                 continue
-            for locator,text in extracted(raw,mime):
-                if entry.get('text_normalization'):text=normalized_pdf_text(text)
-                for offset,part in passages(text):
-                    if len(part)<60:continue
-                    # Ordinary screen; exact owner-reviewed passages in config/reference-reviews.json only.
-                    try:inspect_reference(part,entry['id'])
-                    except TextHeld as exc:
-                        rejected.append({'source_id':entry['id'],'locator':locator,'offset':offset,'reason':exc.reason})
-                        continue
-                    for role in entry['roles']:
-                        records.append((entry['id'],entry['title'],entry['url'],entry.get('snapshot',entry.get('fetched_at','')[:10]),locator+' offset '+str(offset),part,role))
-                    count+=1
-            entry['indexed_passages']=count
-            if count==0:
-                metadata='Metadata only: '+entry['title']+'. No approved extractable full text is indexed. Do not infer results from the title. Image-only PDFs need separate offline OCR and review.'
-                inspect_message(metadata)
-                for role in entry['roles']:records.append((entry['id'],entry['title'],entry['url'],entry.get('snapshot',entry.get('fetched_at','')[:10]),'metadata only',metadata,role))
-            print(entry['id']+': indexed '+str(count)+' passages',flush=True)
-        except Exception as exc:
-            # Atomic per-document rejection, even if some pages already parsed.
-            records=[r for r in records if r[0]!=entry['id']]
-            rejected.append({'source_id':entry['id'],'reason':'parse_failed','error':type(exc).__name__,'detail':str(exc).replace(str(ROOT),'[project]')[:160]})
-            metadata='Metadata only: '+entry['title']+'. The original document could not be indexed with the approved parser and permissions. No full-text evidence is available here; do not infer results from the title.'
+            for role in entry['roles']:
+                records.append((entry['id'],entry['title'],entry['url'],entry.get('snapshot',entry.get('fetched_at','')[:10]),locator+' offset '+str(offset),part,role))
+            count+=1
+    return count
+
+def record_parse_failure(entry,exc,records,rejected):
+    # Atomic per-document rejection, even if some pages already parsed.
+    records=[r for r in records if r[0]!=entry['id']]
+    rejected.append({'source_id':entry['id'],'reason':'parse_failed','error':type(exc).__name__,'detail':str(exc).replace(str(ROOT),'[project]')[:160]})
+    metadata='Metadata only: '+entry['title']+'. The original document could not be indexed with the approved parser and permissions. No full-text evidence is available here; do not infer results from the title.'
+    inspect_message(metadata)
+    records.extend(metadata_only_rows(entry,'metadata only',metadata))
+    return records
+
+def index_one_document(entry,raw,mime,reused,records,rejected):
+    """Index one prepared document into records/rejected; returns updated records."""
+    try:
+        if entry['id'] in reused:
+            return reused_metadata_records(entry,records)
+        count=append_screened_passages(entry,raw,mime,records,rejected)
+        entry['indexed_passages']=count
+        if count==0:
+            metadata='Metadata only: '+entry['title']+'. No approved extractable full text is indexed. Do not infer results from the title. Image-only PDFs need separate offline OCR and review.'
             inspect_message(metadata)
-            for role in entry['roles']:records.append((entry['id'],entry['title'],entry['url'],entry.get('snapshot',entry.get('fetched_at','')[:10]),'metadata only',metadata,role))
-    CACHE.mkdir(parents=True,exist_ok=True)
-    from scripts.github_archive import indexed_records
-    github_records,github_sources,github_decisions=indexed_records()
-    records.extend(github_records)
-    (CACHE/'rejected-passages.json').write_text(json.dumps(rejected,indent=2)+'\n',encoding='utf-8')
+            records.extend(metadata_only_rows(entry,'metadata only',metadata))
+        print(entry['id']+': indexed '+str(count)+' passages',flush=True)
+    except Exception as exc:
+        records=record_parse_failure(entry,exc,records,rejected)
+    return records
+
+def source_manifest_rows(documents,github_sources):
+    rows=[{'id':e['id'],'sha256':e['sha256'],'publication':e.get('publication'),'snapshot':e.get('snapshot',e.get('fetched_at','')[:10])} for e,_,_ in documents]
+    if github_sources:
+        rows.append({'id':'github-archive','sha256':github_sources[0]['sha256'],'publication':None,'snapshot':github_sources[0]['snapshot']})
+    return rows
+
+def build_manifest(records,rejected,documents,github_records,github_sources,github_decisions):
+    return {'version':1,'prepared_at':datetime.now(timezone.utc).isoformat(),'database_sha256':hashlib.sha256((KNOWLEDGE/'approved.sqlite').read_bytes()).hexdigest(),'database_bytes':(KNOWLEDGE/'approved.sqlite').stat().st_size,'documents':len({r[0] for r in records}),'passages':len(records),'metadata_only_documents':len({r[0] for r in records if r[4]=='metadata only'}),'rejected_passages':len(rejected),'role_counts':{role:sum(r[6]==role for r in records) for role in sorted({r[6] for r in records})},'sources':source_manifest_rows(documents,github_sources),'github':{'repositories':sum(e['id']!='github-catalog' for e in github_sources),'passages':len(github_records),'screening_decisions':len(github_decisions)}}
+
+def write_sqlite_chunks(records):
     temp=KNOWLEDGE/'approved.build.sqlite';temp.unlink(missing_ok=True)
     with sqlite3.connect(temp) as db:
         db.execute("CREATE VIRTUAL TABLE chunks USING fts5(source_id UNINDEXED,title,url UNINDEXED,snapshot UNINDEXED,locator UNINDEXED,text,role UNINDEXED,tokenize='porter unicode61')")
@@ -314,7 +297,12 @@ def build(fetch_docs,reuse_research=False):
     db.close()
     if temp.stat().st_size>512*1024*1024:raise ValueError('Index exceeds runtime limit')
     temp.replace(KNOWLEDGE/'approved.sqlite')
-    manifest={'version':1,'prepared_at':datetime.now(timezone.utc).isoformat(),'database_sha256':hashlib.sha256((KNOWLEDGE/'approved.sqlite').read_bytes()).hexdigest(),'database_bytes':(KNOWLEDGE/'approved.sqlite').stat().st_size,'documents':len({r[0] for r in records}),'passages':len(records),'metadata_only_documents':len({r[0] for r in records if r[4]=='metadata only'}),'rejected_passages':len(rejected),'role_counts':{role:sum(r[6]==role for r in records) for role in sorted({r[6] for r in records})},'sources':[{'id':e['id'],'sha256':e['sha256'],'publication':e.get('publication'),'snapshot':e.get('snapshot',e.get('fetched_at','')[:10])} for e,_,_ in documents]+([{'id':'github-archive','sha256':github_sources[0]['sha256'],'publication':None,'snapshot':github_sources[0]['snapshot']}] if github_sources else []),'github':{'repositories':sum(e['id']!='github-catalog' for e in github_sources),'passages':len(github_records),'screening_decisions':len(github_decisions)}}
+
+def write_approved_index(records,rejected,documents,catalog,github_records,github_sources,github_decisions):
+    CACHE.mkdir(parents=True,exist_ok=True)
+    (CACHE/'rejected-passages.json').write_text(json.dumps(rejected,indent=2)+'\n',encoding='utf-8')
+    write_sqlite_chunks(records)
+    manifest=build_manifest(records,rejected,documents,github_records,github_sources,github_decisions)
     (KNOWLEDGE/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     (KNOWLEDGE/'sources.json').write_text(json.dumps(catalog,indent=2)+'\n',encoding='utf-8')
     import importlib.util
@@ -322,6 +310,21 @@ def build(fetch_docs,reuse_research=False):
     _,provenance=module.build(ROOT);(KNOWLEDGE/'provenance.json').write_text(provenance,encoding='utf8')
     print(json.dumps({k:v for k,v in manifest.items() if k!='sources'}),flush=True)
     print(json.dumps({'unavailable':[{'id':e['id'],'error':e.get('error')} for e in catalog['documents'] if e.get('status')=='unavailable']}),flush=True)
+    return manifest
+
+def build(fetch_docs,reuse_research=False):
+    catalog=json.loads((KNOWLEDGE/'sources.json').read_text(encoding='utf-8'))
+    records,rejected,reused=reused_index(reuse_research)
+    documents=load_documents(catalog,fetch_docs)
+    # Existing PDF bytes must match the reviewed archive catalog before parsing.
+    documents.extend(research_documents())
+    for entry,raw,mime in documents:
+        records=index_one_document(entry,raw,mime,reused,records,rejected)
+    from scripts.github_archive import indexed_records
+    github_records,github_sources,github_decisions=indexed_records()
+    records.extend(github_records)
+    write_approved_index(records,rejected,documents,catalog,github_records,github_sources,github_decisions)
+
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--fetch-reviewed',action='store_true');parser.add_argument('--reuse-research',action='store_true')
